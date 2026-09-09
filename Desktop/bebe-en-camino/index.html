@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bebé en Camino 👶 | Tienda Online</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Íconos de FontAwesome para Redes Sociales -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Encabezado / Navbar -->
+  <header class="navbar">
+    <div class="logo">Bebé en Camino
+    
+    </div>
+    
+    <!-- Menú de Navegación del Cliente -->
+    <nav class="nav-links">
+      <a href="#productos">Productos</a>
+      <a href="#blog">Blog</a>
+      <a href="#contacto">Ubicación & Contacto</a>
+    </nav>
+
+    <button class="cart-btn" onclick="toggleCart()">🛒 Carrito (<span id="cart-count">0</span>)</button>
+  </header>
+
+  <!-- Slider / Carrusel Automático -->
+  <section class="slider-container">
+    <div class="slider-track" id="slider-track">
+      <div class="slide slide-1">
+        <div class="slide-content">
+          <h2>Nuevas Colecciones para Bebé</h2>
+          <p>Descubre prendas suaves 100% algodón orgánico</p>
+        </div>
+      </div>
+      <div class="slide slide-2">
+        <div class="slide-content">
+          <h2>Juguetes Didácticos</h2>
+          <p>Estimula el aprendizaje y la motricidad desde sus primeros meses</p>
+        </div>
+      </div>
+      <div class="slide slide-3">
+        <div class="slide-content">
+          <h2>Accesorios & Lactancia</h2>
+          <p>Todo lo que necesitas para el cuidado y confort de tu bebé</p>
+        </div>
+      </div>
+    </div>
+    <!-- Indicadores -->
+    <div class="slider-dots">
+      <span class="dot active" onclick="setSlide(0)"></span>
+      <span class="dot" onclick="setSlide(1)"></span>
+      <span class="dot" onclick="setSlide(2)"></span>
+    </div>
+  </section>
+
+  <!-- Contenido Principal -->
+  <div class="main-layout" id="productos">
+    <main class="shop-section">
+      
+      <!-- Barra de Búsqueda y Filtros por Categoría -->
+      <div class="toolbar">
+        <input type="text" id="search-bar" placeholder="🔍 Buscar productos..." oninput="filterProducts()">
+        <div class="category-filters">
+          <button class="cat-btn active" onclick="filterByCategory('todos', this)">Todos</button>
+          <button class="cat-btn" onclick="filterByCategory('ropa', this)">Ropa</button>
+          <button class="cat-btn" onclick="filterByCategory('juguetes', this)">Juguetes</button>
+          <button class="cat-btn" onclick="filterByCategory('accesorios', this)">Accesorios</button>
+        </div>
+      </div>
+
+      <h2 class="section-title">Nuestros Productos</h2>
+      <div id="products-container" class="products-grid">
+        <p>Cargando catálogo...</p>
+      </div>
+    </main>
+
+    <!-- Sidebar del Blog -->
+    <aside class="sidebar" id="blog">
+      <div class="blog-widget">
+        <h3>💡 Blog & Tips para Mamás y Papás</h3>
+        <p>Aprende más sobre el cuidado de tu bebé</p>
+        <div class="blog-posts">
+          <!-- Cargados desde Supabase -->
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Sección de Ubicación y Mapa -->
+  <section class="location-section" id="contacto">
+    <h2>📍 Visítanos o Contáctanos</h2>
+    <div class="location-container">
+      <div class="location-info">
+        <h3>Nuestra Tienda Física</h3>
+        <p><i class="fa-solid fa-location-dot"></i> Av. Principal 123 y Calle 4ta (Ecuador)</p>
+        <p><i class="fa-solid fa-clock"></i> Lunes a Sábado: 09:00 AM - 07:00 PM</p>
+        <p><i class="fa-solid fa-phone"></i> +593 99 999 9999</p>
+        <p><i class="fa-solid fa-envelope"></i> contacto@bebeencamino.com</p>
+      </div>
+      <div class="map-box">
+        <iframe 
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127538.93237190002!2d-79.95299!3d-2.17099!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x902d13c200000001%3A0x87978e85847e0a2!2sGuayaquil!5e0!3m2!1ses!2sec!4v1700000000000" 
+          width="100%" height="220" style="border:0; border-radius: 8px;" allowfullscreen="" loading="lazy">
+        </iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pie de Página (Footer) -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <h3>Bebé en Camino 👶</h3>
+        <p>Acompañándote en la etapa más hermosa de la vida.</p>
+      </div>
+
+      <div class="footer-socials">
+        <h4>Síguenos en Redes Sociales</h4>
+        <div class="social-icons">
+          <a href="https://instagram.com" target="_blank" class="social-btn instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://facebook.com" target="_blank" class="social-btn facebook" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="https://wa.me/593999999999" target="_blank" class="social-btn whatsapp" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="https://tiktok.com" target="_blank" class="social-btn tiktok" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2026 Bebé en Camino. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <!-- Modal del Carrito -->
+  <div id="cart-modal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-btn" onclick="toggleCart()">&times;</span>
+      <h2>Tu Carrito de Compras 🛒</h2>
+      <div id="cart-items" style="margin-top: 1rem;"></div>
+      <h3 style="margin-top: 1rem;">Total: $<span id="cart-total">0.00</span></h3>
+
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        <input type="text" id="cli-nombre" placeholder="Tu Nombre" required style="padding: 0.5rem;">
+        <input type="tel" id="cli-telefono" placeholder="WhatsApp / Teléfono" required style="padding: 0.5rem;">
+        <input type="email" id="cli-email" placeholder="Correo (Opcional)" style="padding: 0.5rem;">
+        <button class="checkout-btn" onclick="checkout()">Realizar Pedido por WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
