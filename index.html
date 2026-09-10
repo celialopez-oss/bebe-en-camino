@@ -95,17 +95,40 @@
       </div>
     </main>
 
-    <!-- Sidebar del Blog -->
-    <aside class="sidebar" id="blog">
-      <div class="blog-widget">
-        <h3>💡 Blog & Tips para Mamás y Papás</h3>
-        <p>Aprende más sobre el cuidado de tu bebé</p>
-        <div class="blog-posts">
-          <!-- Cargados desde Supabase -->
-        </div>
-      </div>
-    </aside>
+    <!-- Sidebar del Blog y Nuevas Secciones -->
+<aside class="sidebar" id="blog">
+  <div class="blog-widget">
+    <h3>💡 Blog & Tips para Mamás y Papás</h3>
+    <p>Aprende más sobre el cuidado de tu bebé</p>
+    <div class="blog-posts">
+      <!-- Cargados desde Supabase -->
+    </div>
   </div>
+
+  <!-- Sección de Ofertas (Justo debajo del Blog) -->
+  <div class="sidebar-widget" style="margin-top: 1.5rem; background-color: #fff0f5; padding: 1rem; border-radius: 8px;">
+    <h3 style="color: #d81b60; margin-bottom: 0.8rem; font-size: 1.1rem;">🔥 Ofertas Especiales</h3>
+    <div id="ofertas-container" class="product-grid-sidebar">
+      <!-- Los productos en oferta se cargarán aquí -->
+    </div>
+  </div>
+
+  <!-- Sección Por Temporada (Justo debajo de Ofertas) -->
+  <div class="sidebar-widget" style="margin-top: 1.5rem; background-color: #f3e5f5; padding: 1rem; border-radius: 8px;">
+    <h3 style="color: #4a148c; margin-bottom: 0.8rem; font-size: 1.1rem;">🌸 Por Temporada</h3>
+    <div id="temporada-container" class="product-grid-sidebar">
+      <!-- Los productos de temporada se cargarán aquí -->
+    </div>
+  </div>
+</aside>
+</div>
+
+<!-- Sección de Ubicación y Mapa -->
+<section class="location-section" id="contacto">
+<h2>📍 Visítanos o Contáctanos</h2>
+<div class="location-container">
+  <div class="location-info">
+    <h3>Nuestra Tienda Física</h3>
 
   <!-- Sección de Ubicación y Mapa -->
   <section class="location-section" id="contacto">
