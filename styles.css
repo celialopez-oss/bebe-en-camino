@@ -106,7 +106,7 @@ body { background-color: #f8f9fa; color: #333; }
 }
 
 .logo-img {
-  height: 42px; /* Tamaño pequeño y elegante */
+  height: 60px; /* Tamaño pequeño y elegante */
   width: auto;
   object-fit: contain;
   display: block;
