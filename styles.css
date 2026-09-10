@@ -93,48 +93,33 @@ body { background-color: #f8f9fa; color: #333; }
 .close-btn { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; }
 .checkout-btn { background: #25D366; color: white; border: none; padding: 0.8rem; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 0.5rem; }
 
-/* Estilo para que el logo quede pequeño y alineado a la izquierda */
+/* Contenedor general del encabezado */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0.8rem 2rem;
 }
 
+/* Forzar que el logo y el texto vayan en fila horizontal */
 .logo {
   display: flex;
   align-items: center;
+  gap: 15px;
 }
 
+/* Tamaño grande y destacado para el logo */
 .logo-img {
-  height: 60px; /* Tamaño pequeño y elegante */
+  height: 95px;
   width: auto;
   object-fit: contain;
   display: block;
 }
 
-/* Estilos para el contenedor del logo y el texto al lado */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 2rem;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px; /* Espacio entre el logo y el nombre */
-}
-
-.logo-img {
-  height: 60px; /* El tamaño de 60px que te gusta para que destaque */
-  width: auto;
-  object-fit: contain;
-  display: block;
-}
-
+/* Estilo del texto al lado */
 .logo-text {
-  font-size: 1.25rem;
+  font-size: 1.8rem;
   font-weight: bold;
-  color: #333; /* Puedes cambiar el color si lo deseas */
+  color: #ffffff;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
