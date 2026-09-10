@@ -1,6 +1,6 @@
 const SUPABASE_URL = "https://bwkohmeobwplthvjihtd.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_MfylsjMrOCQIK2fGwmPEdg_gXB-zhRo";
-const TELEFONO_TIENDA = "593939669413"; // Reemplaza por tu número real de WhatsApp
+const TELEFONO_TIENDA = "593939669413"; // Número de WhatsApp
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -8,14 +8,18 @@ let todosLosProductos = [];
 let carrito = [];
 let currentSlide = 0;
 let selectedCategory = 'todos';
+let indiceSliderOfertas = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchProductos();
   fetchBlogArticles();
   initSlider();
+  
+  // Cargamos las secciones especiales de la barra lateral con un pequeño respiro
+  setTimeout(cargarSeccionesSidebar, 600);
 });
 
-// ------------------- SLIDER AUTOMÁTICO -------------------
+// ------------------- SLIDER PRINCIPAL -------------------
 function initSlider() {
   setInterval(() => {
     currentSlide = (currentSlide + 1) % 3;
@@ -233,64 +237,26 @@ async function checkout() {
   toggleCart();
 }
 
-// --- LÓGICA PARA RENDERIZAR OFERTAS Y TEMPORADA ---
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(cargarSeccionesEspeciales, 500); // Da un pequeño respiro para cargar los datos
-});
-
-function cargarSeccionesEspeciales() {
-  // Intentamos obtener los productos guardados (funciona con localStorage)
-  const productos = JSON.parse(localStorage.getItem("productos")) || [];
-  
-  const ofertasContainer = document.getElementById("ofertas-container");
-  const temporadaContainer = document.getElementById("temporada-container");
-
-  if (!ofertasContainer || !temporadaContainer) return;
-
-  ofertasContainer.innerHTML = "";
-  temporadaContainer.innerHTML = "";
-
-  productos.forEach(prod => {
-    // Creamos la tarjetita del producto
-    const card = document.createElement("div");
-    card.className = "product-card";
-    card.style.cssText = "background: white; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center;";
-    
-    card.innerHTML = `
-      <img src="${prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 6px;">
-      <h3 style="font-size: 1.1rem; margin: 10px 0 5px;">${prod.nombre}</h3>
-      <p style="color: #d81b60; font-weight: bold; margin-bottom: 10px;">$${prod.precio}</p>
-      <button onclick="agregarAlCarrito('${prod.id}')" style="background: #ff69b4; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">Agregar al Carrito</button>
-    `;
-
-    // Clasificamos según la categoría seleccionada en el admin
-    if (prod.categoria === "ofertas") {
-      ofertasContainer.appendChild(card);
-    } else if (prod.categoria === "temporada") {
-      temporadaContainer.appendChild(card);
-    }
-  });
-}
-// --- CONTROL DEL SLIDER DE OFERTAS Y SECCIÓN TEMPORADA EN SIDEBAR ---
-let indiceSliderOfertas = 0;
-
+// ------------------- SLIDER DE OFERTAS Y TEMPORADA (SIDEBAR) -------------------
 function cargarSeccionesSidebar() {
-  const productos = JSON.parse(localStorage.getItem("productos")) || [];
+  // Como los productos vienen de Supabase (tabla 'productos'), leemos de 'todosLosProductos' 
+  // o de localStorage si los manejas por fuera. Usaremos 'todosLosProductos' que ya carga Supabase:
+  const productos = todosLosProductos.length > 0 ? todosLosProductos : (JSON.parse(localStorage.getItem("productos")) || []);
   
-  // 1. Lógica del Slider de Ofertas
+  // 1. Lógica del Slider de Ofertas en la barra lateral
   const ofertasContainer = document.getElementById("ofertas-slider");
   if (ofertasContainer) {
-    const ofertas = productos.filter(p => p.categoria === "ofertas");
+    const ofertas = productos.filter(p => p.categoria && p.categoria.toLowerCase() === "ofertas");
 
     if (ofertas.length === 0) {
       ofertasContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay ofertas activas</p>";
     } else {
       ofertasContainer.innerHTML = ofertas.map((prod, index) => `
         <div class="oferta-slide" style="display: ${index === 0 ? 'block' : 'none'};">
-          <img src="${prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
+          <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
           <h4 style="font-size: 0.95rem; margin: 6px 0 3px;">${prod.nombre}</h4>
-          <p style="color: #d81b60; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${prod.precio}</p>
-          <button onclick="agregarAlCarrito('${prod.id}')" style="background: #ff69b4; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%;">¡Aprovechar Oferta!</button>
+          <p style="color: #d81b60; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
+          <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #ff69b4; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%;">¡Aprovechar Oferta!</button>
         </div>
       `).join('');
 
@@ -308,27 +274,22 @@ function cargarSeccionesSidebar() {
     }
   }
 
-  // 2. Lógica de la sección Por Temporada
+  // 2. Lógica de la sección Por Temporada en la barra lateral
   const temporadaContainer = document.getElementById("temporada-container");
   if (temporadaContainer) {
-    const temporada = productos.filter(p => p.categoria === "temporada");
+    const temporada = productos.filter(p => p.categoria && p.categoria.toLowerCase() === "temporada");
 
     if (temporada.length === 0) {
       temporadaContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay productos de temporada</p>";
     } else {
       temporadaContainer.innerHTML = temporada.map(prod => `
         <div style="background: white; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.8rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-          <img src="${prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">
+          <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">
           <h4 style="font-size: 0.95rem; margin: 6px 0 3px;">${prod.nombre}</h4>
-          <p style="color: #4a148c; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${prod.precio}</p>
-          <button onclick="agregarAlCarrito('${prod.id}')" style="background: #9c27b0; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%;">Comprar</button>
+          <p style="color: #4a148c; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
+          <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #9c27b0; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%;">Comprar</button>
         </div>
       `).join('');
     }
   }
 }
-
-// Ejecutar al cargar la página
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(cargarSeccionesSidebar, 500);
-});
