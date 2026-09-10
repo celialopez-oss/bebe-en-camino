@@ -123,3 +123,47 @@ body { background-color: #f8f9fa; color: #333; }
   color: #ffffff;
   text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
+
+/* --- AJUSTES RESPONSIVOS PARA LA BARRA DE NAVEGACIÓN --- */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  flex-wrap: wrap; /* Permite que los elementos bajen si faltan espacio en celular */
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-img {
+  height: 55px; /* Tamaño adaptado para que luzca bien en móviles */
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.logo-text {
+  font-size: 1.3rem; /* Tamaño de texto equilibrado */
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Adaptación del menú para celulares pequeños */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .nav-links {
+    display: flex;
+    gap: 15px;
+    font-size: 0.9rem;
+  }
+}
