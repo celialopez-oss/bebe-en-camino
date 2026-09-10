@@ -232,3 +232,42 @@ async function checkout() {
   updateCartUI();
   toggleCart();
 }
+
+// --- LÓGICA PARA RENDERIZAR OFERTAS Y TEMPORADA ---
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(cargarSeccionesEspeciales, 500); // Da un pequeño respiro para cargar los datos
+});
+
+function cargarSeccionesEspeciales() {
+  // Intentamos obtener los productos guardados (funciona con localStorage)
+  const productos = JSON.parse(localStorage.getItem("productos")) || [];
+  
+  const ofertasContainer = document.getElementById("ofertas-container");
+  const temporadaContainer = document.getElementById("temporada-container");
+
+  if (!ofertasContainer || !temporadaContainer) return;
+
+  ofertasContainer.innerHTML = "";
+  temporadaContainer.innerHTML = "";
+
+  productos.forEach(prod => {
+    // Creamos la tarjetita del producto
+    const card = document.createElement("div");
+    card.className = "product-card";
+    card.style.cssText = "background: white; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center;";
+    
+    card.innerHTML = `
+      <img src="${prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 6px;">
+      <h3 style="font-size: 1.1rem; margin: 10px 0 5px;">${prod.nombre}</h3>
+      <p style="color: #d81b60; font-weight: bold; margin-bottom: 10px;">$${prod.precio}</p>
+      <button onclick="agregarAlCarrito('${prod.id}')" style="background: #ff69b4; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">Agregar al Carrito</button>
+    `;
+
+    // Clasificamos según la categoría seleccionada en el admin
+    if (prod.categoria === "ofertas") {
+      ofertasContainer.appendChild(card);
+    } else if (prod.categoria === "temporada") {
+      temporadaContainer.appendChild(card);
+    }
+  });
+}
