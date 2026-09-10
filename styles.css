@@ -93,77 +93,62 @@ body { background-color: #f8f9fa; color: #333; }
 .close-btn { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; cursor: pointer; }
 .checkout-btn { background: #25D366; color: white; border: none; padding: 0.8rem; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 0.5rem; }
 
-/* Contenedor general del encabezado */
+/* --- BARRA DE NAVEGACIÓN Y LOGO DEFINITIVOS --- */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem 2rem;
-}
-
-/* Forzar que el logo y el texto vayan en fila horizontal */
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-/* Tamaño grande y destacado para el logo */
-.logo-img {
-  height: 95px;
-  width: auto;
-  object-fit: contain;
-  display: block;
-}
-
-/* Estilo del texto al lado */
-.logo-text {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #ffffff;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-}
-
-/* --- AJUSTES RESPONSIVOS PARA LA BARRA DE NAVEGACIÓN --- */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  flex-wrap: wrap; /* Permite que los elementos bajen si faltan espacio en celular */
+  padding: 0.8rem 1.5rem;
+  background-color: #ffb6c1;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .logo-img {
-  height: 55px; /* Tamaño adaptado para que luzca bien en móviles */
+  height: 70px;
   width: auto;
   object-fit: contain;
   display: block;
 }
 
 .logo-text {
-  font-size: 1.3rem; /* Tamaño de texto equilibrado */
+  font-size: 1.5rem;
   font-weight: bold;
   color: #ffffff;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
 }
 
-/* Adaptación del menú para celulares pequeños */
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}
+
+/* --- ADAPTACIÓN PARA CELULARES --- */
 @media (max-width: 768px) {
   .navbar {
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     text-align: center;
+    padding: 1rem;
   }
   
+  .logo {
+    justify-content: center;
+  }
+
   .nav-links {
-    display: flex;
+    justify-content: center;
     gap: 15px;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
   }
 }
