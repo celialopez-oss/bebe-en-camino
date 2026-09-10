@@ -271,3 +271,64 @@ function cargarSeccionesEspeciales() {
     }
   });
 }
+// --- CONTROL DEL SLIDER DE OFERTAS Y SECCIÓN TEMPORADA EN SIDEBAR ---
+let indiceSliderOfertas = 0;
+
+function cargarSeccionesSidebar() {
+  const productos = JSON.parse(localStorage.getItem("productos")) || [];
+  
+  // 1. Lógica del Slider de Ofertas
+  const ofertasContainer = document.getElementById("ofertas-slider");
+  if (ofertasContainer) {
+    const ofertas = productos.filter(p => p.categoria === "ofertas");
+
+    if (ofertas.length === 0) {
+      ofertasContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay ofertas activas</p>";
+    } else {
+      ofertasContainer.innerHTML = ofertas.map((prod, index) => `
+        <div class="oferta-slide" style="display: ${index === 0 ? 'block' : 'none'};">
+          <img src="${prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
+          <h4 style="font-size: 0.95rem; margin: 6px 0 3px;">${prod.nombre}</h4>
+          <p style="color: #d81b60; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${prod.precio}</p>
+          <button onclick="agregarAlCarrito('${prod.id}')" style="background: #ff69b4; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%;">¡Aprovechar Oferta!</button>
+        </div>
+      `).join('');
+
+      // Activar rotación automática si hay más de una oferta
+      if (ofertas.length > 1 && !window.ofertasIntervalo) {
+        window.ofertasIntervalo = setInterval(() => {
+          const slides = document.querySelectorAll('.oferta-slide');
+          if (slides.length === 0) return;
+          
+          slides[indiceSliderOfertas].style.display = 'none';
+          indiceSliderOfertas = (indiceSliderOfertas + 1) % slides.length;
+          slides[indiceSliderOfertas].style.display = 'block';
+        }, 3500);
+      }
+    }
+  }
+
+  // 2. Lógica de la sección Por Temporada
+  const temporadaContainer = document.getElementById("temporada-container");
+  if (temporadaContainer) {
+    const temporada = productos.filter(p => p.categoria === "temporada");
+
+    if (temporada.length === 0) {
+      temporadaContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay productos de temporada</p>";
+    } else {
+      temporadaContainer.innerHTML = temporada.map(prod => `
+        <div style="background: white; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.8rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <img src="${prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">
+          <h4 style="font-size: 0.95rem; margin: 6px 0 3px;">${prod.nombre}</h4>
+          <p style="color: #4a148c; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${prod.precio}</p>
+          <button onclick="agregarAlCarrito('${prod.id}')" style="background: #9c27b0; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%;">Comprar</button>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+// Ejecutar al cargar la página
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(cargarSeccionesSidebar, 500);
+});
