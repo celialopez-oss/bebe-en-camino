@@ -20,7 +20,7 @@ function initSlider() {
   setInterval(() => {
     currentSlide = (currentSlide + 1) % 3;
     updateSliderUI();
-  }, 4000); // Transición cada 4 segundos
+  }, 4000);
 }
 
 function setSlide(index) {
