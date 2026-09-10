@@ -111,3 +111,30 @@ body { background-color: #f8f9fa; color: #333; }
   object-fit: contain;
   display: block;
 }
+
+/* Estilos para el contenedor del logo y el texto al lado */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 2rem;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Espacio entre el logo y el nombre */
+}
+
+.logo-img {
+  height: 60px; /* El tamaño de 60px que te gusta para que destaque */
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.logo-text {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #333; /* Puedes cambiar el color si lo deseas */
+}
