@@ -20,10 +20,12 @@
     
     <!-- Menú de Navegación del Cliente -->
     <nav class="nav-links">
-      <a href="#productos">Productos</a>
-      <a href="#blog">Blog</a>
-      <a href="#contacto">Contacto</a>
-    </nav>
+  <a href="index.html">Inicio</a>
+  <a href="#ofertas-container">Ofertas</a>
+  <a href="#temporada-container">Temporada</a>
+  <a href="#blog">Blog</a>
+  <a href="#contacto">Contacto</a>
+</nav>
 
     <button class="cart-btn" onclick="toggleCart()">🛒 Carrito (<span id="cart-count">0</span>)</button>
   </header>
@@ -89,13 +91,14 @@
     </div>
   </div>
 
-  <!-- Sección de Ofertas (Justo debajo del Blog) -->
-  <div class="sidebar-widget" style="margin-top: 1.5rem; background-color: #fff0f5; padding: 1rem; border-radius: 8px;">
-    <h3 style="color: #d81b60; margin-bottom: 0.8rem; font-size: 1.1rem;">🔥 Ofertas Especiales</h3>
-    <div id="ofertas-container" class="product-grid-sidebar">
-      <!-- Los productos en oferta se cargarán aquí -->
-    </div>
+ <!-- Sección de Ofertas en Slider (Justo debajo del Blog) -->
+<div class="sidebar-widget" style="margin-top: 1.5rem; background-color: #fff0f5; padding: 1rem; border-radius: 8px; text-align: center;">
+  <h3 style="color: #d81b60; margin-bottom: 0.8rem; font-size: 1.1rem;">🔥 Ofertas Especiales</h3>
+  <!-- Contenedor del Slider -->
+  <div id="ofertas-slider" style="position: relative; overflow: hidden; border-radius: 6px;">
+    <!-- Las imágenes/productos en oferta rotarán aquí automáticamente -->
   </div>
+</div>
 
   <!-- Sección Por Temporada (Justo debajo de Ofertas) -->
   <div class="sidebar-widget" style="margin-top: 1.5rem; background-color: #f3e5f5; padding: 1rem; border-radius: 8px;">
