@@ -75,12 +75,28 @@
         </div>
       </div>
 
-      <h2 class="section-title">Nuestros Productos</h2>
-      <div id="products-container" class="products-grid">
-        <p>Cargando catálogo...</p>
-      </div>
-    </main>
+     <!-- Sección: Lo Nuevo (Máximo 4 imágenes en 2 filas) -->
+<section style="margin: 2rem 0;">
+  <h2 style="color: #e84393; border-bottom: 2px solid #ff69b4; padding-bottom: 0.5rem; margin-bottom: 1rem;">✨ Lo Nuevo</h2>
+  <div id="lo-nuevo-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+    <!-- Se carga dinámicamente (máx 4) -->
+  </div>
+</section>
 
+<!-- Sección: Nuestros Productos (8 iniciales + Botón Ver Más) -->
+<section style="margin: 2rem 0;">
+  <h2 style="color: #e84393; border-bottom: 2px solid #ff69b4; padding-bottom: 0.5rem; margin-bottom: 1rem;">🛍️ Nuestros Productos</h2>
+  <div id="nuestros-productos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+    <!-- Se carga dinámicamente de 8 en 8 -->
+  </div>
+  
+  <!-- Botón Ver Más -->
+  <div style="text-align: center; margin-top: 2rem;">
+    <button id="btn-ver-mas" onclick="cargarMasProductos()" style="background-color: #ff69b4; color: white; border: none; padding: 0.8rem 2rem; font-size: 1rem; border-radius: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background 0.3s;">
+      Ver más productos
+    </button>
+  </div>
+</section>
     <!-- Sidebar del Blog y Nuevas Secciones -->
 <aside class="sidebar" id="blog">
   <div class="blog-widget">
