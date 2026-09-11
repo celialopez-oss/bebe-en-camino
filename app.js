@@ -1,22 +1,24 @@
 const SUPABASE_URL = "https://bwkohmeobwplthvjihtd.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_MfylsjMrOCQIK2fGwmPEdg_gXB-zhRo";
-const TELEFONO_TIENDA = "593939669413"; // Número de WhatsApp
+const TELEFONO_TIENDA = "593996219444"; // Número de WhatsApp
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let todosLosProductos = [];
+let todosLosProductosGenerales = [];
+let productosMostradosCount = 8; // Empieza mostrando 8 productos en la sección principal
 let carrito = [];
 let currentSlide = 0;
 let selectedCategory = 'todos';
 let indiceSliderOfertas = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
-  fetchProductos();
+  fetchProductosTienda();
   fetchBlogArticles();
   initSlider();
   
-  // Cargamos las secciones especiales de la barra lateral con un pequeño respiro
-  setTimeout(cargarSeccionesSidebar, 600);
+  // Cargamos las secciones especiales de la barra lateral de inmediato
+  cargarSeccionesSidebarDirecto();
 });
 
 // ------------------- SLIDER PRINCIPAL -------------------
@@ -46,74 +48,92 @@ function updateSliderUI() {
 }
 
 // ------------------- CARGA Y FILTRADO DE PRODUCTOS -------------------
-async function fetchProductos() {
-  const container = document.getElementById("products-container");
-  if (!container) return;
+async function fetchProductosTienda() {
+  try {
+    const { data, error } = await supabaseClient
+      .from("productos")
+      .select("*")
+      .order("id", { ascending: false }); // Los más recientes primero
 
-  const { data: productos, error } = await supabaseClient
-    .from("productos")
-    .select("*");
+    if (error) {
+      console.error("Error al obtener productos:", error);
+      return;
+    }
 
-  if (error) {
-    console.error("Error al cargar productos:", error.message);
-    container.innerHTML = "<p>Error al cargar los productos.</p>";
-    return;
-  }
+    if (!data) return;
 
-  todosLosProductos = productos || [];
-  renderProducts(todosLosProductos);
-}
-
-function renderProducts(productos) {
-  const container = document.getElementById("products-container");
-  if (!container) return;
-
-  if (productos.length === 0) {
-    container.innerHTML = "<p>No se encontraron productos.</p>";
-    return;
-  }
-
-  container.innerHTML = "";
-  productos.forEach((p) => {
-    const card = document.createElement("div");
-    card.className = "product-card";
-    card.innerHTML = `
-      <img src="${p.imagen_url}" alt="${p.nombre}">
-      <div>
-        <h3>${p.nombre}</h3>
-        <p>${p.descripcion}</p>
-      </div>
-      <div>
-        <p class="price">$${parseFloat(p.precio).toFixed(2)}</p>
-        <button onclick="addToCart(${p.id}, '${p.nombre}', ${p.precio})">Agregar al Carrito</button>
-      </div>
-    `;
-    container.appendChild(card);
-  });
-}
-
-function filterProducts() {
-  const searchTerm = document.getElementById("search-bar").value.toLowerCase();
-
-  const productosFiltrados = todosLosProductos.filter((p) => {
-    const coincideBusqueda = p.nombre.toLowerCase().includes(searchTerm) || 
-                             p.descripcion.toLowerCase().includes(searchTerm);
-    const coincideCategoria = selectedCategory === 'todos' || 
-                              (p.categoria && p.categoria.toLowerCase() === selectedCategory);
+    todosLosProductos = data;
     
-    return coincideBusqueda && coincideCategoria;
-  });
+    // Filtramos los productos generales (excluyendo ofertas y temporada que van en el sidebar)
+    todosLosProductosGenerales = data.filter(p => {
+      const cat = p.categoria ? p.categoria.toLowerCase() : "";
+      return cat !== "ofertas" && cat !== "temporada";
+    });
 
-  renderProducts(productosFiltrados);
+    // 1. RENDERIZAR "LO NUEVO" (Exactamente los primeros 4)
+    const loNuevoContainer = document.getElementById("lo-nuevo-grid");
+    if (loNuevoContainer) {
+      const productosNuevos = todosLosProductosGenerales.slice(0, 4);
+      if (productosNuevos.length === 0) {
+        loNuevoContainer.innerHTML = "<p>No hay novedades disponibles.</p>";
+      } else {
+        loNuevoContainer.innerHTML = productosNuevos.map(prod => generarTarjetaProducto(prod)).join('');
+      }
+    }
+
+    // 2. RENDERIZAR "NUESTROS PRODUCTOS" (Primeros 8)
+    renderizarNuestrosProductos();
+
+  } catch (err) {
+    console.error("Excepción cargando tienda:", err);
+  }
 }
 
-function filterByCategory(categoria, buttonEl) {
-  selectedCategory = categoria;
-  
-  document.querySelectorAll(".cat-btn").forEach(btn => btn.classList.remove("active"));
-  if (buttonEl) buttonEl.classList.add("active");
+function renderizarNuestrosProductos() {
+  const container = document.getElementById("nuestros-productos-grid");
+  const btnVerMas = document.getElementById("btn-ver-mas");
+  if (!container) return;
 
-  filterProducts();
+  const productosSlice = todosLosProductosGenerales.slice(0, productosMostradosCount);
+
+  if (productosSlice.length === 0) {
+    container.innerHTML = "<p>No hay productos disponibles en este momento.</p>";
+    if (btnVerMas) btnVerMas.style.display = "none";
+    return;
+  }
+
+  container.innerHTML = productosSlice.map(prod => generarTarjetaProducto(prod)).join('');
+
+  if (btnVerMas) {
+    if (productosMostradosCount >= todosLosProductosGenerales.length) {
+      btnVerMas.style.display = "none";
+    } else {
+      btnVerMas.style.display = "inline-block";
+    }
+  }
+}
+
+// Función que se ejecuta al hacer clic en el botón "Ver más"
+function cargarMasProductos() {
+  productosMostradosCount += 8;
+  renderizarNuestrosProductos();
+}
+
+function generarTarjetaProducto(prod) {
+  const imagen = prod.imagen_url || prod.imagen || 'logo.PNG';
+  return `
+    <div style="background: white; border-radius: 8px; padding: 0.8rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: space-between; text-align: center;">
+      <img src="${imagen}" alt="${prod.nombre}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 6px;">
+      <div>
+        <h4 style="font-size: 1rem; margin: 8px 0 4px; color: #333;">${prod.nombre}</h4>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${prod.descripcion || ''}</p>
+      </div>
+      <div>
+        <p style="color: #e84393; font-weight: bold; font-size: 1rem; margin-bottom: 8px;">$${parseFloat(prod.precio).toFixed(2)}</p>
+        <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #e84393; color: white; border: none; padding: 6px 12px; font-size: 0.85rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Agregar al Carrito</button>
+      </div>
+    </div>
+  `;
 }
 
 // ------------------- BLOG & CARRITO -------------------
@@ -238,58 +258,64 @@ async function checkout() {
 }
 
 // ------------------- SLIDER DE OFERTAS Y TEMPORADA (SIDEBAR) -------------------
-function cargarSeccionesSidebar() {
-  // Como los productos vienen de Supabase (tabla 'productos'), leemos de 'todosLosProductos' 
-  // o de localStorage si los manejas por fuera. Usaremos 'todosLosProductos' que ya carga Supabase:
-  const productos = todosLosProductos.length > 0 ? todosLosProductos : (JSON.parse(localStorage.getItem("productos")) || []);
-  
-  // 1. Lógica del Slider de Ofertas en la barra lateral
-  const ofertasContainer = document.getElementById("ofertas-slider");
-  if (ofertasContainer) {
-    const ofertas = productos.filter(p => p.categoria && p.categoria.toLowerCase() === "ofertas");
+async function cargarSeccionesSidebarDirecto() {
+  try {
+    // Consulta veloz y directa a Supabase para las ofertas
+    const { data: ofertas, error: errOfertas } = await supabaseClient
+      .from("productos")
+      .select("*")
+      .eq("categoria", "ofertas");
 
-    if (ofertas.length === 0) {
-      ofertasContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay ofertas activas</p>";
-    } else {
-      ofertasContainer.innerHTML = ofertas.map((prod, index) => `
-        <div class="oferta-slide" style="display: ${index === 0 ? 'block' : 'none'};">
-          <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
-          <h4 style="font-size: 0.95rem; margin: 6px 0 3px;">${prod.nombre}</h4>
-          <p style="color: #d81b60; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
-          <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #ff69b4; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%;">¡Aprovechar Oferta!</button>
-        </div>
-      `).join('');
+    const ofertasContainer = document.getElementById("ofertas-slider");
+    if (ofertasContainer && !errOfertas) {
+      if (!ofertas || ofertas.length === 0) {
+        ofertasContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay ofertas activas</p>";
+      } else {
+        ofertasContainer.innerHTML = ofertas.map((prod, index) => `
+          <div class="oferta-slide" style="display: ${index === 0 ? 'block' : 'none'};">
+            <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
+            <h4 style="font-size: 0.95rem; margin: 6px 0 3px;">${prod.nombre}</h4>
+            <p style="color: #d81b60; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
+            <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #ff69b4; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%;">¡Aprovechar Oferta!</button>
+          </div>
+        `).join('');
 
-      // Activar rotación automática si hay más de una oferta
-      if (ofertas.length > 1 && !window.ofertasIntervalo) {
-        window.ofertasIntervalo = setInterval(() => {
-          const slides = document.querySelectorAll('.oferta-slide');
-          if (slides.length === 0) return;
-          
-          slides[indiceSliderOfertas].style.display = 'none';
-          indiceSliderOfertas = (indiceSliderOfertas + 1) % slides.length;
-          slides[indiceSliderOfertas].style.display = 'block';
-        }, 3500);
+        if (ofertas.length > 1 && !window.ofertasIntervalo) {
+          window.ofertasIntervalo = setInterval(() => {
+            const slides = document.querySelectorAll('.oferta-slide');
+            if (slides.length === 0) return;
+            
+            slides[indiceSliderOfertas].style.display = 'none';
+            indiceSliderOfertas = (indiceSliderOfertas + 1) % slides.length;
+            slides[indiceSliderOfertas].style.display = 'block';
+          }, 3500);
+        }
       }
     }
-  }
 
-  // 2. Lógica de la sección Por Temporada en la barra lateral
-  const temporadaContainer = document.getElementById("temporada-container");
-  if (temporadaContainer) {
-    const temporada = productos.filter(p => p.categoria && p.categoria.toLowerCase() === "temporada");
+    // Consulta veloz y directa a Supabase para la temporada
+    const { data: temporada, error: errTemporada } = await supabaseClient
+      .from("productos")
+      .select("*")
+      .eq("categoria", "temporada");
 
-    if (temporada.length === 0) {
-      temporadaContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay productos de temporada</p>";
-    } else {
-      temporadaContainer.innerHTML = temporada.map(prod => `
-        <div style="background: white; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.8rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-          <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">
-          <h4 style="font-size: 0.95rem; margin: 6px 0 3px;">${prod.nombre}</h4>
-          <p style="color: #4a148c; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
-          <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #9c27b0; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%;">Comprar</button>
-        </div>
-      `).join('');
+    const temporadaContainer = document.getElementById("temporada-container");
+    if (temporadaContainer && !errTemporada) {
+      if (!temporada || temporada.length === 0) {
+        temporadaContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay productos de temporada</p>";
+      } else {
+        temporadaContainer.innerHTML = temporada.map(prod => `
+          <div style="background: white; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.8rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">
+            <h4 style="font-size: 0.95rem; margin: 6px 0 3px;">${prod.nombre}</h4>
+            <p style="color: #4a148c; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
+            <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #9c27b0; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%;">Comprar</button>
+          </div>
+        `).join('');
+      }
     }
+
+  } catch (err) {
+    console.error("Error cargando secciones laterales:", err);
   }
 }
