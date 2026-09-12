@@ -104,36 +104,45 @@
     </div>
 
     <!-- Pestaña del Blog -->
-    <div id="blog-tab" class="tab-content hidden">
-      <h3>Escribir Nuevo Artículo / Tip</h3>
-      <form id="blog-form" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-        <input type="text" id="b-titulo" placeholder="Título del artículo" required style="padding: 0.8rem;">
-        <input type="text" id="b-categoria" placeholder="Categoría (Ej: Cuidado, Alimentación, Sueño)" required style="padding: 0.8rem;">
-        
-        <!-- Campo añadido para la imagen -->
-        <input type="text" id="b-imagen" placeholder="URL de la imagen (ej: https://... o ruta de la foto)" required style="padding: 0.8rem;">
-        
-        <textarea id="b-resumen" placeholder="Resumen corto (aparecerá en la vista previa lateral)" required style="padding: 0.8rem; height: 70px;"></textarea>
-        <textarea id="b-contenido" placeholder="Contenido completo del artículo (opcional)" style="padding: 0.8rem; height: 120px;"></textarea>
-        <button type="submit" class="add-btn" style="background: #e84393;">Publicar Artículo</button>
-      </form>
-      <p id="blog-msg" style="margin-top: 0.5rem; font-weight: bold;"></p>
-
-      <h3 style="margin-top: 2rem;">Artículos Publicados</h3>
-      <table class="item-list-table">
-        <thead>
-          <tr>
-            <th>Imagen</th>
-            <th>Título</th>
-            <th>Categoría</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody id="blog-list">
-          <!-- Se cargan dinámicamente -->
-        </tbody>
-      </table>
+<div id="blog-tab" class="tab-content hidden">
+  <h3>Escribir Nuevo Artículo / Tip</h3>
+  <form id="blog-form" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+    
+    <input type="text" id="b-titulo" placeholder="Título del artículo" required style="padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px;">
+    
+    <input type="text" id="b-categoria" placeholder="Categoría (Ej: Cuidado, Alimentación, Sueño)" required style="padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px;">
+    
+    <!-- SECCIÓN DE CARGA DE IMAGEN (JPG / PNG) -->
+    <div style="background: #f9f9f9; padding: 0.8rem; border: 2px dashed #e84393; border-radius: 6px; display: flex; flex-direction: column; gap: 0.4rem;">
+      <label for="b-imagen-file" style="font-size: 0.9rem; font-weight: bold; color: #333;">📸 Selecciona la imagen del artículo (PNG o JPG):</label>
+      <input type="file" id="b-imagen-file" accept=".png, .jpg, .jpeg" style="padding: 0.4rem; background: #fff; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
     </div>
+    
+    <textarea id="b-resumen" placeholder="Resumen corto (aparecerá en la vista previa lateral)" required style="padding: 0.8rem; height: 70px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+    
+    <textarea id="b-contenido" placeholder="Contenido completo del artículo (opcional)" style="padding: 0.8rem; height: 120px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+    
+    <button type="submit" class="add-btn" style="background: #e84393; color: white; border: none; padding: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer;">Publicar Artículo</button>
+  
+  </form>
+  
+  <p id="blog-msg" style="margin-top: 0.5rem; font-weight: bold;"></p>
+
+  <h3 style="margin-top: 2rem;">Artículos Publicados</h3>
+  <table class="item-list-table">
+    <thead>
+      <tr>
+        <th>Imagen</th>
+        <th>Título</th>
+        <th>Categoría</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody id="blog-list">
+      <!-- Se cargan dinámicamente -->
+    </tbody>
+  </table>
+</div>
 
   </div>
 
