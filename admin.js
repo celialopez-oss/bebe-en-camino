@@ -238,6 +238,95 @@ async function deleteProduct(id) {
 
 // ------------------- GESTIÓN DEL BLOG -------------------
 
+document.addEventListener("DOMContentLoaded", () => {
+  loadAdminBlog();
+
+  const blogForm = document.getElementById("blog-form");
+  if (blogForm) {
+    blogForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      console.log("Botón de publicar presionado"); // Para ver si reacciona en la consola
+
+      const msg = document.getElementById("blog-msg");
+      if (msg) {
+        msg.style.color = "blue";
+        msg.textContent = "Procesando artículo...";
+      }
+
+      try {
+        const fileInput = document.getElementById("b-imagen-file");
+        let imagenUrlFinal = "";
+
+        // 1. Si seleccionó un archivo, lo subimos a Supabase Storage
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          const file = fileInput.files[0];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `blog_${Date.now()}.${fileExt}`;
+          const filePath = `${fileName}`;
+
+          console.log("Subiendo imagen:", fileName);
+
+          const { data: uploadData, error: uploadError } = await supabaseClient.storage
+            .from('productos') 
+            .upload(filePath, file);
+
+          if (uploadError) {
+            alert("Error al subir la imagen: " + uploadError.message);
+            if (msg) {
+              msg.style.color = "red";
+              msg.textContent = "Error al subir la imagen.";
+            }
+            return;
+          }
+
+          const { data: publicUrlData } = supabaseClient.storage
+            .from('productos')
+            .getPublicUrl(filePath);
+
+          imagenUrlFinal = publicUrlData.publicUrl;
+          console.log("Imagen subida con éxito:", imagenUrlFinal);
+        }
+
+        // 2. Preparamos el objeto con los datos del artículo
+        const nuevoArticulo = {
+          titulo: document.getElementById("b-titulo").value,
+          categoria: document.getElementById("b-categoria").value,
+          resumen: document.getElementById("b-resumen").value,
+          contenido: document.getElementById("b-contenido").value,
+          imagen_url: imagenUrlFinal 
+        };
+
+        console.log("Guardando artículo en Supabase...", nuevoArticulo);
+
+        const { error } = await supabaseClient.from("blog").insert([nuevoArticulo]);
+
+        if (error) {
+          alert("Error al guardar en la base de datos: " + error.message);
+          if (msg) {
+            msg.style.color = "red";
+            msg.textContent = "Error: " + error.message;
+          }
+        } else {
+          if (msg) {
+            msg.style.color = "green";
+            msg.textContent = "¡Artículo publicado con éxito!";
+          }
+          blogForm.reset();
+          loadAdminBlog();
+        }
+
+      } catch (err) {
+        alert("Ocurrió un error inesperado: " + err.message);
+        console.error(err);
+        if (msg) {
+          msg.style.color = "red";
+          msg.textContent = "Error crítico en el script.";
+        }
+      }
+    });
+  }
+});
+
 async function loadAdminBlog() {
   const listEl = document.getElementById("blog-list");
   if (!listEl) return;
@@ -261,72 +350,6 @@ async function loadAdminBlog() {
     listEl.appendChild(tr);
   });
 }
-
-document.getElementById("blog-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const msg = document.getElementById("blog-msg");
-  msg.style.color = "blue";
-  msg.textContent = "Procesando artículo...";
-
-  try {
-    const fileInput = document.getElementById("b-imagen-file");
-    let imagenUrlFinal = "";
-
-    // 1. Si seleccionó un archivo, lo subimos
-    if (fileInput.files && fileInput.files[0]) {
-      const file = fileInput.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `blog_${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      // Nota: Si tu bucket en Supabase se llama distinto a 'productos', cámbialo aquí
-      const { data: uploadData, error: uploadError } = await supabaseClient.storage
-        .from('productos') 
-        .upload(filePath, file);
-
-      if (uploadError) {
-        alert("Error al subir la imagen: " + uploadError.message);
-        msg.style.color = "red";
-        msg.textContent = "Error al subir la imagen.";
-        return;
-      }
-
-      const { data: publicUrlData } = supabaseClient.storage
-        .from('productos')
-        .getPublicUrl(filePath);
-
-      imagenUrlFinal = publicUrlData.publicUrl;
-    }
-
-    // 2. Preparamos el objeto con los datos del artículo
-    const nuevoArticulo = {
-      titulo: document.getElementById("b-titulo").value,
-      categoria: document.getElementById("b-categoria").value,
-      resumen: document.getElementById("b-resumen").value,
-      contenido: document.getElementById("b-contenido").value,
-      imagen_url: imagenUrlFinal 
-    };
-
-    const { error } = await supabaseClient.from("blog").insert([nuevoArticulo]);
-
-    if (error) {
-      alert("Error al guardar en la base de datos: " + error.message);
-      msg.style.color = "red";
-      msg.textContent = "Error: " + error.message;
-    } else {
-      msg.style.color = "green";
-      msg.textContent = "¡Artículo publicado con éxito!";
-      document.getElementById("blog-form").reset();
-      loadAdminBlog();
-    }
-
-  } catch (err) {
-    alert("Ocurrió un error inesperado: " + err.message);
-    console.error(err);
-    msg.style.color = "red";
-    msg.textContent = "Error crítico en el script.";
-  }
-});
 
 async function deleteBlogArticle(id) {
   if (!confirm("¿Seguro que deseas eliminar este artículo?")) return;
