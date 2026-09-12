@@ -11,32 +11,24 @@
 </head>
 <body>
 
-  <!-- Encabezado / Navbar -->
-  <header class="navbar">
-    <div class="logo">
-      <img src="logo.PNG" alt="Bebé en Camino" class="logo-img">
-      <span class="logo-text">Bebé en Camino</span>
+  <!-- Encabezado / Navbar Limpio (Solo Logo, Nombre y Carrito) -->
+  <header class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div class="logo" style="display: flex; align-items: center; gap: 10px;">
+      <img src="logo.PNG" alt="Bebé en Camino" class="logo-img" style="height: 45px; width: 45px; object-fit: cover; border-radius: 50%;">
+      <span class="logo-text" style="font-size: 1.25rem; font-weight: bold; color: #2f2f2f;">Bebé en Camino</span>
     </div>
     
-    <!-- Menú Superior Limpio (Solo Logo, Nombre y Carrito) -->
-<header class="main-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-  <div class="logo-container" style="display: flex; align-items: center; gap: 10px;">
-    <img src="logo.PNG" alt="Bebé en camino" style="height: 40px; width: 40px; object-fit: cover; border-radius: 50%;">
-    <h1 style="font-size: 1.25rem; color: #2f2f2f; margin: 0;">Bebé en camino</h1>
-  </div>
-  
-  <div class="cart-btn-container">
-    <button onclick="toggleCart()" style="background: #fb5c74; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-      🛒 Carrito (<span id="cart-count">0</span>)
-    </button>
-  </div>
-</header>
+    <div class="cart-btn-container">
+      <button onclick="toggleCart()" style="background: #fb5c74; color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 0.95rem;">
+        🛒 Carrito (<span id="cart-count">0</span>)
+      </button>
+    </div>
+  </header>
 
-<!-- Botón Flotante de WhatsApp -->
-<a href="https://wa.me/593996219444?text=¡Hola!%20Tengo%20una%20consulta%20sobre%20la%20tienda%20Bebé%20en%20camino." target="_blank" class="whatsapp-float" style="position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; border-radius: 50px; width: 60px; height: 60px; text-align: center; font-size: 30px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; justify-content: center; text-decoration: none;">
-  <i class="fab fa-whatsapp"></i>
-  <!-- Si no usas FontAwesome para el icono, puedes poner este emoji en su lugar: 💬 -->
-</a>
+  <!-- Botón Flotante de WhatsApp -->
+  <a href="https://wa.me/593996219444?text=¡Hola!%20Tengo%20una%20consulta%20sobre%20la%20tienda%20Bebé%20en%20camino." target="_blank" class="whatsapp-float" style="position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; border-radius: 50px; width: 60px; height: 60px; text-align: center; font-size: 30px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+    <i class="fab fa-whatsapp"></i>
+  </a>
 
   <!-- Slider / Carrusel Automático -->
   <section class="slider-container">
@@ -76,16 +68,16 @@
       <div class="toolbar">
         <input type="text" id="search-bar" placeholder="🔍 Buscar productos..." oninput="filterProducts()">
         <div class="category-filters">
-  <button class="cat-btn active" onclick="filterByCategory('todos', this)">Todos</button>
-  <button class="cat-btn" onclick="filterByCategory('ofertas', this)">🔥 Ofertas Especiales</button>
-  <button class="cat-btn" onclick="filterByCategory('paseo y transporte', this)">Paseo y transporte</button>
-  <button class="cat-btn" onclick="filterByCategory('dormitorio y descanso', this)">Dormitorio y descanso</button>
-  <button class="cat-btn" onclick="filterByCategory('alimentacion y lactancia', this)">Alimentación y lactancia</button>
-  <button class="cat-btn" onclick="filterByCategory('juguetes y estimulacion', this)">Juguetes y estimulación</button>
-  <button class="cat-btn" onclick="filterByCategory('higiene y cuidado del bebe', this)">Higiene y cuidado del bebé</button>
-  <button class="cat-btn" onclick="filterByCategory('ropa y moda', this)">Ropa y moda</button>
-  <button class="cat-btn" onclick="filterByCategory('seguridad para el hogar', this)">Seguridad para el hogar</button>
-</div>
+          <button class="cat-btn active" onclick="filterByCategory('todos', this)">Todos</button>
+          <button class="cat-btn" onclick="filterByCategory('ofertas', this)">🔥 Ofertas Especiales</button>
+          <button class="cat-btn" onclick="filterByCategory('paseo y transporte', this)">Paseo y transporte</button>
+          <button class="cat-btn" onclick="filterByCategory('dormitorio y descanso', this)">Dormitorio y descanso</button>
+          <button class="cat-btn" onclick="filterByCategory('alimentacion y lactancia', this)">Alimentación y lactancia</button>
+          <button class="cat-btn" onclick="filterByCategory('juguetes y estimulacion', this)">Juguetes y estimulación</button>
+          <button class="cat-btn" onclick="filterByCategory('higiene y cuidado del bebe', this)">Higiene y cuidado del bebé</button>
+          <button class="cat-btn" onclick="filterByCategory('ropa y moda', this)">Ropa y moda</button>
+          <button class="cat-btn" onclick="filterByCategory('seguridad para el hogar', this)">Seguridad para el hogar</button>
+        </div>
       </div>
 
       <!-- Sección: Lo Nuevo -->
