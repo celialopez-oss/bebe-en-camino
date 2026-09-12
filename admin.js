@@ -249,7 +249,6 @@ async function loadAdminBlog() {
   listEl.innerHTML = "";
   articulos.forEach(a => {
     const tr = document.createElement("tr");
-    // Mostramos también una miniatura en la tabla del admin si tiene imagen
     const imgMini = a.imagen_url || a.imagen;
     const tdImg = imgMini ? `<img src="${imgMini}" alt="Miniatura" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` : 'Sin foto';
 
@@ -266,20 +265,52 @@ async function loadAdminBlog() {
 document.getElementById("blog-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const msg = document.getElementById("blog-msg");
+  msg.style.color = "blue";
+  msg.textContent = "Subiendo imagen y publicando artículo...";
 
+  const fileInput = document.getElementById("b-imagen-file");
+  let imagenUrlFinal = "";
+
+  // 1. Si seleccionó un archivo de imagen, lo subimos a Supabase Storage
+  if (fileInput.files && fileInput.files[0]) {
+    const file = fileInput.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `blog_${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    // Sube la imagen al bucket 'productos' (puedes cambiarlo si usas otro)
+    const { data: uploadData, error: uploadError } = await supabaseClient.storage
+      .from('productos') 
+      .upload(filePath, file);
+
+    if (uploadError) {
+      msg.style.color = "red";
+      msg.textContent = "Error al subir la imagen: " + uploadError.message;
+      return;
+    }
+
+    // Obtenemos la URL pública de la imagen recién subida
+    const { data: publicUrlData } = supabaseClient.storage
+      .from('productos')
+      .getPublicUrl(filePath);
+
+    imagenUrlFinal = publicUrlData.publicUrl;
+  }
+
+  // 2. Preparamos el objeto con los datos, incluyendo el enlace de la foto
   const nuevoArticulo = {
     titulo: document.getElementById("b-titulo").value,
     categoria: document.getElementById("b-categoria").value,
     resumen: document.getElementById("b-resumen").value,
     contenido: document.getElementById("b-contenido").value,
-    imagen_url: document.getElementById("b-imagen").value // <--- Aquí guardamos la URL de la foto
+    imagen_url: imagenUrlFinal 
   };
 
   const { error } = await supabaseClient.from("blog").insert([nuevoArticulo]);
 
   if (error) {
     msg.style.color = "red";
-    msg.textContent = "Error: " + error.message;
+    msg.textContent = "Error al guardar el artículo: " + error.message;
   } else {
     msg.style.color = "green";
     msg.textContent = "¡Artículo publicado con éxito!";
