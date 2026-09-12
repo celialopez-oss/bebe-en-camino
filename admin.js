@@ -249,7 +249,12 @@ async function loadAdminBlog() {
   listEl.innerHTML = "";
   articulos.forEach(a => {
     const tr = document.createElement("tr");
+    // Mostramos también una miniatura en la tabla del admin si tiene imagen
+    const imgMini = a.imagen_url || a.imagen;
+    const tdImg = imgMini ? `<img src="${imgMini}" alt="Miniatura" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` : 'Sin foto';
+
     tr.innerHTML = `
+      <td>${tdImg}</td>
       <td>${a.titulo}</td>
       <td>${a.categoria}</td>
       <td><button class="delete-btn" onclick="deleteBlogArticle(${a.id})">Eliminar</button></td>
@@ -266,7 +271,8 @@ document.getElementById("blog-form").addEventListener("submit", async (e) => {
     titulo: document.getElementById("b-titulo").value,
     categoria: document.getElementById("b-categoria").value,
     resumen: document.getElementById("b-resumen").value,
-    contenido: document.getElementById("b-contenido").value
+    contenido: document.getElementById("b-contenido").value,
+    imagen_url: document.getElementById("b-imagen").value // <--- Aquí guardamos la URL de la foto
   };
 
   const { error } = await supabaseClient.from("blog").insert([nuevoArticulo]);
