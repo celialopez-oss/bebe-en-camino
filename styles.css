@@ -185,10 +185,10 @@ body {
   border-radius: 10px;
 }
 
-/* --- LAYOUT PRINCIPAL --- */
+/* --- LAYOUT PRINCIPAL Y SIDEBAR DERECHO --- */
 .main-layout {
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: 1fr 320px;
   gap: 2rem;
   max-width: 1200px;
   margin: 2rem auto;
@@ -199,6 +199,13 @@ body {
   .main-layout {
     grid-template-columns: 1fr;
   }
+}
+
+/* Contenedor general para las secciones de la derecha */
+.sidebar-derecho {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 /* --- BARRA DE BÚSQUEDA Y FILTROS --- */
@@ -258,7 +265,7 @@ body {
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1.5rem;
 }
 
@@ -275,13 +282,13 @@ body {
 
 .product-card img {
   width: 100%;
-  height: 180px;
+  height: 160px;
   object-fit: cover;
   border-radius: 6px;
 }
 
 .product-card h3 {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   margin: 0.5rem 0;
   color: #2f2f2f;
 }
@@ -292,7 +299,7 @@ body {
 }
 
 .product-card .price {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: bold;
   color: #fb5c74;
   margin: 0.5rem 0;
@@ -314,17 +321,36 @@ body {
   background: #11d5d4;
 }
 
-/* --- SIDEBAR DEL BLOG --- */
-.blog-widget {
+/* --- SIDEBAR: OFERTAS, TEMPORADA Y BLOG --- */
+.sidebar-box {
   background: white;
   padding: 1.2rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-top: 4px solid #fb5c74;
+}
+
+.sidebar-box.temporada-box {
+  border-top-color: #19efee;
+}
+
+.sidebar-box.blog-widget {
+  border-top-color: #2f2f2f;
+}
+
+.sidebar-box h3, .sidebar-box h4 {
+  font-size: 1.1rem;
+  color: #2f2f2f;
+  margin-bottom: 0.8rem;
 }
 
 .blog-card {
   border-bottom: 1px solid #f2f2f2;
   padding: 0.8rem 0;
+}
+
+.blog-card:last-child {
+  border-bottom: none;
 }
 
 .blog-tag {
