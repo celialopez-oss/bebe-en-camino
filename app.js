@@ -87,7 +87,7 @@ function renderizarSeccionesGenerales() {
     });
   }
 
-  // 1. RENDERIZAR "LO NUEVO" (Estricto: Exactamente los primeros 3 productos más recientes)
+  // 1. RENDERIZAR "LO NUEVO" (Exactamente los primeros 3 productos más recientes)
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
   const productosNuevos = productosAFiltrar.slice(0, 3);
   
@@ -99,7 +99,7 @@ function renderizarSeccionesGenerales() {
     }
   }
 
-  // 2. RENDERIZAR "NUESTROS PRODUCTOS" (A partir del 4to producto en adelante para que no se repitan)
+  // 2. RENDERIZAR "NUESTROS PRODUCTOS" (A partir del 4to producto en adelante)
   const productosRestantes = productosAFiltrar.slice(3);
   renderizarNuestrosProductosFiltrados(productosRestantes);
 }
@@ -119,11 +119,12 @@ function renderizarNuestrosProductosFiltrados(listaRestantes) {
 
   container.innerHTML = productosSlice.map(prod => generarTarjetaProducto(prod)).join('');
 
+  // Control estricto y seguro del botón Ver Más
   if (btnVerMas) {
     if (productosMostradosCount >= listaRestantes.length) {
-      btnVerMas.style.display = "none";
+      btnVerMas.style.display = "none"; // Ocultar si ya se mostraron todos
     } else {
-      btnVerMas.style.display = "inline-block";
+      btnVerMas.style.display = "inline-block"; // Mostrar si aún hay más por desplegar
     }
   }
 }
@@ -204,7 +205,6 @@ async function fetchBlogArticles() {
 
     container.innerHTML = "";
     articulos.forEach((art) => {
-      // Soportamos tanto 'imagen_url' como 'imagen' para el blog
       const imgArt = art.imagen_url || art.imagen;
       const htmlImagen = imgArt ? `<img src="${imgArt}" alt="${art.titulo}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">` : '';
 
