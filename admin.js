@@ -266,56 +266,65 @@ document.getElementById("blog-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const msg = document.getElementById("blog-msg");
   msg.style.color = "blue";
-  msg.textContent = "Subiendo imagen y publicando artículo...";
+  msg.textContent = "Procesando artículo...";
 
-  const fileInput = document.getElementById("b-imagen-file");
-  let imagenUrlFinal = "";
+  try {
+    const fileInput = document.getElementById("b-imagen-file");
+    let imagenUrlFinal = "";
 
-  // 1. Si seleccionó un archivo de imagen, lo subimos a Supabase Storage
-  if (fileInput.files && fileInput.files[0]) {
-    const file = fileInput.files[0];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `blog_${Date.now()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    // 1. Si seleccionó un archivo, lo subimos
+    if (fileInput.files && fileInput.files[0]) {
+      const file = fileInput.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `blog_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
 
-    // Sube la imagen al bucket 'productos' (puedes cambiarlo si usas otro)
-    const { data: uploadData, error: uploadError } = await supabaseClient.storage
-      .from('productos') 
-      .upload(filePath, file);
+      // Nota: Si tu bucket en Supabase se llama distinto a 'productos', cámbialo aquí
+      const { data: uploadData, error: uploadError } = await supabaseClient.storage
+        .from('productos') 
+        .upload(filePath, file);
 
-    if (uploadError) {
-      msg.style.color = "red";
-      msg.textContent = "Error al subir la imagen: " + uploadError.message;
-      return;
+      if (uploadError) {
+        alert("Error al subir la imagen: " + uploadError.message);
+        msg.style.color = "red";
+        msg.textContent = "Error al subir la imagen.";
+        return;
+      }
+
+      const { data: publicUrlData } = supabaseClient.storage
+        .from('productos')
+        .getPublicUrl(filePath);
+
+      imagenUrlFinal = publicUrlData.publicUrl;
     }
 
-    // Obtenemos la URL pública de la imagen recién subida
-    const { data: publicUrlData } = supabaseClient.storage
-      .from('productos')
-      .getPublicUrl(filePath);
+    // 2. Preparamos el objeto con los datos del artículo
+    const nuevoArticulo = {
+      titulo: document.getElementById("b-titulo").value,
+      categoria: document.getElementById("b-categoria").value,
+      resumen: document.getElementById("b-resumen").value,
+      contenido: document.getElementById("b-contenido").value,
+      imagen_url: imagenUrlFinal 
+    };
 
-    imagenUrlFinal = publicUrlData.publicUrl;
-  }
+    const { error } = await supabaseClient.from("blog").insert([nuevoArticulo]);
 
-  // 2. Preparamos el objeto con los datos, incluyendo el enlace de la foto
-  const nuevoArticulo = {
-    titulo: document.getElementById("b-titulo").value,
-    categoria: document.getElementById("b-categoria").value,
-    resumen: document.getElementById("b-resumen").value,
-    contenido: document.getElementById("b-contenido").value,
-    imagen_url: imagenUrlFinal 
-  };
+    if (error) {
+      alert("Error al guardar en la base de datos: " + error.message);
+      msg.style.color = "red";
+      msg.textContent = "Error: " + error.message;
+    } else {
+      msg.style.color = "green";
+      msg.textContent = "¡Artículo publicado con éxito!";
+      document.getElementById("blog-form").reset();
+      loadAdminBlog();
+    }
 
-  const { error } = await supabaseClient.from("blog").insert([nuevoArticulo]);
-
-  if (error) {
+  } catch (err) {
+    alert("Ocurrió un error inesperado: " + err.message);
+    console.error(err);
     msg.style.color = "red";
-    msg.textContent = "Error al guardar el artículo: " + error.message;
-  } else {
-    msg.style.color = "green";
-    msg.textContent = "¡Artículo publicado con éxito!";
-    document.getElementById("blog-form").reset();
-    loadAdminBlog();
+    msg.textContent = "Error crítico en el script.";
   }
 });
 
