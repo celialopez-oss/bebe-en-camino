@@ -84,7 +84,7 @@ async function loadAdminProducts() {
     
     tr.innerHTML = `
       <td><img src="${p.imagen_url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
-      <td>${p.nombre}</td>
+      <td>${p.nombre} ${p.en_oferta ? '<span style="color:red; font-weight:bold; font-size:0.8rem;">(OFERTA)</span>' : ''}</td>
       <td>$${parseFloat(p.precio).toFixed(2)}</td>
       <td>${p.categoria}</td>
       <td>
@@ -117,12 +117,17 @@ document.getElementById("product-form").addEventListener("submit", async (e) => 
       return;
     }
 
+    // Captura si la casilla de oferta está marcada
+    const enOfertaCheckbox = document.getElementById("p-en-oferta");
+    const enOferta = enOfertaCheckbox ? enOfertaCheckbox.checked : false;
+
     const nuevoProducto = {
       nombre: document.getElementById("p-nombre").value,
       descripcion: document.getElementById("p-descripcion").value,
       precio: parseFloat(document.getElementById("p-precio").value),
       categoria: document.getElementById("p-categoria").value,
-      imagen_url: imagenUrl
+      imagen_url: imagenUrl,
+      en_oferta: enOferta
     };
 
     const { error } = await supabaseClient.from("productos").insert([nuevoProducto]);
@@ -153,6 +158,12 @@ function openEditModal(producto) {
   document.getElementById("edit-p-precio").value = producto.precio;
   document.getElementById("edit-p-categoria").value = producto.categoria;
   document.getElementById("edit-p-imagen-actual").value = producto.imagen_url;
+  
+  // Marcar o desmarcar la casilla de oferta según el producto
+  const editOfertaCheckbox = document.getElementById("edit-p-en-oferta");
+  if (editOfertaCheckbox) {
+    editOfertaCheckbox.checked = producto.en_oferta === true;
+  }
 
   document.getElementById("edit-modal").classList.remove("hidden");
 }
@@ -182,12 +193,16 @@ document.getElementById("edit-product-form").addEventListener("submit", async (e
       if (nuevaUrl) imagenUrl = nuevaUrl;
     }
 
+    const editOfertaCheckbox = document.getElementById("edit-p-en-oferta");
+    const enOferta = editOfertaCheckbox ? editOfertaCheckbox.checked : false;
+
     const productoActualizado = {
       nombre: document.getElementById("edit-p-nombre").value,
       descripcion: document.getElementById("edit-p-descripcion").value,
       precio: parseFloat(document.getElementById("edit-p-precio").value),
       categoria: document.getElementById("edit-p-categoria").value,
-      imagen_url: imagenUrl
+      imagen_url: imagenUrl,
+      en_oferta: enOferta
     };
 
     const { error } = await supabaseClient
