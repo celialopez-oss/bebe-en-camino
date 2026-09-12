@@ -18,17 +18,25 @@
       <span class="logo-text">Bebé en Camino</span>
     </div>
     
-    <!-- Menú de Navegación del Cliente -->
-    <nav class="nav-links">
-      <a href="index.html">Inicio</a>
-      <a href="#ofertas-container">Ofertas</a>
-      <a href="#temporada-container">Temporada</a>
-      <a href="#blog">Blog</a>
-      <a href="#contacto">Contacto</a>
-    </nav>
+    <!-- Menú Superior Limpio (Solo Logo, Nombre y Carrito) -->
+<header class="main-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+  <div class="logo-container" style="display: flex; align-items: center; gap: 10px;">
+    <img src="logo.PNG" alt="Bebé en camino" style="height: 40px; width: 40px; object-fit: cover; border-radius: 50%;">
+    <h1 style="font-size: 1.25rem; color: #2f2f2f; margin: 0;">Bebé en camino</h1>
+  </div>
+  
+  <div class="cart-btn-container">
+    <button onclick="toggleCart()" style="background: #fb5c74; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+      🛒 Carrito (<span id="cart-count">0</span>)
+    </button>
+  </div>
+</header>
 
-    <button class="cart-btn" onclick="toggleCart()">🛒 Carrito (<span id="cart-count">0</span>)</button>
-  </header>
+<!-- Botón Flotante de WhatsApp -->
+<a href="https://wa.me/593996219444?text=¡Hola!%20Tengo%20una%20consulta%20sobre%20la%20tienda%20Bebé%20en%20camino." target="_blank" class="whatsapp-float" style="position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; border-radius: 50px; width: 60px; height: 60px; text-align: center; font-size: 30px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+  <i class="fab fa-whatsapp"></i>
+  <!-- Si no usas FontAwesome para el icono, puedes poner este emoji en su lugar: 💬 -->
+</a>
 
   <!-- Slider / Carrusel Automático -->
   <section class="slider-container">
