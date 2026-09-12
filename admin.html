@@ -109,6 +109,10 @@
       <form id="blog-form" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
         <input type="text" id="b-titulo" placeholder="Título del artículo" required style="padding: 0.8rem;">
         <input type="text" id="b-categoria" placeholder="Categoría (Ej: Cuidado, Alimentación, Sueño)" required style="padding: 0.8rem;">
+        
+        <!-- Campo añadido para la imagen -->
+        <input type="text" id="b-imagen" placeholder="URL de la imagen (ej: https://... o ruta de la foto)" required style="padding: 0.8rem;">
+        
         <textarea id="b-resumen" placeholder="Resumen corto (aparecerá en la vista previa lateral)" required style="padding: 0.8rem; height: 70px;"></textarea>
         <textarea id="b-contenido" placeholder="Contenido completo del artículo (opcional)" style="padding: 0.8rem; height: 120px;"></textarea>
         <button type="submit" class="add-btn" style="background: #e84393;">Publicar Artículo</button>
@@ -119,6 +123,7 @@
       <table class="item-list-table">
         <thead>
           <tr>
+            <th>Imagen</th>
             <th>Título</th>
             <th>Categoría</th>
             <th>Acción</th>
@@ -131,7 +136,6 @@
     </div>
 
   </div>
-
   <!-- Modal para Editar Producto -->
   <div id="edit-modal" class="modal-overlay hidden">
     <div class="modal-box">
