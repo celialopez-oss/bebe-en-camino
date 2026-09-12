@@ -64,10 +64,10 @@ async function fetchProductosTienda() {
 
     todosLosProductos = data;
     
-    // Filtramos los productos generales (excluyendo ofertas y temporada que van en el sidebar)
+    // Filtramos los productos generales (excluyendo la categoría fija de "ofertas" que va en el sidebar)
     todosLosProductosGenerales = data.filter(p => {
-      const cat = p.categoria ? p.categoria.toLowerCase() : "";
-      return cat !== "ofertas" && cat !== "temporada";
+      const cat = p.categoria ? p.categoria.toLowerCase().trim() : "";
+      return cat !== "ofertas";
     });
 
     renderizarSeccionesGenerales();
@@ -82,8 +82,8 @@ function renderizarSeccionesGenerales() {
   let productosAFiltrar = todosLosProductosGenerales;
   if (selectedCategory !== 'todos') {
     productosAFiltrar = todosLosProductosGenerales.filter(p => {
-      const cat = p.categoria ? p.categoria.toLowerCase() : "";
-      return cat === selectedCategory.toLowerCase();
+      const cat = p.categoria ? p.categoria.toLowerCase().trim() : "";
+      return cat === selectedCategory.toLowerCase().trim();
     });
   }
 
@@ -144,7 +144,7 @@ function filterProducts() {
   
   let baseList = todosLosProductosGenerales;
   if (selectedCategory !== 'todos') {
-    baseList = baseList.filter(p => (p.categoria || "").toLowerCase() === selectedCategory.toLowerCase());
+    baseList = baseList.filter(p => (p.categoria || "").toLowerCase().trim() === selectedCategory.toLowerCase().trim());
   }
 
   const filtered = baseList.filter(p => 
@@ -168,8 +168,12 @@ function cargarMasProductos() {
 
 function generarTarjetaProducto(prod) {
   const imagen = prod.imagen_url || prod.imagen || 'logo.PNG';
+  // Etiqueta visual flotante si el producto tiene marcada la casilla de oferta en el admin
+  const badgeOferta = prod.en_oferta ? '<span style="position: absolute; top: 10px; left: 10px; background: #e84393; color: white; padding: 3px 8px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; z-index: 10;">🔥 OFERTA</span>' : '';
+  
   return `
-    <div class="product-card">
+    <div class="product-card" style="position: relative;">
+      ${badgeOferta}
       <img src="${imagen}" alt="${prod.nombre}">
       <div>
         <h3>${prod.nombre}</h3>
