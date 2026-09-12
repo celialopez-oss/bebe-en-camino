@@ -87,10 +87,11 @@ function renderizarSeccionesGenerales() {
     });
   }
 
-  // 1. RENDERIZAR "LO NUEVO" (Exactamente los primeros 4)
+  // 1. RENDERIZAR "LO NUEVO" (Estricto: Exactamente los primeros 4 productos más recientes)
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
+  const productosNuevos = productosAFiltrar.slice(0, 4);
+  
   if (loNuevoContainer) {
-    const productosNuevos = productosAFiltrar.slice(0, 4);
     if (productosNuevos.length === 0) {
       loNuevoContainer.innerHTML = "<p>No hay novedades disponibles en esta categoría.</p>";
     } else {
@@ -98,19 +99,20 @@ function renderizarSeccionesGenerales() {
     }
   }
 
-  // 2. RENDERIZAR "NUESTROS PRODUCTOS"
-  renderizarNuestrosProductosFiltrados(productosAFiltrar);
+  // 2. RENDERIZAR "NUESTROS PRODUCTOS" (Excluyendo los 4 de "Lo Nuevo" para que no se repitan)
+  const productosRestantes = productosAFiltrar.slice(4);
+  renderizarNuestrosProductosFiltrados(productosRestantes);
 }
 
-function renderizarNuestrosProductosFiltrados(listaProductos) {
+function renderizarNuestrosProductosFiltrados(listaRestantes) {
   const container = document.getElementById("nuestros-productos-grid");
   const btnVerMas = document.getElementById("btn-ver-mas");
   if (!container) return;
 
-  const productosSlice = listaProductos.slice(0, productosMostradosCount);
+  const productosSlice = listaRestantes.slice(0, productosMostradosCount);
 
   if (productosSlice.length === 0) {
-    container.innerHTML = "<p>No hay productos disponibles en este momento.</p>";
+    container.innerHTML = "<p>No hay más productos disponibles en este momento.</p>";
     if (btnVerMas) btnVerMas.style.display = "none";
     return;
   }
@@ -118,7 +120,7 @@ function renderizarNuestrosProductosFiltrados(listaProductos) {
   container.innerHTML = productosSlice.map(prod => generarTarjetaProducto(prod)).join('');
 
   if (btnVerMas) {
-    if (productosMostradosCount >= listaProductos.length) {
+    if (productosMostradosCount >= listaRestantes.length) {
       btnVerMas.style.display = "none";
     } else {
       btnVerMas.style.display = "inline-block";
@@ -129,7 +131,7 @@ function renderizarNuestrosProductosFiltrados(listaProductos) {
 // Función para cambiar de categoría desde los botones de la barra de herramientas
 function filterByCategory(cat, btnElement) {
   selectedCategory = cat;
-  productosMostradosCount = 8; // Resetear conteo al cambiar de categoría
+  productosMostradosCount = 8; // Resetear conteo a 8 al cambiar de categoría
 
   // Actualizar clases activas de los botones
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
@@ -157,10 +159,11 @@ function filterProducts() {
     loNuevoContainer.innerHTML = filtered.slice(0, 4).map(prod => generarTarjetaProducto(prod)).join('') || "<p>No se encontraron novedades.</p>";
   }
 
-  renderizarNuestrosProductosFiltrados(filtered);
+  const restoFiltrado = filtered.slice(4);
+  renderizarNuestrosProductosFiltrados(restoFiltrado);
 }
 
-// Función que se ejecuta al hacer clic en el botón "Ver más"
+// Función que se ejecuta al hacer clic en el botón "Ver más" (suma 8 productos más del resto)
 function cargarMasProductos() {
   productosMostradosCount += 8;
   renderizarSeccionesGenerales();
@@ -168,7 +171,6 @@ function cargarMasProductos() {
 
 function generarTarjetaProducto(prod) {
   const imagen = prod.imagen_url || prod.imagen || 'logo.PNG';
-  // Etiqueta visual flotante si el producto tiene marcada la casilla de oferta en el admin
   const badgeOferta = prod.en_oferta ? '<span style="position: absolute; top: 10px; left: 10px; background: #e84393; color: white; padding: 3px 8px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; z-index: 10;">🔥 OFERTA</span>' : '';
   
   return `
