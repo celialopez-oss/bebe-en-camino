@@ -87,9 +87,9 @@ function renderizarSeccionesGenerales() {
     });
   }
 
-  // 1. RENDERIZAR "LO NUEVO" (Estricto: Exactamente los primeros 4 productos más recientes)
+  // 1. RENDERIZAR "LO NUEVO" (Estricto: Exactamente los primeros 3 productos más recientes)
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
-  const productosNuevos = productosAFiltrar.slice(0, 4);
+  const productosNuevos = productosAFiltrar.slice(0, 3);
   
   if (loNuevoContainer) {
     if (productosNuevos.length === 0) {
@@ -99,8 +99,8 @@ function renderizarSeccionesGenerales() {
     }
   }
 
-  // 2. RENDERIZAR "NUESTROS PRODUCTOS" (Excluyendo los 4 de "Lo Nuevo" para que no se repitan)
-  const productosRestantes = productosAFiltrar.slice(4);
+  // 2. RENDERIZAR "NUESTROS PRODUCTOS" (A partir del 4to producto en adelante para que no se repitan)
+  const productosRestantes = productosAFiltrar.slice(3);
   renderizarNuestrosProductosFiltrados(productosRestantes);
 }
 
@@ -156,10 +156,10 @@ function filterProducts() {
 
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
   if (loNuevoContainer) {
-    loNuevoContainer.innerHTML = filtered.slice(0, 4).map(prod => generarTarjetaProducto(prod)).join('') || "<p>No se encontraron novedades.</p>";
+    loNuevoContainer.innerHTML = filtered.slice(0, 3).map(prod => generarTarjetaProducto(prod)).join('') || "<p>No se encontraron novedades.</p>";
   }
 
-  const restoFiltrado = filtered.slice(4);
+  const restoFiltrado = filtered.slice(3);
   renderizarNuestrosProductosFiltrados(restoFiltrado);
 }
 
@@ -204,9 +204,14 @@ async function fetchBlogArticles() {
 
     container.innerHTML = "";
     articulos.forEach((art) => {
+      // Soportamos tanto 'imagen_url' como 'imagen' para el blog
+      const imgArt = art.imagen_url || art.imagen;
+      const htmlImagen = imgArt ? `<img src="${imgArt}" alt="${art.titulo}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">` : '';
+
       const card = document.createElement("article");
       card.className = "blog-card";
       card.innerHTML = `
+        ${htmlImagen}
         <span class="blog-tag">${art.categoria}</span>
         <h4>${art.titulo}</h4>
         <p>${art.resumen}</p>
