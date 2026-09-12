@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bebé en Camino | Tienda Online</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="style.css">
   <!-- Íconos de FontAwesome para Redes Sociales -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -14,18 +14,18 @@
   <!-- Encabezado / Navbar -->
   <header class="navbar">
     <div class="logo">
-  <img src="logo.PNG" alt="Bebé en Camino" class="logo-img">
-  <span class="logo-text">Bebé en Camino</span>
-</div>
+      <img src="logo.PNG" alt="Bebé en Camino" class="logo-img">
+      <span class="logo-text">Bebé en Camino</span>
+    </div>
     
     <!-- Menú de Navegación del Cliente -->
     <nav class="nav-links">
-  <a href="index.html">Inicio</a>
-  <a href="#ofertas-container">Ofertas</a>
-  <a href="#temporada-container">Temporada</a>
-  <a href="#blog">Blog</a>
-  <a href="#contacto">Contacto</a>
-</nav>
+      <a href="index.html">Inicio</a>
+      <a href="#ofertas-container">Ofertas</a>
+      <a href="#temporada-container">Temporada</a>
+      <a href="#blog">Blog</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
 
     <button class="cart-btn" onclick="toggleCart()">🛒 Carrito (<span id="cart-count">0</span>)</button>
   </header>
@@ -60,9 +60,9 @@
     </div>
   </section>
 
-  <!-- Contenido Principal -->
+  <!-- Contenido Principal (Layout de 2 Columnas) -->
   <div class="main-layout" id="productos">
-    <main class="shop-section">
+    <main class="content-area">
       
       <!-- Barra de Búsqueda y Filtros por Categoría -->
       <div class="toolbar">
@@ -75,95 +75,100 @@
         </div>
       </div>
 
-     <!-- Sección: Lo Nuevo (Máximo 4 imágenes en 2 filas) -->
-<section style="margin: 2rem 0;">
-  <h2 style="color: #e84393; border-bottom: 2px solid #ff69b4; padding-bottom: 0.5rem; margin-bottom: 1rem;">Lo Nuevo</h2>
-  <div id="lo-nuevo-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
-    <!-- Se carga dinámicamente (máx 4) -->
-  </div>
-</section>
+      <!-- Sección: Lo Nuevo -->
+      <section style="margin-bottom: 2rem;">
+        <h2 class="section-title">✨ Lo Nuevo</h2>
+        <div id="lo-nuevo-grid" class="products-grid">
+          <!-- Se carga dinámicamente (máx 4) -->
+        </div>
+      </section>
 
-<!-- Sección: Nuestros Productos (8 iniciales + Botón Ver Más) -->
-<section style="margin: 2rem 0;">
-  <h2 style="color: #e84393; border-bottom: 2px solid #ff69b4; padding-bottom: 0.5rem; margin-bottom: 1rem;">🛍️ Nuestros Productos</h2>
-  <div id="nuestros-productos-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
-    <!-- Se carga dinámicamente de 8 en 8 -->
-  </div>
-  
-  <!-- Botón Ver Más -->
-  <div style="text-align: center; margin-top: 2rem;">
-    <button id="btn-ver-mas" onclick="cargarMasProductos()" style="background-color: #ff69b4; color: white; border: none; padding: 0.8rem 2rem; font-size: 1rem; border-radius: 25px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background 0.3s;">
-      Ver más productos
-    </button>
-  </div>
-</section>
-    <!-- Sidebar del Blog y Nuevas Secciones -->
-<aside class="sidebar" id="blog">
-  <div class="blog-widget">
-    <h3>💡 Blog & Tips para Mamás y Papás</h3>
-    <p>Aprende más sobre el cuidado de tu bebé</p>
-    <div class="blog-posts">
-      <!-- Cargados desde Supabase -->
-    </div>
-  </div>
+      <!-- Sección: Nuestros Productos -->
+      <section style="margin-bottom: 2rem;">
+        <h2 class="section-title">🛍️ Nuestros Productos</h2>
+        <div id="nuestros-productos-grid" class="products-grid">
+          <!-- Se carga dinámicamente de 8 en 8 -->
+        </div>
+        
+        <!-- Botón Ver Más -->
+        <div style="text-align: center; margin-top: 1.5rem;">
+          <button id="btn-ver-mas" onclick="cargarMasProductos()" style="background: #fb5c74; color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.95rem;">
+            Ver más productos
+          </button>
+        </div>
+      </section>
+    </main>
 
- <!-- Sección de Ofertas en Slider (Justo debajo del Blog) -->
-<div class="sidebar-widget" style="margin-top: 1.5rem; background-color: #fff0f5; padding: 1rem; border-radius: 8px; text-align: center;">
-  <h3 style="color: #d81b60; margin-bottom: 0.8rem; font-size: 1.1rem;">Ofertas Especiales</h3>
-  <!-- Contenedor del Slider -->
-  <div id="ofertas-slider" style="position: relative; overflow: hidden; border-radius: 6px;">
-    <!-- Las imágenes/productos en oferta rotarán aquí automáticamente -->
-  </div>
-</div>
-
-  <!-- Sección Por Temporada (Justo debajo de Ofertas) -->
-  <div class="sidebar-widget" style="margin-top: 1.5rem; background-color: #f3e5f5; padding: 1rem; border-radius: 8px;">
-    <h3 style="color: #4a148c; margin-bottom: 0.8rem; font-size: 1.1rem;">Por Temporada</h3>
-    <div id="temporada-container" class="product-grid-sidebar">
-      <!-- Los productos de temporada se cargarán aquí -->
-    </div>
-  </div>
-</aside>
-</div>
-  <!-- Pie de Página y Contacto Oficial -->
-<footer id="contacto" style="background-color: #2c3e50; color: white; padding: 3rem 1rem; margin-top: 3rem; text-align: center;">
-  <div style="max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem; align-items: center;">
-    
-    <div>
-      <h3 style="color: #ff69b4; margin-bottom: 0.5rem; font-size: 1.5rem;">Bebé en Camino</h3>
-      <p style="font-size: 0.95rem; color: #ddd; margin: 0;">Acompañándote en la etapa más hermosa de la vida.</p>
-    </div>
-
-    <!-- Tarjeta de Tienda Física -->
-    <div style="background: rgba(255,255,255,0.07); padding: 1.2rem; border-radius: 8px; width: 100%; text-align: left; box-sizing: border-box;">
-      <h4 style="margin-top: 0; margin-bottom: 0.8rem; color: #ff69b4; font-size: 1.1rem; text-align: center;">📍 Visítanos o Contáctanos</h4>
-      <p style="font-size: 0.9rem; margin: 5px 0;"><strong>Dirección:</strong> Argentina #4312 y calle 20ava, Guayaquil</p>
-      <p style="font-size: 0.9rem; margin: 5px 0;"><strong>Horario:</strong> Lunes a Sábado 09:00 AM - 07:00 PM</p>
-      <p style="font-size: 0.9rem; margin: 5px 0;"><strong>Teléfono / WhatsApp:</strong> +593 939669413</p>
-      <p style="font-size: 0.9rem; margin: 5px 0;"><strong>Correo:</strong> contacto@bebeencamino.com</p>
-    </div>
-
-    <!-- Redes Sociales con Iconos Profesionales -->
-    <div style="width: 100%;">
-      <h4 style="margin-bottom: 0.8rem; font-size: 1rem; color: #fff;">Síguenos en Redes Sociales</h4>
-      <div style="display: flex; justify-content: center; gap: 1.2rem; align-items: center;">
-        <!-- Instagram -->
-        <a href="https://instagram.com/tu_usuario" target="_blank" title="Instagram" style="background: #e1306c; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; font-size: 1.2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">📷</a>
-        <!-- TikTok -->
-        <a href="https://tiktok.com/@tu_usuario" target="_blank" title="TikTok" style="background: #000; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; font-size: 1.2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">🎵</a>
-        <!-- WhatsApp -->
-        <a href="https://wa.me/593939669413" target="_blank" title="WhatsApp" style="background: #25d366; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; font-size: 1.2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">💬</a>
-        <!-- Facebook -->
-        <a href="https://facebook.com/tu_pagina" target="_blank" title="Facebook" style="background: #1877f2; color: white; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; font-size: 1.2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">👥</a>
+    <!-- Sidebar del Blog y Nuevas Secciones (Derecha) -->
+    <aside class="sidebar-area" style="display: flex; flex-direction: column; gap: 1.5rem;" id="blog">
+      
+      <!-- Sección de Ofertas en Slider -->
+      <div class="blog-widget" id="ofertas-container" style="border-top: 4px solid #fb5c74;">
+        <h3 style="color: #fb5c74; margin-bottom: 1rem; font-size: 1.1rem;">🔥 Ofertas Especiales</h3>
+        <div id="ofertas-slider">
+          <!-- Las imágenes/productos en oferta rotarán aquí automáticamente -->
+        </div>
       </div>
+
+      <!-- Sección Por Temporada -->
+      <div class="blog-widget" style="border-top: 4px solid #19efee;">
+        <h3 style="color: #2f2f2f; margin-bottom: 1rem; font-size: 1.1rem;">🌟 Por Temporada</h3>
+        <div id="temporada-container">
+          <!-- Los productos de temporada se cargarán aquí -->
+        </div>
+      </div>
+
+      <!-- Widget del Blog & Tips -->
+      <div class="blog-widget" style="border-top: 4px solid #a0a2ad;">
+        <h3 style="color: #2f2f2f; margin-bottom: 0.3rem; font-size: 1.1rem;">💡 Blog & Tips</h3>
+        <p style="font-size: 0.85rem; color: #a0a2ad; margin-bottom: 1rem;">Aprende más sobre el cuidado de tu bebé</p>
+        <div class="blog-posts">
+          <!-- Cargados desde Supabase -->
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- Pie de Página y Contacto Oficial -->
+  <footer id="contacto" class="footer">
+    <div class="footer-container">
+      
+      <div class="footer-brand">
+        <h3>Bebé en Camino</h3>
+        <p>Acompañándote en la etapa más hermosa de la vida.</p>
+      </div>
+
+      <!-- Tarjeta de Tienda Física -->
+      <div style="background: rgba(255,255,255,0.07); padding: 1.2rem; border-radius: 8px; width: 100%; max-width: 450px; box-sizing: border-box;">
+        <h4 style="margin-top: 0; margin-bottom: 0.8rem; color: #19efee; font-size: 1.1rem; text-align: center;">📍 Visítanos o Contáctanos</h4>
+        <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-location-dot" style="color: #fb5c74; width: 20px;"></i> <strong>Dirección:</strong> Argentina #4312 y calle 20ava, Guayaquil</p>
+        <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-clock" style="color: #fb5c74; width: 20px;"></i> <strong>Horario:</strong> Lunes a Sábado 09:00 AM - 07:00 PM</p>
+        <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-phone" style="color: #fb5c74; width: 20px;"></i> <strong>Teléfono / WhatsApp:</strong> +593 939669413</p>
+        <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-envelope" style="color: #fb5c74; width: 20px;"></i> <strong>Correo:</strong> contacto@bebeencamino.com</p>
+      </div>
+
+      <!-- Redes Sociales con Iconos Profesionales y Colores Oficiales -->
+      <div class="footer-socials" style="text-align: center;">
+        <h4 style="margin-bottom: 0.8rem; font-size: 1rem; color: #fff;">Síguenos en Redes Sociales</h4>
+        <div class="social-icons" style="justify-content: center;">
+          <!-- Instagram -->
+          <a href="https://instagram.com/tu_usuario" target="_blank" title="Instagram" class="social-btn instagram"><i class="fa-brands fa-instagram"></i></a>
+          <!-- TikTok -->
+          <a href="https://tiktok.com/@tu_usuario" target="_blank" title="TikTok" class="social-btn tiktok"><i class="fa-brands fa-tiktok"></i></a>
+          <!-- WhatsApp -->
+          <a href="https://wa.me/593939669413" target="_blank" title="WhatsApp" class="social-btn whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
+          <!-- Facebook -->
+          <a href="https://facebook.com/tu_pagina" target="_blank" title="Facebook" class="social-btn facebook"><i class="fa-brands fa-facebook-f"></i></a>
+        </div>
+      </div>
+
     </div>
 
-    <div style="border-top: 1px solid rgba(255,255,255,0.2); width: 100%; padding-top: 1rem; text-align: center; font-size: 0.8rem; color: #aaa;">
+    <div class="footer-bottom">
       © 2026 Bebé en Camino. Todos los derechos reservados.
     </div>
-
-  </div>
-</footer>
+  </footer>
 
   <!-- Modal del Carrito -->
   <div id="cart-modal" class="modal hidden">
@@ -174,10 +179,10 @@
       <h3 style="margin-top: 1rem;">Total: $<span id="cart-total">0.00</span></h3>
 
       <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-        <input type="text" id="cli-nombre" placeholder="Tu Nombre" required style="padding: 0.5rem;">
-        <input type="tel" id="cli-telefono" placeholder="WhatsApp / Teléfono" required style="padding: 0.5rem;">
-        <input type="text" id="cli-ciudad" placeholder="Ciudad (Ej. Guayaquil)" required style="padding: 0.5rem;">
-        <input type="email" id="cli-email" placeholder="Correo (Opcional)" style="padding: 0.5rem;">
+        <input type="text" id="cli-nombre" placeholder="Tu Nombre" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="tel" id="cli-telefono" placeholder="WhatsApp / Teléfono" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="text" id="cli-ciudad" placeholder="Ciudad (Ej. Guayaquil)" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="email" id="cli-email" placeholder="Correo (Opcional)" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
         <button class="checkout-btn" onclick="checkout()">Realizar Pedido por WhatsApp</button>
       </div>
     </div>
@@ -186,4 +191,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-          
