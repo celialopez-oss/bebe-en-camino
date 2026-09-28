@@ -1,204 +1,396 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Admin | Bebé en Camino</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    .admin-container { max-width: 900px; margin: 2rem auto; padding: 1.5rem; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid #eee; }
-    .tab-btn { padding: 0.8rem 1.5rem; border: none; background: none; font-weight: bold; cursor: pointer; color: #666; border-bottom: 3px solid transparent; }
-    .tab-btn.active { color: #e84393; border-color: #e84393; }
-    .item-list-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    .item-list-table th, .item-list-table td { border: 1px solid #ddd; padding: 0.8rem; text-align: left; }
-    .item-list-table th { background-color: #f8f9fa; }
-    
-    .edit-btn { background-color: #f39c12; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; margin-right: 5px; }
-    .edit-btn:hover { background-color: #d68910; }
-    .delete-btn { background-color: #e74c3c; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; }
-    .delete-btn:hover { background-color: #c0392b; }
+const SUPABASE_URL = "https://bwkohmeobwplthvjihtd.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_MfylsjMrOCQIK2fGwmPEdg_gXB-zhRo";
 
-    /* Modal de Edición */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 2000; }
-    .modal-box { background: white; padding: 2rem; border-radius: 8px; width: 100%; max-width: 500px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-  </style>
-</head>
-<body>
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  <!-- Formulario de Login -->
-  <div id="login-section" style="max-width: 400px; margin: 4rem auto; text-align: center;">
-    <h2>🔑 Iniciar Sesión (Admin)</h2>
-    <form id="login-form" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
-      <input type="email" id="email" placeholder="Correo electrónico" required style="padding: 0.8rem;">
-      <input type="password" id="password" placeholder="Contraseña" required style="padding: 0.8rem;">
-      <button type="submit" class="add-btn">Ingresar</button>
-    </form>
-    <p id="login-error" style="color: red; margin-top: 1rem;"></p>
-  </div>
+document.addEventListener("DOMContentLoaded", async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) {
+    showPanel();
+  }
+});
+
+// Autenticación de Administrador
+document.getElementById("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const errorMsg = document.getElementById("login-error");
+
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    errorMsg.textContent = "Error: Credenciales incorrectas.";
+  } else {
+    errorMsg.textContent = "";
+    showPanel();
+  }
+});
+
+function switchTab(tabId) {
+  document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
   
-  <!-- Panel Principal -->
-  <div id="admin-panel" class="admin-container hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-      <h2>⚙️ Panel de Administración</h2>
-      <button onclick="logout()" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">Cerrar Sesión</button>
-    </div>
+  document.getElementById(tabId).classList.remove("hidden");
+  event.currentTarget.classList.add("active");
+}
 
-    <!-- Navegación por pestañas -->
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('productos-tab')">📦 Productos</button>
-      <button class="tab-btn" onclick="switchTab('blog-tab')">💡 Artículos del Blog</button>
-    </div>
+async function showPanel() {
+  document.getElementById("login-section").classList.add("hidden");
+  document.getElementById("admin-panel").classList.remove("hidden");
+  await loadAdminProducts();
+  await loadAdminBlog();
+}
 
-    <!-- Pestaña de Productos -->
-    <div id="productos-tab" class="tab-content">
-      <h3>Agregar Nuevo Producto</h3>
-      <form id="product-form" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-        <input type="text" id="p-nombre" placeholder="Nombre del producto" required style="padding: 0.8rem;">
-        <textarea id="p-descripcion" placeholder="Descripción breve" required style="padding: 0.8rem;"></textarea>
-        <input type="number" step="0.01" id="p-precio" placeholder="Precio ($)" required style="padding: 0.8rem;">
-        
-        <label style="font-weight: bold; margin-top: 0.2rem;">Categoría del Producto:</label>
-        <select id="p-categoria" required style="padding: 0.8rem; border-radius: 4px; border: 1px solid #ccc;">
-          <option value="">Selecciona una categoría</option>
-          <option value="ofertas">🔥 Ofertas Especiales</option>
-          <option value="temporada">🌟 Por Temporada</option>
-          <option value="paseo y transporte">Paseo y transporte</option>
-          <option value="dormitorio y descanso">Dormitorio y descanso</option>
-          <option value="alimentacion y lactancia">Alimentación y lactancia</option>
-          <option value="juguetes y estimulacion">Juguetes y estimulación</option>
-          <option value="higiene y cuidado del bebe">Higiene y cuidado del bebé</option>
-          <option value="ropa y moda">Ropa y moda</option>
-          <option value="seguridad para el hogar">Seguridad para el hogar</option>
-        </select>
-        
-        <label style="display: flex; align-items: center; gap: 8px; margin-top: 0.5rem; cursor: pointer; font-weight: bold;">
-          <input type="checkbox" id="p-en-oferta" style="width: 18px; height: 18px;">
-          ¿Marcar con etiqueta de Oferta flotante en la foto?
-        </label>
+// Función auxiliar para subir imágenes a Supabase Storage
+async function uploadImageToStorage(fileInput, bucketName = 'productos') {
+  const file = fileInput.files[0];
+  if (!file) return null;
 
-        <label style="font-weight: bold; margin-top: 0.3rem;">Imagen del Producto (JPG / PNG):</label>
-        <input type="file" id="p-imagen-file" accept="image/*" required style="padding: 0.5rem; border: 1px dashed #ccc; border-radius: 4px;">
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-        <button type="submit" id="btn-save-prod" class="add-btn" style="background: #27ae60;">Guardar Producto</button>
-      </form>
-      <p id="product-msg" style="margin-top: 0.5rem; font-weight: bold;"></p>
+  const { error: uploadError } = await supabaseClient
+    .storage
+    .from(bucketName)
+    .upload(fileName, file);
 
-      <h3 style="margin-top: 2rem;">Inventario de Productos</h3>
-      <table class="item-list-table">
-        <thead>
-          <tr>
-            <th>Imagen</th>
-            <th>Nombre</th>
-            <th>Precio</th>
-            <th>Categoría</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="product-list">
-          <!-- Se cargan dinámicamente -->
-        </tbody>
-      </table>
-    </div>
+  if (uploadError) {
+    throw new Error("Error al subir imagen: " + uploadError.message);
+  }
 
-    <!-- Pestaña del Blog -->
-    <div id="blog-tab" class="tab-content hidden">
-      <h3 id="blog-form-title">Escribir Nuevo Artículo / Tip</h3>
-      <form id="blog-form" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-        
-        <!-- CAMPOS OCULTOS NECESARIOS PARA EDICIÓN -->
-        <input type="hidden" id="b-id">
-        <input type="hidden" id="b-imagen-actual">
-        
-        <input type="text" id="b-titulo" placeholder="Título del artículo" required style="padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px;">
-        
-        <input type="text" id="b-categoria" placeholder="Categoría (Ej: Cuidado, Alimentación, Sueño)" required style="padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px;">
-        
-        <!-- SECCIÓN DE CARGA DE IMAGEN (JPG / PNG) -->
-        <div style="background: #f9f9f9; padding: 0.8rem; border: 2px dashed #e84393; border-radius: 6px; display: flex; flex-direction: column; gap: 0.4rem;">
-          <label for="b-imagen-file" style="font-size: 0.9rem; font-weight: bold; color: #333;">📸 Selecciona la imagen del artículo (PNG o JPG):</label>
-          <input type="file" id="b-imagen-file" accept=".png, .jpg, .jpeg" style="padding: 0.4rem; background: #fff; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
-        </div>
-        
-        <textarea id="b-resumen" placeholder="Resumen corto (aparecerá en la vista previa lateral)" required style="padding: 0.8rem; height: 70px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
-        
-        <textarea id="b-contenido" placeholder="Contenido completo del artículo. Puedes escribir varios párrafos (cada salto de línea se guardará como párrafo independiente)" required style="padding: 0.8rem; height: 120px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
-        
-        <div style="display: flex; gap: 0.5rem;">
-          <button type="submit" id="b-submit-btn" class="add-btn" style="background: #e84393; color: white; border: none; padding: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer; flex: 1;">Publicar Artículo</button>
-          <button type="button" id="b-cancel-btn" onclick="cancelarEdicionBlog()" style="background: #95a5a6; color: white; border: none; padding: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer; display: none;">Cancelar</button>
-        </div>
-      
-      </form>
-      
-      <p id="blog-msg" style="margin-top: 0.5rem; font-weight: bold;"></p>
+  const { data: publicUrlData } = supabaseClient
+    .storage
+    .from(bucketName)
+    .getPublicUrl(fileName);
 
-      <h3 style="margin-top: 2rem;">Artículos Publicados</h3>
-      <table class="item-list-table">
-        <thead>
-          <tr>
-            <th>Imagen</th>
-            <th>Título</th>
-            <th>Categoría</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="blog-list">
-          <!-- Se cargan dinámicamente -->
-        </tbody>
-      </table>
-    </div>
+  return publicUrlData.publicUrl;
+}
 
-  </div>
+// ------------------- GESTIÓN DE PRODUCTOS -------------------
 
-  <!-- Modal para Editar Producto -->
-  <div id="edit-modal" class="modal-overlay hidden">
-    <div class="modal-box">
-      <h3>✏️ Editar Producto</h3>
-      <form id="edit-product-form" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-        <input type="hidden" id="edit-p-id">
-        <input type="hidden" id="edit-p-imagen-actual">
-        
-        <label>Nombre:</label>
-        <input type="text" id="edit-p-nombre" required style="padding: 0.6rem;">
-        
-        <label>Descripción:</label>
-        <textarea id="edit-p-descripcion" required style="padding: 0.6rem;"></textarea>
-        
-        <label>Precio ($):</label>
-        <input type="number" step="0.01" id="edit-p-precio" required style="padding: 0.6rem;">
-        
-        <label for="edit-p-categoria">Categoría del Producto:</label>
-        <select id="edit-p-categoria" required style="padding: 0.6rem; border-radius: 4px; border: 1px solid #ccc;">
-          <option value="ofertas">🔥 Ofertas Especiales</option>
-          <option value="temporada">🌟 Por Temporada</option>
-          <option value="paseo y transporte">Paseo y transporte</option>
-          <option value="dormitorio y descanso">Dormitorio y descanso</option>
-          <option value="alimentacion y lactancia">Alimentación y lactancia</option>
-          <option value="juguetes y estimulacion">Juguetes y estimulación</option>
-          <option value="higiene y cuidado del bebé">Higiene y cuidado del bebé</option>
-          <option value="ropa y moda">Ropa y moda</option>
-          <option value="seguridad para el hogar">Seguridad para el hogar</option>
-        </select>
-        
-        <label style="display: flex; align-items: center; gap: 8px; margin-top: 0.3rem; cursor: pointer; font-weight: bold;">
-          <input type="checkbox" id="edit-p-en-oferta" style="width: 18px; height: 18px;">
-          ¿Marcar con etiqueta de Oferta flotante en la foto?
-        </label>
-        
-        <label style="font-weight: bold; margin-top: 0.3rem;">Cambiar Imagen (opcional):</label>
-        <input type="file" id="edit-p-imagen-file" accept="image/*" style="padding: 0.5rem; border: 1px dashed #ccc; border-radius: 4px;">
+async function loadAdminProducts() {
+  const listEl = document.getElementById("product-list");
+  if (!listEl) return;
 
-        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-          <button type="submit" id="btn-update-prod" class="add-btn" style="background: #27ae60; flex: 1;">Actualizar</button>
-          <button type="button" onclick="closeEditModal()" style="background: #7f8c8d; color: white; border: none; padding: 0.6rem; border-radius: 4px; cursor: pointer; flex: 1;">Cancelar</button>
-        </div>
-      </form>
-    </div>
-  </div>
+  const { data: productos, error } = await supabaseClient.from("productos").select("*").order("id", { ascending: false });
 
-  <script src="admin.js"></script>
-</body>
-</html>
+  if (error) return console.error(error);
 
+  listEl.innerHTML = "";
+  productos.forEach(p => {
+    const tr = document.createElement("tr");
+    const pJson = JSON.stringify(p).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+    
+    tr.innerHTML = `
+      <td><img src="${p.imagen_url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
+      <td>${p.nombre} ${p.en_oferta ? '<span style="color:red; font-weight:bold; font-size:0.8rem;">(OFERTA)</span>' : ''}</td>
+      <td>$${parseFloat(p.precio).toFixed(2)}</td>
+      <td>${p.categoria}</td>
+      <td>
+        <button class="edit-btn" onclick='openEditModal(${pJson})'>Editar</button>
+        <button class="delete-btn" onclick="deleteProduct(${p.id})">Eliminar</button>
+      </td>
+    `;
+    listEl.appendChild(tr);
+  });
+}
+
+// Guardar Nuevo Producto
+document.getElementById("product-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById("product-msg");
+  const saveBtn = document.getElementById("btn-save-prod");
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = "Subiendo imagen y guardando...";
+  msg.textContent = "";
+
+  try {
+    const fileInput = document.getElementById("p-imagen-file");
+    const imagenUrl = await uploadImageToStorage(fileInput, 'productos');
+
+    if (!imagenUrl) {
+      alert("Por favor selecciona una imagen JPG/PNG válida.");
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Guardar Producto";
+      return;
+    }
+
+    const enOfertaCheckbox = document.getElementById("p-en-oferta");
+    const enOferta = enOfertaCheckbox ? enOfertaCheckbox.checked : false;
+
+    const nuevoProducto = {
+      nombre: document.getElementById("p-nombre").value,
+      descripcion: document.getElementById("p-descripcion").value,
+      precio: parseFloat(document.getElementById("p-precio").value),
+      categoria: document.getElementById("p-categoria").value,
+      imagen_url: imagenUrl,
+      en_oferta: enOferta
+    };
+
+    const { error } = await supabaseClient.from("productos").insert([nuevoProducto]);
+
+    if (error) {
+      msg.style.color = "red";
+      msg.textContent = "Error al guardar: " + error.message;
+    } else {
+      msg.style.color = "green";
+      msg.textContent = "¡Producto guardado exitosamente!";
+      document.getElementById("product-form").reset();
+      loadAdminProducts();
+    }
+  } catch (err) {
+    msg.style.color = "red";
+    msg.textContent = err.message;
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = "Guardar Producto";
+  }
+});
+
+function openEditModal(producto) {
+  document.getElementById("edit-p-id").value = producto.id;
+  document.getElementById("edit-p-nombre").value = producto.nombre;
+  document.getElementById("edit-p-descripcion").value = producto.descripcion;
+  document.getElementById("edit-p-precio").value = producto.precio;
+  document.getElementById("edit-p-categoria").value = producto.categoria;
+  document.getElementById("edit-p-imagen-actual").value = producto.imagen_url;
+  
+  const editOfertaCheckbox = document.getElementById("edit-p-en-oferta");
+  if (editOfertaCheckbox) {
+    editOfertaCheckbox.checked = producto.en_oferta === true;
+  }
+
+  document.getElementById("edit-modal").classList.remove("hidden");
+}
+
+function closeEditModal() {
+  document.getElementById("edit-modal").classList.add("hidden");
+  document.getElementById("edit-p-imagen-file").value = "";
+}
+
+document.getElementById("edit-product-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const updateBtn = document.getElementById("btn-update-prod");
+  updateBtn.disabled = true;
+  updateBtn.textContent = "Guardando cambios...";
+
+  const id = document.getElementById("edit-p-id").value;
+  const imagenActual = document.getElementById("edit-p-imagen-actual").value;
+  const fileInput = document.getElementById("edit-p-imagen-file");
+
+  try {
+    let imagenUrl = imagenActual;
+
+    if (fileInput.files.length > 0) {
+      const nuevaUrl = await uploadImageToStorage(fileInput, 'productos');
+      if (nuevaUrl) imagenUrl = nuevaUrl;
+    }
+
+    const editOfertaCheckbox = document.getElementById("edit-p-en-oferta");
+    const enOferta = editOfertaCheckbox ? editOfertaCheckbox.checked : false;
+
+    const productoActualizado = {
+      nombre: document.getElementById("edit-p-nombre").value,
+      descripcion: document.getElementById("edit-p-descripcion").value,
+      precio: parseFloat(document.getElementById("edit-p-precio").value),
+      categoria: document.getElementById("edit-p-categoria").value,
+      imagen_url: imagenUrl,
+      en_oferta: enOferta
+    };
+
+    const { error } = await supabaseClient
+      .from("productos")
+      .update(productoActualizado)
+      .eq("id", id);
+
+    if (error) {
+      alert("Error al actualizar: " + error.message);
+    } else {
+      closeEditModal();
+      loadAdminProducts();
+    }
+  } catch (err) {
+    alert("Error: " + err.message);
+  } finally {
+    updateBtn.disabled = false;
+    updateBtn.textContent = "Actualizar";
+  }
+});
+
+async function deleteProduct(id) {
+  if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
+
+  const { error } = await supabaseClient.from("productos").delete().eq("id", id);
+  if (error) {
+    alert("Error al eliminar el producto: " + error.message);
+  } else {
+    loadAdminProducts();
+  }
+}
+
+// ------------------- GESTIÓN DEL BLOG -------------------
+
+document.addEventListener("DOMContentLoaded", () => {
+  const blogForm = document.getElementById("blog-form");
+  if (blogForm) {
+    blogForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const msg = document.getElementById("blog-msg");
+      const submitBtn = document.getElementById("b-submit-btn");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Procesando artículo...";
+
+      if (msg) {
+        msg.style.color = "blue";
+        msg.textContent = "Guardando artículo...";
+      }
+
+      try {
+        const idEdicion = document.getElementById("b-id").value;
+        const fileInput = document.getElementById("b-imagen-file");
+        let imagenUrlFinal = document.getElementById("b-imagen-actual").value;
+
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          const nuevaUrl = await uploadImageToStorage(fileInput, 'productos');
+          if (nuevaUrl) {
+            imagenUrlFinal = nuevaUrl;
+          }
+        }
+
+        const contenidoCrudo = document.getElementById("b-contenido").value;
+        const contenidoFormateado = contenidoCrudo
+          .split("\n")
+          .filter(parrafo => parrafo.trim() !== "")
+          .map(parrafo => `<p style="margin-bottom: 1rem;">${parrafo.trim()}</p>`)
+          .join("");
+
+        const datosArticulo = {
+          titulo: document.getElementById("b-titulo").value.trim(),
+          categoria: document.getElementById("b-categoria").value.trim(),
+          resumen: document.getElementById("b-resumen").value.trim(),
+          contenido: contenidoFormateado,
+          imagen_url: imagenUrlFinal
+        };
+
+        let errorSupabase = null;
+
+        if (idEdicion) {
+          const { error } = await supabaseClient
+            .from("blog")
+            .update(datosArticulo)
+            .eq("id", idEdicion);
+          errorSupabase = error;
+        } else {
+          const { error } = await supabaseClient
+            .from("blog")
+            .insert([datosArticulo]);
+          errorSupabase = error;
+        }
+
+        if (errorSupabase) {
+          alert("Error al guardar en la base de datos: " + errorSupabase.message);
+          if (msg) {
+            msg.style.color = "red";
+            msg.textContent = "Error: " + errorSupabase.message;
+          }
+        } else {
+          if (msg) {
+            msg.style.color = "green";
+            msg.textContent = idEdicion ? "¡Artículo actualizado con éxito!" : "¡Artículo publicado con éxito!";
+          }
+          cancelarEdicionBlog();
+          loadAdminBlog();
+        }
+
+      } catch (err) {
+        alert("Ocurrió un error inesperado: " + err.message);
+        console.error(err);
+        if (msg) {
+          msg.style.color = "red";
+          msg.textContent = "Error crítico en el script.";
+        }
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  }
+});
+
+async function loadAdminBlog() {
+  const listEl = document.getElementById("blog-list");
+  if (!listEl) return;
+
+  const { data: articulos, error } = await supabaseClient.from("blog").select("*").order("id", { ascending: false });
+
+  if (error) return console.error(error);
+
+  listEl.innerHTML = "";
+  articulos.forEach(a => {
+    const tr = document.createElement("tr");
+    const imgMini = a.imagen_url || a.imagen;
+    const tdImg = imgMini ? `<img src="${imgMini}" alt="Miniatura" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` : 'Sin foto';
+    
+    const aJson = JSON.stringify(a).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+
+    tr.innerHTML = `
+      <td>${tdImg}</td>
+      <td>${a.titulo}</td>
+      <td>${a.categoria}</td>
+      <td>
+        <button class="edit-btn" onclick='prepararEdicionBlog(${aJson})'>Editar</button>
+        <button class="delete-btn" onclick="deleteBlogArticle(${a.id})">Eliminar</button>
+      </td>
+    `;
+    listEl.appendChild(tr);
+  });
+}
+
+function prepararEdicionBlog(articulo) {
+  document.getElementById("b-id").value = articulo.id;
+  document.getElementById("b-titulo").value = articulo.titulo;
+  document.getElementById("b-categoria").value = articulo.categoria;
+  document.getElementById("b-resumen").value = articulo.resumen;
+  document.getElementById("b-imagen-actual").value = articulo.imagen_url || "";
+  
+  let contenidoLimpio = "";
+  if (articulo.contenido) {
+    contenidoLimpio = articulo.contenido
+      .replace(/<\/?p[^>]*>/g, "\n")
+      .trim();
+  }
+  document.getElementById("b-contenido").value = contenidoLimpio;
+
+  document.getElementById("blog-form-title").textContent = "✏️ Editar Artículo del Blog";
+  document.getElementById("b-submit-btn").textContent = "Actualizar Artículo";
+  document.getElementById("b-cancel-btn").style.display = "inline-block";
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelarEdicionBlog() {
+  document.getElementById("blog-form").reset();
+  document.getElementById("b-id").value = "";
+  document.getElementById("b-imagen-actual").value = "";
+  document.getElementById("blog-form-title").textContent = "Escribir Nuevo Artículo / Tip";
+  document.getElementById("b-submit-btn").textContent = "Publicar Artículo";
+  document.getElementById("b-cancel-btn").style.display = "none";
+}
+
+async function deleteBlogArticle(id) {
+  if (!confirm("¿Seguro que deseas eliminar este artículo?")) return;
+
+  const { error } = await supabaseClient.from("blog").delete().eq("id", id);
+  if (error) {
+    alert("Error al eliminar el artículo: " + error.message);
+  } else {
+    loadAdminBlog();
+  }
+}
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+  location.reload();
+}
