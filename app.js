@@ -177,7 +177,8 @@ function generarTarjetaProducto(prod) {
   return `
     <div class="product-card" style="position: relative;">
       ${badgeOferta}
-      <img src="${imagen}" alt="${prod.nombre}">
+      <!-- Imagen con evento para abrir el Lightbox y actualizar la URL -->
+      <img src="${imagen}" alt="${prod.nombre}" onclick="abrirLightbox('${imagen}', '${prod.nombre}', ${prod.id})" style="cursor: pointer;">
       <div>
         <h3>${prod.nombre}</h3>
         <p>${prod.descripcion || ''}</p>
@@ -188,6 +189,31 @@ function generarTarjetaProducto(prod) {
       </div>
     </div>
   `;
+}
+
+// ------------------- VISOR DE IMAGEN (LIGHTBOX) & URL -------------------
+function abrirLightbox(imagenUrl, nombreProducto, id) {
+  const lightbox = document.getElementById("product-lightbox");
+  const lightboxImg = document.getElementById("lightbox-img");
+
+  if (lightbox && lightboxImg) {
+    lightboxImg.src = imagenUrl;
+    lightboxImg.alt = nombreProducto;
+    lightbox.classList.add("active");
+
+    // Actualiza la URL del navegador con el ID del producto (ejemplo: #producto-1)
+    history.pushState(null, null, `#producto-${id}`);
+  }
+}
+
+function cerrarLightbox() {
+  const lightbox = document.getElementById("product-lightbox");
+  if (lightbox) {
+    lightbox.classList.remove("active");
+
+    // Limpia el hash de la URL al cerrar el visor
+    history.pushState("", document.title, window.location.pathname + window.location.search);
+  }
 }
 
 // ------------------- CARRITO -------------------
