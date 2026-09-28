@@ -163,17 +163,20 @@ function generarTarjetaProducto(prod) {
   const imagen = prod.imagen_url || prod.imagen || 'logo.PNG';
   const badgeOferta = prod.en_oferta ? '<span style="position: absolute; top: 10px; left: 10px; background: #e84393; color: white; padding: 3px 8px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; z-index: 10;">🔥 OFERTA</span>' : '';
   
+  // Limpiamos comillas del nombre para evitar errores en llamadas JS desde HTML
+  const nombreLimpio = prod.nombre.replace(/'/g, "\\'");
+
   return `
     <div class="product-card" style="position: relative;">
       ${badgeOferta}
-      <img src="${imagen}" alt="${prod.nombre}" onclick="abrirLightbox('${imagen}', '${prod.nombre}', ${prod.id})" style="cursor: pointer;">
+      <img src="${imagen}" alt="${prod.nombre}" onclick="abrirLightbox('${imagen}', '${nombreLimpio}', ${prod.id})" style="cursor: pointer;">
       <div>
         <h3>${prod.nombre}</h3>
         <p>${prod.descripcion || ''}</p>
       </div>
       <div>
         <p class="price">$${parseFloat(prod.precio).toFixed(2)}</p>
-        <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})">Agregar al Carrito</button>
+        <button onclick="addToCart(${prod.id}, '${nombreLimpio}', ${prod.precio})">Agregar al Carrito</button>
       </div>
     </div>
   `;
@@ -188,6 +191,7 @@ function abrirLightbox(imagenUrl, nombreProducto, id) {
     lightboxImg.src = imagenUrl;
     lightboxImg.alt = nombreProducto;
     lightbox.classList.add("active");
+    // Actualiza la URL del navegador con el identificador del producto
     history.pushState(null, null, `#producto-${id}`);
   }
 }
@@ -196,6 +200,7 @@ function cerrarLightbox() {
   const lightbox = document.getElementById("product-lightbox");
   if (lightbox) {
     lightbox.classList.remove("active");
+    // Restablece la URL original quitando el hash
     history.pushState("", document.title, window.location.pathname + window.location.search);
   }
 }
