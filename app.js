@@ -10,7 +10,8 @@ let productosMostradosCount = 8;
 let carrito = JSON.parse(localStorage.getItem('bebe_carrito')) || [];
 let currentSlide = 0;
 let selectedCategory = 'todos';
-let indiceSliderOfertas = 0;
+let colorSeleccionadoActual = "Único";
+let productoActualLightbox = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchProductosTienda();
@@ -18,7 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
   loadFrontendBlog();
   cargarSeccionesSidebarDirecto();
   updateCartUI();
-  verificarSesionAdminInicial();
+
+  // Si el usuario entra por URL con hash de producto
+  if (window.location.hash.startsWith('#producto-')) {
+    const idProd = window.location.hash.replace('#producto-', '');
+    setTimeout(() => abrirLightboxPorId(idProd), 800);
+  }
 });
 
 // ------------------- SLIDER PRINCIPAL -------------------
@@ -122,44 +128,108 @@ function generarTarjetaProducto(prod) {
   return `
     <div class="product-card" style="position: relative;">
       ${badgeOferta}
-      <img src="${imagen}" alt="${prod.nombre}" onclick="abrirLightbox('${imagen}', '${nombreLimpio}', ${prod.id})" style="cursor: pointer;">
+      <img src="${imagen}" alt="${prod.nombre}" onclick="abrirLightboxPorId(${prod.id})" style="cursor: pointer;" title="Ver características y colores">
       <div>
         <h3>${prod.nombre}</h3>
         <p>${prod.descripcion || ''}</p>
       </div>
       <div>
         <p class="price">$${parseFloat(prod.precio).toFixed(2)}</p>
-        <button onclick="addToCart(${prod.id}, '${nombreLimpio}', ${prod.precio})">Agregar al Carrito</button>
+        <button onclick="abrirLightboxPorId(${prod.id})">Ver Opciones & Comprar</button>
       </div>
     </div>
   `;
 }
 
-// ------------------- CARRITO CON CANTIDADES Y ELIMINACIÓN -------------------
-function addToCart(id, nombre, precio) {
-  const itemExistente = carrito.find((item) => item.id === id);
-  if (itemExistente) {
-    itemExistente.cantidad++;
+// ------------------- LIGHTBOX DETALLADO CON COLORES -------------------
+async function abrirLightboxPorId(id) {
+  let prod = todosLosProductos.find(p => p.id == id);
+  if (!prod) {
+    const { data } = await supabaseClient.from("productos").select("*").eq("id", id).single();
+    if (data) prod = data;
+    else return;
+  }
+
+  productoActualLightbox = prod;
+  const lightbox = document.getElementById("product-lightbox");
+  const imgEl = document.getElementById("lightbox-img");
+  const titleEl = document.getElementById("lightbox-title");
+  const priceEl = document.getElementById("lightbox-price");
+  const descEl = document.getElementById("lightbox-desc");
+  const colorsListEl = document.getElementById("lightbox-colors-list");
+  const addBtn = document.getElementById("lightbox-add-btn");
+  const inputCant = document.getElementById("lightbox-cantidad");
+
+  imgEl.src = prod.imagen_url || prod.imagen || 'logo.PNG';
+  titleEl.textContent = prod.nombre;
+  priceEl.textContent = `$${parseFloat(prod.precio).toFixed(2)}`;
+  descEl.textContent = prod.descripcion || 'Sin descripción detallada.';
+  inputCant.value = 1;
+  colorSeleccionadoActual = "Único";
+
+  // Cargar colores disponibles desde Supabase para este producto
+  const { data: colores } = await supabaseClient.from("colores_producto").select("*").eq("producto_id", prod.id);
+  
+  if (colores && colores.length > 0) {
+    document.getElementById("lightbox-colors-section").style.display = "block";
+    colorsListEl.innerHTML = colores.map((c, idx) => `
+      <div onclick="seleccionarColorVariante('${c.nombre_color}', '${c.imagen_color || prod.imagen_url}', this)" title="${c.nombre_color}" style="cursor: pointer; border: 2px solid ${idx === 0 ? '#fb5c74' : '#ddd'}; border-radius: 6px; padding: 3px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; background: #fff;">
+        <img src="${c.imagen_color || prod.imagen_url}" alt="${c.nombre_color}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;">
+      </div>
+    `).join('');
+    colorSeleccionadoActual = colores[0].nombre_color;
   } else {
-    carrito.push({ id, nombre, precio, cantidad: 1 });
+    document.getElementById("lightbox-colors-section").style.display = "none";
+  }
+
+  addBtn.onclick = () => {
+    const cantidad = parseInt(inputCant.value) || 1;
+    addToCart(prod.id, prod.nombre, prod.precio, colorSeleccionadoActual, cantidad);
+    cerrarLightbox();
+    toggleCart();
+  };
+
+  lightbox.style.display = "flex";
+  history.pushState(null, null, `#producto-${prod.id}`);
+}
+
+function seleccionarColorVariante(nombreColor, imagenUrl, elementoHtml) {
+  colorSeleccionadoActual = nombreColor;
+  document.getElementById("lightbox-img").src = imagenUrl;
+  document.querySelectorAll('#lightbox-colors-list > div').forEach(el => el.style.border = '2px solid #ddd');
+  elementoHtml.style.border = '2px solid #fb5c74';
+}
+
+function cerrarLightbox() {
+  document.getElementById("product-lightbox").style.display = "none";
+  history.pushState("", document.title, window.location.pathname);
+}
+
+// ------------------- CARRITO CON CANTIDADES, COLOR Y VACIAR -------------------
+function addToCart(id, nombre, precio, color = "Único", cantidadAgregada = 1) {
+  const itemExistente = carrito.find((item) => item.id === id && item.color === color);
+  if (itemExistente) {
+    itemExistente.cantidad += cantidadAgregada;
+  } else {
+    carrito.push({ id, nombre, precio, color, cantidad: cantidadAgregada });
   }
   guardarCarritoStorage();
   updateCartUI();
 }
 
-function cambiarCantidad(id, cambio) {
-  const item = carrito.find(i => i.id === id);
+function cambiarCantidad(id, color, cambio) {
+  const item = carrito.find(i => i.id === id && i.color === color);
   if (!item) return;
   item.cantidad += cambio;
   if (item.cantidad <= 0) {
-    carrito = carrito.filter(i => i.id !== id);
+    carrito = carrito.filter(i => !(i.id === id && i.color === color));
   }
   guardarCarritoStorage();
   updateCartUI();
 }
 
-function eliminarDelCarrito(id) {
-  carrito = carrito.filter(item => item.id !== id);
+function eliminarDelCarrito(id, color) {
+  carrito = carrito.filter(item => !(item.id === id && item.color === color));
   guardarCarritoStorage();
   updateCartUI();
 }
@@ -200,65 +270,20 @@ function updateCartUI() {
     div.innerHTML = `
       <div style="flex-grow: 1;">
         <span style="font-size: 0.9rem; font-weight: bold; display: block; color: #333;">${item.nombre}</span>
+        <span style="font-size: 0.75rem; color: #666; display: block;">Color: <strong>${item.color}</strong></span>
         <span style="font-size: 0.8rem; color: #fb5c74; font-weight: bold;">$${(item.precio * item.cantidad).toFixed(2)}</span>
       </div>
       <div style="display: flex; align-items: center; gap: 5px;">
-        <button onclick="cambiarCantidad(${item.id}, -1)" style="background: #ddd; border: none; width: 22px; height: 22px; font-weight: bold; cursor: pointer; border-radius: 3px;">-</button>
+        <button onclick="cambiarCantidad(${item.id}, '${item.color}', -1)" style="background: #ddd; border: none; width: 22px; height: 22px; font-weight: bold; cursor: pointer; border-radius: 3px;">-</button>
         <span style="font-size: 0.9rem; font-weight: bold; width: 20px; text-align: center;">${item.cantidad}</span>
-        <button onclick="cambiarCantidad(${item.id}, 1)" style="background: #ddd; border: none; width: 22px; height: 22px; font-weight: bold; cursor: pointer; border-radius: 3px;">+</button>
-        <button onclick="eliminarDelCarrito(${item.id})" title="Eliminar producto" style="background: none; border: none; color: #ff4757; cursor: pointer; font-size: 1rem; margin-left: 5px;">🗑️</button>
+        <button onclick="cambiarCantidad(${item.id}, '${item.color}', 1)" style="background: #ddd; border: none; width: 22px; height: 22px; font-weight: bold; cursor: pointer; border-radius: 3px;">+</button>
+        <button onclick="eliminarDelCarrito(${item.id}, '${item.color}')" title="Eliminar producto" style="background: none; border: none; color: #ff4757; cursor: pointer; font-size: 1rem; margin-left: 5px;">🗑️</button>
       </div>
     `;
     itemsContainer.appendChild(div);
   });
 }
 
-// ------------------- AUTENTICACIÓN ADMIN SEGURA -------------------
-function toggleAdminModal() {
-  document.getElementById("admin-modal").classList.toggle("hidden");
-}
-
-async function verificarSesionAdminInicial() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session) {
-    mostrarDashboardAdmin(session.user.email);
-  }
-}
-
-async function loginAdmin() {
-  const email = document.getElementById("admin-email").value.trim();
-  const password = document.getElementById("admin-pass").value.trim();
-
-  if (!email || !password) {
-    alert("Por favor ingresa tu correo y contraseña.");
-    return;
-  }
-
-  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-  if (error) {
-    alert("Error de autenticación: " + error.message);
-    return;
-  }
-
-  mostrarDashboardAdmin(data.user.email);
-  alert("¡Inicio de sesión exitoso!");
-}
-
-async function logoutAdmin() {
-  await supabaseClient.auth.signOut();
-  document.getElementById("admin-auth-view").style.display = "block";
-  document.getElementById("admin-dashboard-view").style.display = "none";
-  document.getElementById("admin-email").value = "";
-  document.getElementById("admin-pass").value = "";
-}
-
-function mostrarDashboardAdmin(email) {
-  document.getElementById("admin-auth-view").style.display = "none";
-  document.getElementById("admin-dashboard-view").style.display = "block";
-  document.getElementById("admin-user-email-display").textContent = `Conectado como: ${email}`;
-}
-
-// ------------------- CHECKOUT Y OTROS -------------------
 function toggleCart() {
   document.getElementById("cart-modal").classList.toggle("hidden");
 }
@@ -277,7 +302,7 @@ async function checkout() {
   carrito.forEach((item, index) => {
     const subtotal = item.precio * item.cantidad;
     total += subtotal;
-    mensaje += `${index + 1}. *${item.nombre}* (x${item.cantidad}) - $${subtotal.toFixed(2)}\n`;
+    mensaje += `${index + 1}. *${item.nombre}* (${item.color}) - (x${item.cantidad}) - $${subtotal.toFixed(2)}\n`;
   });
 
   mensaje += `\n---------------------------\n*Total a pagar: $${total.toFixed(2)}*\n\n¡Gracias!`;
@@ -288,21 +313,6 @@ async function checkout() {
   guardarCarritoStorage();
   updateCartUI();
   toggleCart();
-}
-
-// Lightbox y Blog (igual que antes)
-function abrirLightbox(url, nombre, id) {
-  const lightbox = document.getElementById("product-lightbox");
-  const img = document.getElementById("lightbox-img");
-  if (lightbox && img) {
-    img.src = url;
-    lightbox.classList.add("active");
-    history.pushState(null, null, `#producto-${id}`);
-  }
-}
-function cerrarLightbox() {
-  document.getElementById("product-lightbox")?.classList.remove("active");
-  history.pushState("", document.title, window.location.pathname);
 }
 
 async function loadFrontendBlog() {
@@ -327,7 +337,7 @@ async function cargarSeccionesSidebarDirecto() {
         <img src="${ofertas[0].imagen_url || ofertas[0].imagen || 'logo.PNG'}" style="width: 100%; height: 130px; object-fit: cover; border-radius: 4px;">
         <h4 style="font-size: 0.9rem; margin: 5px 0;">${ofertas[0].nombre}</h4>
         <p style="color: #fb5c74; font-weight: bold; font-size: 0.85rem;">$${parseFloat(ofertas[0].precio).toFixed(2)}</p>
-        <button onclick="addToCart(${ofertas[0].id}, '${ofertas[0].nombre}', ${ofertas[0].precio})" style="background: #fb5c74; color: white; border: none; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Aprovechar</button>
+        <button onclick="abrirLightboxPorId(${ofertas[0].id})" style="background: #fb5c74; color: white; border: none; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Aprovechar</button>
       </div>
     `;
   }
