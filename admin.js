@@ -43,7 +43,7 @@ async function showPanel() {
 }
 
 // Función auxiliar para subir imágenes a Supabase Storage
-async function uploadImageToStorage(fileInput) {
+async function uploadImageToStorage(fileInput, bucketName = 'productos') {
   const file = fileInput.files[0];
   if (!file) return null;
 
@@ -52,7 +52,7 @@ async function uploadImageToStorage(fileInput) {
 
   const { error: uploadError } = await supabaseClient
     .storage
-    .from('productos')
+    .from(bucketName)
     .upload(fileName, file);
 
   if (uploadError) {
@@ -61,7 +61,7 @@ async function uploadImageToStorage(fileInput) {
 
   const { data: publicUrlData } = supabaseClient
     .storage
-    .from('productos')
+    .from(bucketName)
     .getPublicUrl(fileName);
 
   return publicUrlData.publicUrl;
@@ -108,7 +108,7 @@ document.getElementById("product-form").addEventListener("submit", async (e) => 
 
   try {
     const fileInput = document.getElementById("p-imagen-file");
-    const imagenUrl = await uploadImageToStorage(fileInput);
+    const imagenUrl = await uploadImageToStorage(fileInput, 'productos');
 
     if (!imagenUrl) {
       alert("Por favor selecciona una imagen JPG/PNG válida.");
@@ -117,7 +117,6 @@ document.getElementById("product-form").addEventListener("submit", async (e) => 
       return;
     }
 
-    // Captura si la casilla de oferta está marcada
     const enOfertaCheckbox = document.getElementById("p-en-oferta");
     const enOferta = enOfertaCheckbox ? enOfertaCheckbox.checked : false;
 
@@ -150,7 +149,6 @@ document.getElementById("product-form").addEventListener("submit", async (e) => 
   }
 });
 
-// Modal de Edición
 function openEditModal(producto) {
   document.getElementById("edit-p-id").value = producto.id;
   document.getElementById("edit-p-nombre").value = producto.nombre;
@@ -159,7 +157,6 @@ function openEditModal(producto) {
   document.getElementById("edit-p-categoria").value = producto.categoria;
   document.getElementById("edit-p-imagen-actual").value = producto.imagen_url;
   
-  // Marcar o desmarcar la casilla de oferta según el producto
   const editOfertaCheckbox = document.getElementById("edit-p-en-oferta");
   if (editOfertaCheckbox) {
     editOfertaCheckbox.checked = producto.en_oferta === true;
@@ -173,7 +170,6 @@ function closeEditModal() {
   document.getElementById("edit-p-imagen-file").value = "";
 }
 
-// Actualizar Producto Editado
 document.getElementById("edit-product-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const updateBtn = document.getElementById("btn-update-prod");
@@ -187,9 +183,8 @@ document.getElementById("edit-product-form").addEventListener("submit", async (e
   try {
     let imagenUrl = imagenActual;
 
-    // Si seleccionó una nueva foto, la subimos
     if (fileInput.files.length > 0) {
-      const nuevaUrl = await uploadImageToStorage(fileInput);
+      const nuevaUrl = await uploadImageToStorage(fileInput, 'productos');
       if (nuevaUrl) imagenUrl = nuevaUrl;
     }
 
@@ -224,7 +219,6 @@ document.getElementById("edit-product-form").addEventListener("submit", async (e
   }
 });
 
-// Eliminar Producto
 async function deleteProduct(id) {
   if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
 
@@ -239,79 +233,80 @@ async function deleteProduct(id) {
 // ------------------- GESTIÓN DEL BLOG -------------------
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadAdminBlog();
-
   const blogForm = document.getElementById("blog-form");
   if (blogForm) {
     blogForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      console.log("Botón de publicar presionado"); // Para ver si reacciona en la consola
 
       const msg = document.getElementById("blog-msg");
+      const submitBtn = document.getElementById("b-submit-btn");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Procesando artículo...";
+
       if (msg) {
         msg.style.color = "blue";
-        msg.textContent = "Procesando artículo...";
+        msg.textContent = "Guardando artículo...";
       }
 
       try {
+        const idEdicion = document.getElementById("b-id").value;
         const fileInput = document.getElementById("b-imagen-file");
-        let imagenUrlFinal = "";
+        let imagenUrlFinal = document.getElementById("b-imagen-actual").value;
 
-        // 1. Si seleccionó un archivo, lo subimos a Supabase Storage
+        // 1. Si seleccionó un nuevo archivo de imagen, lo subimos
         if (fileInput && fileInput.files && fileInput.files[0]) {
-          const file = fileInput.files[0];
-          const fileExt = file.name.split('.').pop();
-          const fileName = `blog_${Date.now()}.${fileExt}`;
-          const filePath = `${fileName}`;
-
-          console.log("Subiendo imagen:", fileName);
-
-          const { data: uploadData, error: uploadError } = await supabaseClient.storage
-            .from('productos') 
-            .upload(filePath, file);
-
-          if (uploadError) {
-            alert("Error al subir la imagen: " + uploadError.message);
-            if (msg) {
-              msg.style.color = "red";
-              msg.textContent = "Error al subir la imagen.";
-            }
-            return;
+          const nuevaUrl = await uploadImageToStorage(fileInput, 'productos');
+          if (nuevaUrl) {
+            imagenUrlFinal = nuevaUrl;
           }
-
-          const { data: publicUrlData } = supabaseClient.storage
-            .from('productos')
-            .getPublicUrl(filePath);
-
-          imagenUrlFinal = publicUrlData.publicUrl;
-          console.log("Imagen subida con éxito:", imagenUrlFinal);
         }
 
-        // 2. Preparamos el objeto con los datos del artículo
-        const nuevoArticulo = {
-          titulo: document.getElementById("b-titulo").value,
-          categoria: document.getElementById("b-categoria").value,
-          resumen: document.getElementById("b-resumen").value,
-          contenido: document.getElementById("b-contenido").value,
-          imagen_url: imagenUrlFinal 
+        // 2. Procesar contenido completo para convertir saltos de línea en párrafos estructurados (<p>)
+        const contenidoCrudo = document.getElementById("b-contenido").value;
+        const contenidoFormateado = contenidoCrudo
+          .split("\n")
+          .filter(parrafo => parrafo.trim() !== "")
+          .map(parrafo => `<p style="margin-bottom: 1rem;">${parrafo.trim()}</p>`)
+          .join("");
+
+        // 3. Objeto con datos del artículo
+        const datosArticulo = {
+          titulo: document.getElementById("b-titulo").value.trim(),
+          categoria: document.getElementById("b-categoria").value.trim(),
+          resumen: document.getElementById("b-resumen").value.trim(),
+          contenido: contenidoFormateado,
+          imagen_url: imagenUrlFinal
         };
 
-        console.log("Guardando artículo en Supabase...", nuevoArticulo);
+        let errorSupabase = null;
 
-        const { error } = await supabaseClient.from("blog").insert([nuevoArticulo]);
+        if (idEdicion) {
+          // Actualizar existente
+          const { error } = await supabaseClient
+            .from("blog")
+            .update(datosArticulo)
+            .eq("id", idEdicion);
+          errorSupabase = error;
+        } else {
+          // Crear nuevo
+          const { error } = await supabaseClient
+            .from("blog")
+            .insert([datosArticulo]);
+          errorSupabase = error;
+        }
 
-        if (error) {
-          alert("Error al guardar en la base de datos: " + error.message);
+        if (errorSupabase) {
+          alert("Error al guardar en la base de datos: " + errorSupabase.message);
           if (msg) {
             msg.style.color = "red";
-            msg.textContent = "Error: " + error.message;
+            msg.textContent = "Error: " + errorSupabase.message;
           }
         } else {
           if (msg) {
             msg.style.color = "green";
-            msg.textContent = "¡Artículo publicado con éxito!";
+            msg.textContent = idEdicion ? "¡Artículo actualizado con éxito!" : "¡Artículo publicado con éxito!";
           }
-          blogForm.reset();
+          cancelarEdicionBlog();
           loadAdminBlog();
         }
 
@@ -322,6 +317,8 @@ document.addEventListener("DOMContentLoaded", () => {
           msg.style.color = "red";
           msg.textContent = "Error crítico en el script.";
         }
+      } finally {
+        submitBtn.disabled = false;
       }
     });
   }
@@ -340,15 +337,53 @@ async function loadAdminBlog() {
     const tr = document.createElement("tr");
     const imgMini = a.imagen_url || a.imagen;
     const tdImg = imgMini ? `<img src="${imgMini}" alt="Miniatura" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` : 'Sin foto';
+    
+    // Convertir objeto para pasar seguro a la función de edición
+    const aJson = JSON.stringify(a).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
 
     tr.innerHTML = `
       <td>${tdImg}</td>
       <td>${a.titulo}</td>
       <td>${a.categoria}</td>
-      <td><button class="delete-btn" onclick="deleteBlogArticle(${a.id})">Eliminar</button></td>
+      <td>
+        <button class="edit-btn" onclick='prepararEdicionBlog(${aJson})'>Editar</button>
+        <button class="delete-btn" onclick="deleteBlogArticle(${a.id})">Eliminar</button>
+      </td>
     `;
     listEl.appendChild(tr);
   });
+}
+
+function prepararEdicionBlog(articulo) {
+  document.getElementById("b-id").value = articulo.id;
+  document.getElementById("b-titulo").value = articulo.titulo;
+  document.getElementById("b-categoria").value = articulo.categoria;
+  document.getElementById("b-resumen").value = articulo.resumen;
+  document.getElementById("b-imagen-actual").value = articulo.imagen_url || "";
+  
+  // Revertir etiquetas <p> a texto plano con saltos de línea para que el textarea los edite con comodidad
+  let contenidoLimpio = "";
+  if (articulo.contenido) {
+    contenidoLimpio = articulo.contenido
+      .replace(/<\/?p[^>]*>/g, "\n")
+      .trim();
+  }
+  document.getElementById("b-contenido").value = contenidoLimpio;
+
+  document.getElementById("blog-form-title").textContent = "✏️ Editar Artículo del Blog";
+  document.getElementById("b-submit-btn").textContent = "Actualizar Artículo";
+  document.getElementById("b-cancel-btn").style.display = "inline-block";
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelarEdicionBlog() {
+  document.getElementById("blog-form").reset();
+  document.getElementById("b-id").value = "";
+  document.getElementById("b-imagen-actual").value = "";
+  document.getElementById("blog-form-title").textContent = "Escribir Nuevo Artículo / Tip";
+  document.getElementById("b-submit-btn").textContent = "Publicar Artículo";
+  document.getElementById("b-cancel-btn").style.display = "none";
 }
 
 async function deleteBlogArticle(id) {
