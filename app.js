@@ -1,13 +1,13 @@
 const SUPABASE_URL = "https://bwkohmeobwplthvjihtd.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_MfylsjMrOCQIK2fGwmPEdg_gXB-zhRo";
-const TELEFONO_TIENDA = "593996219444"; // Número de WhatsApp
+const TELEFONO_TIENDA = "593996219444";
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let todosLosProductos = [];
 let todosLosProductosGenerales = [];
 let productosMostradosCount = 8; 
-let carrito = [];
+let carrito = JSON.parse(localStorage.getItem('bebe_carrito')) || [];
 let currentSlide = 0;
 let selectedCategory = 'todos';
 let indiceSliderOfertas = 0;
@@ -17,6 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initSlider();
   loadFrontendBlog();
   cargarSeccionesSidebarDirecto();
+  updateCartUI();
+  verificarSesionAdminInicial();
 });
 
 // ------------------- SLIDER PRINCIPAL -------------------
@@ -35,67 +37,37 @@ function setSlide(index) {
 function updateSliderUI() {
   const track = document.getElementById("slider-track");
   const dots = document.querySelectorAll(".dot");
-  
-  if (track) {
-    track.style.transform = `translateX(-${currentSlide * (100 / 3)}%)`;
-  }
-  
-  dots.forEach((dot, index) => {
-    dot.classList.toggle("active", index === currentSlide);
-  });
+  if (track) track.style.transform = `translateX(-${currentSlide * (100 / 3)}%)`;
+  dots.forEach((dot, index) => dot.classList.toggle("active", index === currentSlide));
 }
 
-// ------------------- CARGA Y FILTRADO DE PRODUCTOS -------------------
+// ------------------- PRODUCTOS Y FILTROS -------------------
 async function fetchProductosTienda() {
   try {
-    const { data, error } = await supabaseClient
-      .from("productos")
-      .select("*")
-      .order("id", { ascending: false });
-
-    if (error) {
-      console.error("Error al obtener productos:", error);
-      return;
-    }
-
+    const { data, error } = await supabaseClient.from("productos").select("*").order("id", { ascending: false });
+    if (error) { console.error("Error al obtener productos:", error); return; }
     if (!data) return;
 
     todosLosProductos = data;
-    
-    todosLosProductosGenerales = data.filter(p => {
-      const cat = p.categoria ? p.categoria.toLowerCase().trim() : "";
-      return cat !== "ofertas";
-    });
-
+    todosLosProductosGenerales = data.filter(p => (p.categoria || "").toLowerCase().trim() !== "ofertas");
     renderizarSeccionesGenerales();
-
-  } catch (err) {
-    console.error("Excepción cargando tienda:", err);
-  }
+  } catch (err) { console.error("Excepción cargando tienda:", err); }
 }
 
 function renderizarSeccionesGenerales() {
   let productosAFiltrar = todosLosProductosGenerales;
   if (selectedCategory !== 'todos') {
-    productosAFiltrar = todosLosProductosGenerales.filter(p => {
-      const cat = p.categoria ? p.categoria.toLowerCase().trim() : "";
-      return cat === selectedCategory.toLowerCase().trim();
-    });
+    productosAFiltrar = todosLosProductosGenerales.filter(p => (p.categoria || "").toLowerCase().trim() === selectedCategory.toLowerCase().trim());
   }
 
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
   const productosNuevos = productosAFiltrar.slice(0, 3);
   
   if (loNuevoContainer) {
-    if (productosNuevos.length === 0) {
-      loNuevoContainer.innerHTML = "<p>No hay novedades disponibles en esta categoría.</p>";
-    } else {
-      loNuevoContainer.innerHTML = productosNuevos.map(prod => generarTarjetaProducto(prod)).join('');
-    }
+    loNuevoContainer.innerHTML = productosNuevos.length === 0 ? "<p>No hay novedades disponibles.</p>" : productosNuevos.map(prod => generarTarjetaProducto(prod)).join('');
   }
 
-  const productosRestantes = productosAFiltrar.slice(3);
-  renderizarNuestrosProductosFiltrados(productosRestantes);
+  renderizarNuestrosProductosFiltrados(productosAFiltrar.slice(3));
 }
 
 function renderizarNuestrosProductosFiltrados(listaRestantes) {
@@ -104,54 +76,37 @@ function renderizarNuestrosProductosFiltrados(listaRestantes) {
   if (!container) return;
 
   const productosSlice = listaRestantes.slice(0, productosMostradosCount);
-
   if (productosSlice.length === 0) {
-    container.innerHTML = "<p>No hay más productos disponibles en este momento.</p>";
+    container.innerHTML = "<p>No hay más productos disponibles.</p>";
     if (btnVerMas) btnVerMas.style.display = "none";
     return;
   }
 
   container.innerHTML = productosSlice.map(prod => generarTarjetaProducto(prod)).join('');
-
-  if (btnVerMas) {
-    if (productosMostradosCount >= listaRestantes.length) {
-      btnVerMas.style.display = "none";
-    } else {
-      btnVerMas.style.display = "inline-block";
-    }
-  }
+  if (btnVerMas) btnVerMas.style.display = productosMostradosCount >= listaRestantes.length ? "none" : "inline-block";
 }
 
 function filterByCategory(cat, btnElement) {
   selectedCategory = cat;
   productosMostradosCount = 8; 
-
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   if (btnElement) btnElement.classList.add('active');
-
   renderizarSeccionesGenerales();
 }
 
 function filterProducts() {
   const query = document.getElementById("search-bar").value.toLowerCase();
-  
   let baseList = todosLosProductosGenerales;
   if (selectedCategory !== 'todos') {
     baseList = baseList.filter(p => (p.categoria || "").toLowerCase().trim() === selectedCategory.toLowerCase().trim());
   }
 
-  const filtered = baseList.filter(p => 
-    (p.nombre && p.nombre.toLowerCase().includes(query)) || 
-    (p.descripcion && p.descripcion.toLowerCase().includes(query))
-  );
-
+  const filtered = baseList.filter(p => (p.nombre && p.nombre.toLowerCase().includes(query)) || (p.descripcion && p.descripcion.toLowerCase().includes(query)));
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
   if (loNuevoContainer) {
     loNuevoContainer.innerHTML = filtered.slice(0, 3).map(prod => generarTarjetaProducto(prod)).join('') || "<p>No se encontraron novedades.</p>";
   }
-
-  const restoFiltrado = filtered.slice(3);
-  renderizarNuestrosProductosFiltrados(restoFiltrado);
+  renderizarNuestrosProductosFiltrados(filtered.slice(3));
 }
 
 function cargarMasProductos() {
@@ -162,8 +117,6 @@ function cargarMasProductos() {
 function generarTarjetaProducto(prod) {
   const imagen = prod.imagen_url || prod.imagen || 'logo.PNG';
   const badgeOferta = prod.en_oferta ? '<span style="position: absolute; top: 10px; left: 10px; background: #e84393; color: white; padding: 3px 8px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; z-index: 10;">🔥 OFERTA</span>' : '';
-  
-  // Limpiamos comillas del nombre para evitar errores en llamadas JS desde HTML
   const nombreLimpio = prod.nombre.replace(/'/g, "\\'");
 
   return `
@@ -182,30 +135,7 @@ function generarTarjetaProducto(prod) {
   `;
 }
 
-// ------------------- VISOR DE IMAGEN (LIGHTBOX) -------------------
-function abrirLightbox(imagenUrl, nombreProducto, id) {
-  const lightbox = document.getElementById("product-lightbox");
-  const lightboxImg = document.getElementById("lightbox-img");
-
-  if (lightbox && lightboxImg) {
-    lightboxImg.src = imagenUrl;
-    lightboxImg.alt = nombreProducto;
-    lightbox.classList.add("active");
-    // Actualiza la URL del navegador con el identificador del producto
-    history.pushState(null, null, `#producto-${id}`);
-  }
-}
-
-function cerrarLightbox() {
-  const lightbox = document.getElementById("product-lightbox");
-  if (lightbox) {
-    lightbox.classList.remove("active");
-    // Restablece la URL original quitando el hash
-    history.pushState("", document.title, window.location.pathname + window.location.search);
-  }
-}
-
-// ------------------- CARRITO -------------------
+// ------------------- CARRITO CON CANTIDADES Y ELIMINACIÓN -------------------
 function addToCart(id, nombre, precio) {
   const itemExistente = carrito.find((item) => item.id === id);
   if (itemExistente) {
@@ -213,7 +143,37 @@ function addToCart(id, nombre, precio) {
   } else {
     carrito.push({ id, nombre, precio, cantidad: 1 });
   }
+  guardarCarritoStorage();
   updateCartUI();
+}
+
+function cambiarCantidad(id, cambio) {
+  const item = carrito.find(i => i.id === id);
+  if (!item) return;
+  item.cantidad += cambio;
+  if (item.cantidad <= 0) {
+    carrito = carrito.filter(i => i.id !== id);
+  }
+  guardarCarritoStorage();
+  updateCartUI();
+}
+
+function eliminarDelCarrito(id) {
+  carrito = carrito.filter(item => item.id !== id);
+  guardarCarritoStorage();
+  updateCartUI();
+}
+
+function vaciarCarrito() {
+  if (confirm("¿Estás segura de que deseas vaciar el carrito?")) {
+    carrito = [];
+    guardarCarritoStorage();
+    updateCartUI();
+  }
+}
+
+function guardarCarritoStorage() {
+  localStorage.setItem('bebe_carrito', JSON.stringify(carrito));
 }
 
 function updateCartUI() {
@@ -226,130 +186,92 @@ function updateCartUI() {
 
   if (countEl) countEl.textContent = totalCount;
   if (totalEl) totalEl.textContent = totalPrecio.toFixed(2);
-
   if (!itemsContainer) return;
 
   if (carrito.length === 0) {
-    itemsContainer.innerHTML = "<p>El carrito está vacío.</p>";
+    itemsContainer.innerHTML = "<p style='text-align: center; color: #666; padding: 1rem;'>El carrito está vacío.</p>";
     return;
   }
 
   itemsContainer.innerHTML = "";
   carrito.forEach((item) => {
     const div = document.createElement("div");
-    div.style.display = "flex";
-    div.style.justifyContent = "space-between";
-    div.style.marginBottom = "0.5rem";
+    div.style.cssText = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; background: #f8f9fa; padding: 8px; border-radius: 6px;";
     div.innerHTML = `
-      <span>${item.nombre} (x${item.cantidad})</span>
-      <span>$${(item.precio * item.cantidad).toFixed(2)}</span>
+      <div style="flex-grow: 1;">
+        <span style="font-size: 0.9rem; font-weight: bold; display: block; color: #333;">${item.nombre}</span>
+        <span style="font-size: 0.8rem; color: #fb5c74; font-weight: bold;">$${(item.precio * item.cantidad).toFixed(2)}</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <button onclick="cambiarCantidad(${item.id}, -1)" style="background: #ddd; border: none; width: 22px; height: 22px; font-weight: bold; cursor: pointer; border-radius: 3px;">-</button>
+        <span style="font-size: 0.9rem; font-weight: bold; width: 20px; text-align: center;">${item.cantidad}</span>
+        <button onclick="cambiarCantidad(${item.id}, 1)" style="background: #ddd; border: none; width: 22px; height: 22px; font-weight: bold; cursor: pointer; border-radius: 3px;">+</button>
+        <button onclick="eliminarDelCarrito(${item.id})" title="Eliminar producto" style="background: none; border: none; color: #ff4757; cursor: pointer; font-size: 1rem; margin-left: 5px;">🗑️</button>
+      </div>
     `;
     itemsContainer.appendChild(div);
   });
 }
 
-// ------------------- BLOG & TIPS -------------------
-async function loadFrontendBlog() {
-  const container = document.getElementById("blog-container");
-  const btnVerMas = document.getElementById("ver-mas-blog-btn");
-  if (!container) return;
+// ------------------- AUTENTICACIÓN ADMIN SEGURA -------------------
+function toggleAdminModal() {
+  document.getElementById("admin-modal").classList.toggle("hidden");
+}
 
-  const { data: articulos, error } = await supabaseClient
-    .from("blog")
-    .select("*")
-    .order("id", { ascending: false });
+async function verificarSesionAdminInicial() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) {
+    mostrarDashboardAdmin(session.user.email);
+  }
+}
 
+async function loginAdmin() {
+  const email = document.getElementById("admin-email").value.trim();
+  const password = document.getElementById("admin-pass").value.trim();
+
+  if (!email || !password) {
+    alert("Por favor ingresa tu correo y contraseña.");
+    return;
+  }
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
   if (error) {
-    console.error("Error al cargar el blog:", error);
+    alert("Error de autenticación: " + error.message);
     return;
   }
 
-  if (!articulos || articulos.length === 0) {
-    container.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>Pronto subiremos nuevos tips.</p>";
-    return;
-  }
-
-  const limiteInicial = 2; 
-  const articulosAEmpezar = articulos.slice(0, limiteInicial);
-
-  function renderizar(lista) {
-    container.innerHTML = "";
-    lista.forEach(a => {
-      const img = a.imagen_url || "logo.PNG";
-      const card = document.createElement("div");
-      card.className = "blog-card-sidebar";
-      card.style.cssText = "background: #fff; border-radius: 6px; overflow: hidden; border: 1px solid #eee; margin-bottom: 0.8rem;";
-      
-      card.innerHTML = `
-        <img src="${img}" alt="${a.titulo}" style="width: 100%; height: 110px; object-fit: cover;">
-        <div style="padding: 0.7rem;">
-          <span style="font-size: 0.7rem; color: #e84393; font-weight: bold; text-transform: uppercase;">${a.categoria}</span>
-          <h4 style="font-size: 0.95rem; margin: 0.3rem 0; color: #333;">${a.titulo}</h4>
-          <p id="resumen-${a.id}" style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">${a.resumen}</p>
-          <div id="contenido-completo-${a.id}" style="display: none; font-size: 0.8rem; color: #444; margin-bottom: 0.5rem; line-height: 1.4;">
-            ${a.contenido || a.resumen}
-          </div>
-          <button onclick="toggleLeerMas(${a.id})" id="btn-leer-${a.id}" style="background: none; border: none; color: #e84393; font-weight: bold; font-size: 0.8rem; cursor: pointer; padding: 0;">Leer más &rarr;</button>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
-
-  renderizar(articulosAEmpezar);
-
-  if (articulos.length > limiteInicial && btnVerMas) {
-    btnVerMas.style.display = "inline-block";
-    btnVerMas.onclick = () => {
-      renderizar(articulos);
-      btnVerMas.style.display = "none";
-    };
-  }
+  mostrarDashboardAdmin(data.user.email);
+  alert("¡Inicio de sesión exitoso!");
 }
 
-function toggleLeerMas(id) {
-  const contenidoDiv = document.getElementById(`contenido-completo-${id}`);
-  const resumenP = document.getElementById(`resumen-${id}`);
-  const btn = document.getElementById(`btn-leer-${id}`);
-
-  if (contenidoDiv.style.display === "none") {
-    contenidoDiv.style.display = "block";
-    resumenP.style.display = "none";
-    btn.innerHTML = "&larr; Leer menos";
-  } else {
-    contenidoDiv.style.display = "none";
-    resumenP.style.display = "block";
-    btn.innerHTML = "Leer más &rarr;";
-  }
+async function logoutAdmin() {
+  await supabaseClient.auth.signOut();
+  document.getElementById("admin-auth-view").style.display = "block";
+  document.getElementById("admin-dashboard-view").style.display = "none";
+  document.getElementById("admin-email").value = "";
+  document.getElementById("admin-pass").value = "";
 }
 
+function mostrarDashboardAdmin(email) {
+  document.getElementById("admin-auth-view").style.display = "none";
+  document.getElementById("admin-dashboard-view").style.display = "block";
+  document.getElementById("admin-user-email-display").textContent = `Conectado como: ${email}`;
+}
+
+// ------------------- CHECKOUT Y OTROS -------------------
 function toggleCart() {
   document.getElementById("cart-modal").classList.toggle("hidden");
 }
 
 async function checkout() {
   if (carrito.length === 0) return alert("El carrito está vacío.");
-
   const nombre = document.getElementById("cli-nombre").value.trim();
   const telefono = document.getElementById("cli-telefono").value.trim();
-  const email = document.getElementById("cli-email").value.trim();
 
-  if (!nombre || !telefono) {
-    return alert("Por favor, completa tu Nombre y Teléfono.");
-  }
+  if (!nombre || !telefono) return alert("Por favor, completa tu Nombre y Teléfono de contacto.");
 
-  try {
-    await supabaseClient.from("clientes").insert([{ nombre, telefono, email }]);
-  } catch (err) {
-    console.error("Error al guardar cliente:", err);
-  }
-
-  let mensaje = "¡Hola *Bebé en camino*! 👶🛒\n";
-  mensaje += "Tengo un nuevo pedido:\n\n";
-  mensaje += `👤 *Cliente:* ${nombre}\n`;
-  mensaje += `📞 *Contacto:* ${telefono}\n`;
-  if (email) mensaje += `✉️ *Correo:* ${email}\n`;
-  mensaje += "\n*Detalle del pedido:*\n";
+  let mensaje = "¡Hola *Bebé en camino*! 👶🛒\nTengo un nuevo pedido:\n\n";
+  mensaje += `👤 *Cliente:* ${nombre}\n📞 *Contacto:* ${telefono}\n\n*Detalle del pedido:*\n`;
 
   let total = 0;
   carrito.forEach((item, index) => {
@@ -358,78 +280,55 @@ async function checkout() {
     mensaje += `${index + 1}. *${item.nombre}* (x${item.cantidad}) - $${subtotal.toFixed(2)}\n`;
   });
 
-  mensaje += `\n---------------------------\n`;
-  mensaje += `*Total a pagar: $${total.toFixed(2)}*\n\n`;
-  mensaje += "Quedo a la espera de sus datos de cuenta para el pago. ¡Gracias!";
+  mensaje += `\n---------------------------\n*Total a pagar: $${total.toFixed(2)}*\n\n¡Gracias!`;
 
-  const url = `https://wa.me/${TELEFONO_TIENDA}?text=${encodeURIComponent(mensaje)}`;
-  window.open(url, "_blank");
-
+  window.open(`https://wa.me/${TELEFONO_TIENDA}?text=${encodeURIComponent(mensaje)}`, "_blank");
+  
   carrito = [];
-  document.getElementById("cli-nombre").value = "";
-  document.getElementById("cli-telefono").value = "";
-  document.getElementById("cli-email").value = "";
+  guardarCarritoStorage();
   updateCartUI();
   toggleCart();
 }
 
-// ------------------- SIDEBAR: OFERTAS Y TEMPORADA -------------------
+// Lightbox y Blog (igual que antes)
+function abrirLightbox(url, nombre, id) {
+  const lightbox = document.getElementById("product-lightbox");
+  const img = document.getElementById("lightbox-img");
+  if (lightbox && img) {
+    img.src = url;
+    lightbox.classList.add("active");
+    history.pushState(null, null, `#producto-${id}`);
+  }
+}
+function cerrarLightbox() {
+  document.getElementById("product-lightbox")?.classList.remove("active");
+  history.pushState("", document.title, window.location.pathname);
+}
+
+async function loadFrontendBlog() {
+  const container = document.getElementById("blog-container");
+  if (!container) return;
+  const { data: articulos } = await supabaseClient.from("blog").select("*").order("id", { ascending: false });
+  if (!articulos || articulos.length === 0) { container.innerHTML = "<p style='font-size:0.85rem; color:#666;'>Pronto más tips.</p>"; return; }
+  container.innerHTML = articulos.slice(0, 2).map(a => `
+    <div style="margin-bottom: 0.8rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem;">
+      <h4 style="font-size: 0.9rem; color: #333; margin-bottom: 3px;">${a.titulo}</h4>
+      <p style="font-size: 0.75rem; color: #666;">${a.resumen}</p>
+    </div>
+  `).join('');
+}
+
 async function cargarSeccionesSidebarDirecto() {
-  try {
-    const { data: ofertas, error: errOfertas } = await supabaseClient
-      .from("productos")
-      .select("*")
-      .eq("categoria", "ofertas");
-
-    const ofertasContainer = document.getElementById("ofertas-slider");
-    if (ofertasContainer && !errOfertas) {
-      if (!ofertas || ofertas.length === 0) {
-        ofertasContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay ofertas activas</p>";
-      } else {
-        ofertasContainer.innerHTML = ofertas.map((prod, index) => `
-          <div class="oferta-slide" style="display: ${index === 0 ? 'block' : 'none'}; text-align: center;">
-            <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
-            <h4 style="font-size: 0.95rem; margin: 6px 0 3px; color: #2f2f2f;">${prod.nombre}</h4>
-            <p style="color: #fb5c74; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
-            <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #fb5c74; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">¡Aprovechar Oferta!</button>
-          </div>
-        `).join('');
-
-        if (ofertas.length > 1 && !window.ofertasIntervalo) {
-          window.ofertasIntervalo = setInterval(() => {
-            const slides = document.querySelectorAll('.oferta-slide');
-            if (slides.length === 0) return;
-            
-            slides[indiceSliderOfertas].style.display = 'none';
-            indiceSliderOfertas = (indiceSliderOfertas + 1) % slides.length;
-            slides[indiceSliderOfertas].style.display = 'block';
-          }, 3500);
-        }
-      }
-    }
-
-    const { data: temporada, error: errTemporada } = await supabaseClient
-      .from("productos")
-      .select("*")
-      .eq("categoria", "temporada");
-
-    const temporadaContainer = document.getElementById("temporada-container");
-    if (temporadaContainer && !errTemporada) {
-      if (!temporada || temporada.length === 0) {
-        temporadaContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay productos de temporada</p>";
-      } else {
-        temporadaContainer.innerHTML = temporada.map(prod => `
-          <div style="background: white; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.8rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">
-            <h4 style="font-size: 0.95rem; margin: 6px 0 3px; color: #2f2f2f;">${prod.nombre}</h4>
-            <p style="color: #19efee; filter: brightness(0.6); font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
-            <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #19efee; color: #2f2f2f; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Comprar</button>
-          </div>
-        `).join('');
-      }
-    }
-
-  } catch (err) {
-    console.error("Error cargando secciones laterales:", err);
+  const { data: ofertas } = await supabaseClient.from("productos").select("*").eq("categoria", "ofertas");
+  const ofertasContainer = document.getElementById("ofertas-slider");
+  if (ofertasContainer && ofertas && ofertas.length > 0) {
+    ofertasContainer.innerHTML = `
+      <div style="text-align: center;">
+        <img src="${ofertas[0].imagen_url || ofertas[0].imagen || 'logo.PNG'}" style="width: 100%; height: 130px; object-fit: cover; border-radius: 4px;">
+        <h4 style="font-size: 0.9rem; margin: 5px 0;">${ofertas[0].nombre}</h4>
+        <p style="color: #fb5c74; font-weight: bold; font-size: 0.85rem;">$${parseFloat(ofertas[0].precio).toFixed(2)}</p>
+        <button onclick="addToCart(${ofertas[0].id}, '${ofertas[0].nombre}', ${ofertas[0].precio})" style="background: #fb5c74; color: white; border: none; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Aprovechar</button>
+      </div>
+    `;
   }
 }
