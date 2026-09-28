@@ -233,7 +233,7 @@ function updateCartUI() {
   });
 }
 
-// ------------------- BLOG & TIPS -------------------
+// ------------------- BLOG & TIPS (ADAPTADO AL SIDEBAR) -------------------
 async function loadFrontendBlog() {
   const container = document.getElementById("blog-container");
   const btnVerMas = document.getElementById("ver-mas-blog-btn");
@@ -250,11 +250,11 @@ async function loadFrontendBlog() {
   }
 
   if (!articulos || articulos.length === 0) {
-    container.innerHTML = "<p>Pronto subiremos nuevos tips y consejos para ti.</p>";
+    container.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>Pronto subiremos nuevos tips.</p>";
     return;
   }
 
-  const limiteInicial = 3;
+  const limiteInicial = 2; // Mostramos 2 inicialmente en el sidebar para mantenerlo compacto
   const articulosAEmpezar = articulos.slice(0, limiteInicial);
 
   function renderizar(lista) {
@@ -262,19 +262,19 @@ async function loadFrontendBlog() {
     lista.forEach(a => {
       const img = a.imagen_url || "logo.PNG";
       const card = document.createElement("div");
-      card.className = "blog-card";
-      card.style.cssText = "background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 1rem;";
+      card.className = "blog-card-sidebar";
+      card.style.cssText = "background: #fff; border-radius: 6px; overflow: hidden; border: 1px solid #eee; margin-bottom: 0.8rem;";
       
       card.innerHTML = `
-        <img src="${img}" alt="${a.titulo}" style="width: 100%; height: 160px; object-fit: cover;">
-        <div style="padding: 1rem;">
-          <span style="font-size: 0.8rem; color: #e84393; font-weight: bold; text-transform: uppercase;">${a.categoria}</span>
-          <h3 style="font-size: 1.1rem; margin: 0.5rem 0; color: #333;">${a.titulo}</h3>
-          <p id="resumen-${a.id}" style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">${a.resumen}</p>
-          <div id="contenido-completo-${a.id}" style="display: none; font-size: 0.9rem; color: #444; margin-bottom: 1rem; line-height: 1.5;">
+        <img src="${img}" alt="${a.titulo}" style="width: 100%; height: 110px; object-fit: cover;">
+        <div style="padding: 0.7rem;">
+          <span style="font-size: 0.7rem; color: #e84393; font-weight: bold; text-transform: uppercase;">${a.categoria}</span>
+          <h4 style="font-size: 0.95rem; margin: 0.3rem 0; color: #333;">${a.titulo}</h4>
+          <p id="resumen-${a.id}" style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">${a.resumen}</p>
+          <div id="contenido-completo-${a.id}" style="display: none; font-size: 0.8rem; color: #444; margin-bottom: 0.5rem; line-height: 1.4;">
             ${a.contenido || a.resumen}
           </div>
-          <button onclick="toggleLeerMas(${a.id})" id="btn-leer-${a.id}" style="background: none; border: none; color: #e84393; font-weight: bold; font-size: 0.9rem; cursor: pointer; padding: 0;">Leer más &rarr;</button>
+          <button onclick="toggleLeerMas(${a.id})" id="btn-leer-${a.id}" style="background: none; border: none; color: #e84393; font-weight: bold; font-size: 0.8rem; cursor: pointer; padding: 0;">Leer más &rarr;</button>
         </div>
       `;
       container.appendChild(card);
@@ -292,7 +292,7 @@ async function loadFrontendBlog() {
   }
 }
 
-// Función para expandir el artículo completo al hacer clic
+// Función para expandir el artículo completo en el sidebar
 function toggleLeerMas(id) {
   const contenidoDiv = document.getElementById(`contenido-completo-${id}`);
   const resumenP = document.getElementById(`resumen-${id}`);
