@@ -3,67 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Admin | Bebé en Camino</title>
+  <title>Panel de Administración | Bebé en Camino</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    .admin-container { max-width: 900px; margin: 2rem auto; padding: 1.5rem; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .tabs { display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid #eee; }
-    .tab-btn { padding: 0.8rem 1.5rem; border: none; background: none; font-weight: bold; cursor: pointer; color: #666; border-bottom: 3px solid transparent; }
-    .tab-btn.active { color: #e84393; border-color: #e84393; }
-    .item-list-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    .item-list-table th, .item-list-table td { border: 1px solid #ddd; padding: 0.8rem; text-align: left; }
-    .item-list-table th { background-color: #f8f9fa; }
-    
-    .edit-btn { background-color: #f39c12; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; margin-right: 5px; }
-    .edit-btn:hover { background-color: #d68910; }
-    .delete-btn { background-color: #e74c3c; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; }
-    .delete-btn:hover { background-color: #c0392b; }
-
-    /* Modal de Edición */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 2000; }
-    .modal-box { background: white; padding: 2rem; border-radius: 8px; width: 100%; max-width: 500px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-  </style>
 </head>
-<body>
+<body style="background: #f0f2f5;">
 
-  <!-- Formulario de Login -->
-  <div id="login-section" style="max-width: 400px; margin: 4rem auto; text-align: center;">
-    <h2>🔑 Iniciar Sesión (Admin)</h2>
-    <form id="login-form" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
-      <input type="email" id="email" placeholder="Correo electrónico" required style="padding: 0.8rem;">
-      <input type="password" id="password" placeholder="Contraseña" required style="padding: 0.8rem;">
-      <button type="submit" class="add-btn">Ingresar</button>
-    </form>
-    <p id="login-error" style="color: red; margin-top: 1rem;"></p>
+  <!-- Vista de Login si no hay sesión -->
+  <div id="auth-section" style="max-width: 400px; margin: 80px auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    <h2 style="margin-bottom: 1rem; color: #2f2f2f; text-align: center;">🔐 Admin Bebé en Camino</h2>
+    <p style="font-size: 0.85rem; color: #666; margin-bottom: 1.5rem; text-align: center;">Ingresa tus credenciales seguras para acceder al panel.</p>
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+      <input type="email" id="admin-email" placeholder="Correo electrónico" style="padding: 0.8rem; border: 1px solid #ddd; border-radius: 4px;">
+      <input type="password" id="admin-pass" placeholder="Contraseña" style="padding: 0.8rem; border: 1px solid #ddd; border-radius: 4px;">
+      <button onclick="loginAdmin()" style="background: #19efee; color: #2f2f2f; border: none; padding: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer;">Iniciar Sesión</button>
+    </div>
   </div>
-  
-  <!-- Panel Principal -->
-  <div id="admin-panel" class="admin-container hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-      <h2>⚙️ Panel de Administración</h2>
-      <button onclick="logout()" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer;">Cerrar Sesión</button>
+
+  <!-- Vista Principal del Administrador (Oculta por defecto) -->
+  <div id="dashboard-section" style="display: none; max-width: 1000px; margin: 30px auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #fb5c74; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+      <div>
+        <h2 style="color: #fb5c74; margin: 0;">Panel de Control ⚙️</h2>
+        <span id="admin-user-info" style="font-size: 0.8rem; color: #666;"></span>
+      </div>
+      <button onclick="logoutAdmin()" style="background: #2f2f2f; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Cerrar Sesión</button>
     </div>
 
-    <!-- Navegación por pestañas -->
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('productos-tab')">📦 Productos</button>
-      <button class="tab-btn" onclick="switchTab('blog-tab')">💡 Artículos del Blog</button>
+    <!-- Pestañas de Navegación del Admin -->
+    <div style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+      <button onclick="cambiarTabAdmin('productos')" id="tab-btn-productos" style="background: #fb5c74; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Gestión de Productos</button>
+      <button onclick="cambiarTabAdmin('colores')" id="tab-btn-colores" style="background: #f2f2f2; color: #333; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">🎨 Gestionar Colores de Productos</button>
     </div>
 
-    <!-- Pestaña de Productos -->
-    <div id="productos-tab" class="tab-content">
-      <h3>Agregar Nuevo Producto</h3>
-      <form id="product-form" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-        <input type="text" id="p-nombre" placeholder="Nombre del producto" required style="padding: 0.8rem;">
-        <textarea id="p-descripcion" placeholder="Descripción breve" required style="padding: 0.8rem;"></textarea>
-        <input type="number" step="0.01" id="p-precio" placeholder="Precio ($)" required style="padding: 0.8rem;">
-        
-        <label style="font-weight: bold; margin-top: 0.2rem;">Categoría del Producto:</label>
-        <select id="p-categoria" required style="padding: 0.8rem; border-radius: 4px; border: 1px solid #ccc;">
-          <option value="">Selecciona una categoría</option>
+    <!-- Sección 1: Productos -->
+    <div id="admin-tab-productos">
+      <h3 style="margin-bottom: 1rem;">Agregar Nuevo Producto</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; background: #f9f9f9; padding: 1rem; border-radius: 6px;">
+        <input type="text" id="prod-nombre" placeholder="Nombre del producto" style="padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="number" step="0.01" id="prod-precio" placeholder="Precio ($)" style="padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="text" id="prod-imagen" placeholder="URL de la Imagen" style="padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;">
+        <select id="prod-categoria" style="padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;">
           <option value="ofertas">Ofertas Especiales</option>
-          <option value="temporada">Por Temporada</option>
           <option value="paseo y transporte">Paseo y transporte</option>
           <option value="dormitorio y descanso">Dormitorio y descanso</option>
           <option value="alimentacion y lactancia">Alimentación y lactancia</option>
@@ -71,132 +52,184 @@
           <option value="higiene y cuidado del bebe">Higiene y cuidado del bebé</option>
           <option value="ropa y moda">Ropa y moda</option>
           <option value="seguridad para el hogar">Seguridad para el hogar</option>
+          <option value="temporada">Temporada</option>
         </select>
-        
-        <label style="display: flex; align-items: center; gap: 8px; margin-top: 0.5rem; cursor: pointer; font-weight: bold;">
-          <input type="checkbox" id="p-en-oferta" style="width: 18px; height: 18px;">
-          ¿Marcar con etiqueta de Oferta flotante en la foto?
-        </label>
+        <textarea id="prod-desc" placeholder="Descripción y características..." style="grid-column: span 2; padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px; height: 60px;"></textarea>
+        <button onclick="agregarProducto()" style="grid-column: span 2; background: #25d366; color: white; border: none; padding: 0.7rem; font-weight: bold; border-radius: 4px; cursor: pointer;">Guardar Producto en Supabase</button>
+      </div>
 
-        <label style="font-weight: bold; margin-top: 0.3rem;">Imagen del Producto (JPG / PNG):</label>
-        <input type="file" id="p-imagen-file" accept="image/*" required style="padding: 0.5rem; border: 1px dashed #ccc; border-radius: 4px;">
-
-        <button type="submit" id="btn-save-prod" class="add-btn" style="background: #27ae60;">Guardar Producto</button>
-      </form>
-      <p id="product-msg" style="margin-top: 0.5rem; font-weight: bold;"></p>
-
-      <h3 style="margin-top: 2rem;">Inventario de Productos</h3>
-      <table class="item-list-table">
-        <thead>
-          <tr>
-            <th>Imagen</th>
-            <th>Nombre</th>
-            <th>Precio</th>
-            <th>Categoría</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="product-list">
-          <!-- Se cargan dinámicamente -->
-        </tbody>
-      </table>
+      <h3 style="margin-bottom: 0.8rem;">Inventario Actual</h3>
+      <div id="lista-productos-admin" style="max-height: 300px; overflow-y: auto;"></div>
     </div>
 
-    <!-- Pestaña del Blog -->
-    <div id="blog-tab" class="tab-content hidden">
-      <h3 id="blog-form-title">Escribir Nuevo Artículo / Tip</h3>
-      <form id="blog-form" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-        
-        <input type="hidden" id="b-id">
-        <input type="hidden" id="b-imagen-actual">
-        
-        <input type="text" id="b-titulo" placeholder="Título del artículo" required style="padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px;">
-        
-        <input type="text" id="b-categoria" placeholder="Categoría (Ej: Cuidado, Alimentación, Sueño)" required style="padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px;">
-        
-        <!-- SECCIÓN DE CARGA DE IMAGEN (JPG / PNG) -->
-        <div style="background: #f9f9f9; padding: 0.8rem; border: 2px dashed #e84393; border-radius: 6px; display: flex; flex-direction: column; gap: 0.4rem;">
-          <label for="b-imagen-file" style="font-size: 0.9rem; font-weight: bold; color: #333;">📸 Selecciona la imagen del artículo (PNG o JPG):</label>
-          <input type="file" id="b-imagen-file" accept=".png, .jpg, .jpeg" style="padding: 0.4rem; background: #fff; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
-        </div>
-        
-        <textarea id="b-resumen" placeholder="Resumen corto (aparecerá en la vista previa lateral)" required style="padding: 0.8rem; height: 70px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
-        
-        <textarea id="b-contenido" placeholder="Contenido completo del artículo. Puedes escribir varios párrafos (cada salto de línea se guardará como párrafo independiente)" required style="padding: 0.8rem; height: 120px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
-        
-        <div style="display: flex; gap: 0.5rem;">
-          <button type="submit" id="b-submit-btn" class="add-btn" style="background: #e84393; color: white; border: none; padding: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer; flex: 1;">Publicar Artículo</button>
-          <button type="button" id="b-cancel-btn" onclick="cancelarEdicionBlog()" style="background: #95a5a6; color: white; border: none; padding: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer; display: none;">Cancelar</button>
-        </div>
-      
-      </form>
-      
-      <p id="blog-msg" style="margin-top: 0.5rem; font-weight: bold;"></p>
+    <!-- Sección 2: Gestión de Colores por Producto -->
+    <div id="admin-tab-colores" style="display: none;">
+      <h3 style="margin-bottom: 1rem;">Agregar Color / Variante a un Producto</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; background: #f9f9f9; padding: 1rem; border-radius: 6px;">
+        <select id="color-select-producto" style="padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px; grid-column: span 2;"></select>
+        <input type="text" id="color-nombre" placeholder="Nombre del color (Ej. Celeste, Rosado, Beige)" style="padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="text" id="color-imagen" placeholder="URL de la imagen para este color" style="padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;">
+        <button onclick="agregarColorProducto()" style="grid-column: span 2; background: #19efee; color: #2f2f2f; border: none; padding: 0.7rem; font-weight: bold; border-radius: 4px; cursor: pointer;">Agregar Variante de Color</button>
+      </div>
 
-      <h3 style="margin-top: 2rem;">Artículos Publicados</h3>
-      <table class="item-list-table">
-        <thead>
-          <tr>
-            <th>Imagen</th>
-            <th>Título</th>
-            <th>Categoría</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="blog-list">
-          <!-- Se cargan dinámicamente -->
-        </tbody>
-      </table>
+      <h3 style="margin-bottom: 0.8rem;">Colores Registrados por Producto</h3>
+      <div id="lista-colores-admin" style="max-height: 300px; overflow-y: auto;"></div>
     </div>
 
   </div>
 
-  <!-- Modal para Editar Producto -->
-  <div id="edit-modal" class="modal-overlay hidden">
-    <div class="modal-box">
-      <h3>✏️ Editar Producto</h3>
-      <form id="edit-product-form" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-        <input type="hidden" id="edit-p-id">
-        <input type="hidden" id="edit-p-imagen-actual">
-        
-        <label>Nombre:</label>
-        <input type="text" id="edit-p-nombre" required style="padding: 0.6rem;">
-        
-        <label>Descripción:</label>
-        <textarea id="edit-p-descripcion" required style="padding: 0.6rem;"></textarea>
-        
-        <label>Precio ($):</label>
-        <input type="number" step="0.01" id="edit-p-precio" required style="padding: 0.6rem;">
-        
-        <label for="edit-p-categoria">Categoría del Producto:</label>
-        <select id="edit-p-categoria" required style="padding: 0.6rem; border-radius: 4px; border: 1px solid #ccc;">
-          <option value="ofertas">Ofertas Especiales</option>
-          <option value="temporada">Por Temporada</option>
-          <option value="paseo y transporte">Paseo y transporte</option>
-          <option value="dormitorio y descanso">Dormitorio y descanso</option>
-          <option value="alimentacion y lactancia">Alimentación y lactancia</option>
-          <option value="juguetes y estimulacion">Juguetes y estimulación</option>
-          <option value="higiene y cuidado del bebe">Higiene y cuidado del bebé</option>
-          <option value="ropa y moda">Ropa y moda</option>
-          <option value="seguridad para el hogar">Seguridad para el hogar</option>
-        </select>
-        
-        <label style="display: flex; align-items: center; gap: 8px; margin-top: 0.3rem; cursor: pointer; font-weight: bold;">
-          <input type="checkbox" id="edit-p-en-oferta" style="width: 18px; height: 18px;">
-          ¿Marcar con etiqueta de Oferta flotante en la foto?
-        </label>
-        
-        <label style="font-weight: bold; margin-top: 0.3rem;">Cambiar Imagen (opcional):</label>
-        <input type="file" id="edit-p-imagen-file" accept="image/*" style="padding: 0.5rem; border: 1px dashed #ccc; border-radius: 4px;">
+  <script>
+    const SUPABASE_URL = "https://bwkohmeobwplthvjihtd.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_MfylsjMrOCQIK2fGwmPEdg_gXB-zhRo";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-          <button type="submit" id="btn-update-prod" class="add-btn" style="background: #27ae60; flex: 1;">Actualizar</button>
-          <button type="button" onclick="closeEditModal()" style="background: #7f8c8d; color: white; border: none; padding: 0.6rem; border-radius: 4px; cursor: pointer; flex: 1;">Cancelar</button>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) activarDashboard(session.user.email);
+    });
+
+    async function loginAdmin() {
+      const email = document.getElementById("admin-email").value.trim();
+      const password = document.getElementById("admin-pass").value.trim();
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) { alert("Error: " + error.message); return; }
+      activarDashboard(data.user.email);
+    }
+
+    async function logoutAdmin() {
+      await supabaseClient.auth.signOut();
+      document.getElementById("auth-section").style.display = "block";
+      document.getElementById("dashboard-section").style.display = "none";
+    }
+
+    function activarDashboard(email) {
+      document.getElementById("auth-section").style.display = "none";
+      document.getElementById("dashboard-section").style.display = "block";
+      document.getElementById("admin-user-info").textContent = `Conectado como: ${email}`;
+      cargarProductosAdmin();
+      cargarColoresAdmin();
+    }
+
+    function cambiarTabAdmin(tab) {
+      if (tab === 'productos') {
+        document.getElementById("admin-tab-productos").style.display = "block";
+        document.getElementById("admin-tab-colores").style.display = "none";
+        document.getElementById("tab-btn-productos").style.background = "#fb5c74";
+        document.getElementById("tab-btn-productos").style.color = "white";
+        document.getElementById("tab-btn-colores").style.background = "#f2f2f2";
+        document.getElementById("tab-btn-colores").style.color = "#333";
+      } else {
+        document.getElementById("admin-tab-productos").style.display = "none";
+        document.getElementById("admin-tab-colores").style.display = "block";
+        document.getElementById("tab-btn-colores").style.background = "#fb5c74";
+        document.getElementById("tab-btn-colores").style.color = "white";
+        document.getElementById("tab-btn-productos").style.background = "#f2f2f2";
+        document.getElementById("tab-btn-productos").style.color = "#333";
+      }
+    }
+
+    async function agregarProducto() {
+      const nombre = document.getElementById("prod-nombre").value.trim();
+      const precio = parseFloat(document.getElementById("prod-precio").value);
+      const imagen_url = document.getElementById("prod-imagen").value.trim();
+      const categoria = document.getElementById("prod-categoria").value;
+      const descripcion = document.getElementById("prod-desc").value.trim();
+
+      if (!nombre || isNaN(precio) || !imagen_url) {
+        alert("Por favor completa Nombre, Precio y URL de Imagen.");
+        return;
+      }
+
+      const { error } = await supabaseClient.from("productos").insert([{ nombre, precio, imagen_url, categoria, descripcion }]);
+      if (error) { alert("Error al guardar: " + error.message); return; }
+
+      alert("¡Producto agregado con éxito!");
+      document.getElementById("prod-nombre").value = "";
+      document.getElementById("prod-precio").value = "";
+      document.getElementById("prod-imagen").value = "";
+      document.getElementById("prod-desc").value = "";
+      cargarProductosAdmin();
+    }
+
+    async function cargarProductosAdmin() {
+      const { data: productos } = await supabaseClient.from("productos").select("*").order("id", { ascending: false });
+      const container = document.getElementById("lista-productos-admin");
+      const selectProd = document.getElementById("color-select-producto");
+
+      if (!productos) return;
+
+      selectProd.innerHTML = productos.map(p => `<option value="${p.id}">${p.nombre} ($${p.precio})</option>`).join('');
+
+      container.innerHTML = productos.map(p => `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #eee; padding: 8px; border-radius: 6px; margin-bottom: 6px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="${p.imagen_url || 'logo.PNG'}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+            <div>
+              <strong style="font-size: 0.9rem;">${p.nombre}</strong>
+              <span style="font-size: 0.8rem; color: #fb5c74; display: block;">$${parseFloat(p.precio).toFixed(2)} (${p.categoria})</span>
+            </div>
+          </div>
+          <button onclick="eliminarProducto(${p.id})" style="background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Eliminar</button>
         </div>
-      </form>
-    </div>
-  </div>
+      `).join('');
+    }
 
-  <script src="admin.js"></script>
+    async function eliminarProducto(id) {
+      if (confirm("¿Seguro que deseas eliminar este producto?")) {
+        await supabaseClient.from("productos").delete().eq("id", id);
+        cargarProductosAdmin();
+        cargarColoresAdmin();
+      }
+    }
+
+    async function agregarColorProducto() {
+      const producto_id = document.getElementById("color-select-producto").value;
+      const nombre_color = document.getElementById("color-nombre").value.trim();
+      const imagen_color = document.getElementById("color-imagen").value.trim();
+
+      if (!nombre_color || !imagen_color) {
+        alert("Ingresa el nombre del color y la URL de su imagen.");
+        return;
+      }
+
+      const { error } = await supabaseClient.from("colores_producto").insert([{ producto_id, nombre_color, imagen_color }]);
+      if (error) { alert("Error: " + error.message); return; }
+
+      alert("¡Variante de color agregada con éxito!");
+      document.getElementById("color-nombre").value = "";
+      document.getElementById("color-imagen").value = "";
+      cargarColoresAdmin();
+    }
+
+    async function cargarColoresAdmin() {
+      const { data: colores } = await supabaseClient.from("colores_producto").select("*, productos(nombre)").order("id", { ascending: false });
+      const container = document.getElementById("lista-colores-admin");
+
+      if (!colores || colores.length === 0) {
+        container.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay colores adicionales registrados.</p>";
+        return;
+      }
+
+      container.innerHTML = colores.map(c => `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #eee; padding: 8px; border-radius: 6px; margin-bottom: 6px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="${c.imagen_color}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+            <div>
+              <strong style="font-size: 0.9rem;">${c.productos ? c.productos.nombre : 'Producto'}</strong>
+              <span style="font-size: 0.8rem; color: #333; display: block;">Color: <strong>${c.nombre_color}</strong></span>
+            </div>
+          </div>
+          <button onclick="eliminarColor(${c.id})" style="background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Eliminar Color</button>
+        </div>
+      `).join('');
+    }
+
+    async function eliminarColor(id) {
+      if (confirm("¿Deseas eliminar este color?")) {
+        await supabaseClient.from("colores_producto").delete().eq("id", id);
+        cargarColoresAdmin();
+      }
+    }
+  </script>
 </body>
 </html>
