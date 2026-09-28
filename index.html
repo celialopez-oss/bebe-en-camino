@@ -12,21 +12,21 @@
 <body>
 
   <!-- Encabezado / Navbar Limpio (Solo Logo, Nombre y Carrito) -->
-  <header class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-    <div class="logo" style="display: flex; align-items: center; gap: 10px;">
-      <img src="logo.PNG" alt="Bebé en Camino" class="logo-img" style="height: 45px; width: 45px; object-fit: cover; border-radius: 50%;">
-      <span class="logo-text" style="font-size: 1.25rem; font-weight: bold; color: #2f2f2f;">Bebé en Camino</span>
+  <header class="navbar">
+    <div class="logo">
+      <img src="logo.PNG" alt="Bebé en Camino" class="logo-img">
+      <span class="logo-text">Bebé en Camino</span>
     </div>
     
     <div class="cart-btn-container">
-      <button onclick="toggleCart()" style="background: #fb5c74; color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 0.95rem;">
+      <button class="cart-btn-main" onclick="toggleCart()">
         🛒 Carrito (<span id="cart-count">0</span>)
       </button>
     </div>
   </header>
 
   <!-- Botón Flotante de WhatsApp -->
-  <a href="https://wa.me/593996219444?text=¡Hola!%20Tengo%20una%20consulta%20sobre%20la%20tienda%20Bebé%20en%20camino." target="_blank" class="whatsapp-float" style="position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; border-radius: 50px; width: 60px; height: 60px; text-align: center; font-size: 30px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+  <a href="https://wa.me/593996219444?text=¡Hola!%20Tengo%20una%20consulta%20sobre%20la%20tienda%20Bebé%20en%20camino." target="_blank" class="whatsapp-float">
     <i class="fab fa-whatsapp"></i>
   </a>
 
@@ -84,7 +84,7 @@
       <section style="margin-bottom: 2rem;">
         <h2 class="section-title">Lo Nuevo</h2>
         <div id="lo-nuevo-grid" class="products-grid">
-          <!-- Se carga dinámicamente (máx 4) -->
+          <!-- Se carga dinámicamente -->
         </div>
       </section>
 
@@ -92,7 +92,7 @@
       <section style="margin-bottom: 2rem;">
         <h2 class="section-title">Nuestros Productos</h2>
         <div id="nuestros-productos-grid" class="products-grid">
-          <!-- Se carga dinámicamente de 8 en 8 -->
+          <!-- Se carga dinámicamente -->
         </div>
         
         <!-- Botón Ver Más -->
@@ -106,30 +106,24 @@
     </main>
 
     <!-- Sidebar (Derecha) -->
-    <aside class="sidebar-area" style="display: flex; flex-direction: column; gap: 1.5rem;" id="blog">
+    <aside class="sidebar-area" id="blog">
       
       <!-- Sección de Ofertas en Slider -->
-      <div class="blog-widget" id="ofertas-container" style="border-top: 4px solid #fb5c74;">
+      <div class="blog-widget" style="border-top: 4px solid #fb5c74;">
         <h3 style="color: #fb5c74; margin-bottom: 1rem; font-size: 1.1rem;">Ofertas Especiales</h3>
-        <div id="ofertas-slider">
-          <!-- Las imágenes/productos en oferta rotarán aquí automáticamente -->
-        </div>
+        <div id="ofertas-slider"></div>
       </div>
 
       <!-- Sección Por Temporada -->
       <div class="blog-widget" style="border-top: 4px solid #19efee;">
         <h3 style="color: #2f2f2f; margin-bottom: 1rem; font-size: 1.1rem;">Por Temporada</h3>
-        <div id="temporada-container">
-          <!-- Los productos de temporada se cargarán aquí -->
-        </div>
+        <div id="temporada-container"></div>
       </div>
 
-      <!-- Sección del Blog (Tips y Consejos para Mamás) ahora en el Sidebar debajo de Por Temporada -->
+      <!-- Sección del Blog -->
       <div class="blog-widget" style="border-top: 4px solid #e84393; background: #fff; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
         <h3 style="color: #e84393; margin-bottom: 1rem; font-size: 1.1rem;">Tips y Consejos para Mamás</h3>
-        <div id="blog-container">
-          <!-- Aquí se cargarán automáticamente los artículos -->
-        </div>
+        <div id="blog-container"></div>
         <div style="text-align: center; margin-top: 1rem;">
           <button id="ver-mas-blog-btn" class="add-btn" style="background: #e84393; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; cursor: pointer; display: none; font-size: 0.85rem;">Ver más artículos</button>
         </div>
@@ -148,7 +142,7 @@
       </div>
 
       <!-- Tarjeta de Tienda Física -->
-      <div style="background: rgba(255,255,255,0.07); padding: 1.2rem; border-radius: 8px; width: 100%; max-width: 450px; box-sizing: border-box;">
+      <div class="footer-card">
         <h4 style="margin-top: 0; margin-bottom: 0.8rem; color: #19efee; font-size: 1.1rem; text-align: center;">📍 Visítanos o Contáctanos</h4>
         <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-location-dot" style="color: #fb5c74; width: 20px;"></i> <strong>Dirección:</strong> Argentina #4312 y calle 20ava, Guayaquil</p>
         <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-clock" style="color: #fb5c74; width: 20px;"></i> <strong>Horario:</strong> Lunes a Sábado 09:00 AM - 07:00 PM</p>
@@ -156,17 +150,13 @@
         <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-envelope" style="color: #fb5c74; width: 20px;"></i> <strong>Correo:</strong> contacto@bebeencamino.com</p>
       </div>
 
-      <!-- Redes Sociales con Iconos Profesionales y Colores Oficiales -->
+      <!-- Redes Sociales -->
       <div class="footer-socials" style="text-align: center;">
         <h4 style="margin-bottom: 0.8rem; font-size: 1rem; color: #fff;">Síguenos en Redes Sociales</h4>
         <div class="social-icons" style="justify-content: center;">
-          <!-- Instagram -->
           <a href="https://instagram.com/tu_usuario" target="_blank" title="Instagram" class="social-btn instagram"><i class="fa-brands fa-instagram"></i></a>
-          <!-- TikTok -->
           <a href="https://tiktok.com/@tu_usuario" target="_blank" title="TikTok" class="social-btn tiktok"><i class="fa-brands fa-tiktok"></i></a>
-          <!-- WhatsApp -->
           <a href="https://wa.me/593939669413" target="_blank" title="WhatsApp" class="social-btn whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
-          <!-- Facebook -->
           <a href="https://facebook.com/tu_pagina" target="_blank" title="Facebook" class="social-btn facebook"><i class="fa-brands fa-facebook-f"></i></a>
         </div>
       </div>
@@ -196,11 +186,11 @@
     </div>
   </div>
 
-<!-- Visor de Imagen Lightbox -->
-<div id="product-lightbox" onclick="cerrarLightbox()">
-  <button class="close-lightbox">&times;</button>
-  <img id="lightbox-img" src="" alt="Vista ampliada">
-</div>
+  <!-- Visor de Imagen Lightbox -->
+  <div id="product-lightbox" onclick="cerrarLightbox()">
+    <button class="close-lightbox" onclick="cerrarLightbox()">&times;</button>
+    <img id="lightbox-img" src="" alt="Vista ampliada">
+  </div>
   
   <script src="app.js"></script>
 </body>
