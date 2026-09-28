@@ -5,22 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bebé en Camino | Tienda Online</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Íconos de FontAwesome para Redes Sociales -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-  <!-- Encabezado / Navbar Limpio (Solo Logo, Nombre y Carrito) -->
+  <!-- Navbar -->
   <header class="navbar">
     <div class="logo">
       <img src="logo.PNG" alt="Bebé en Camino" class="logo-img">
       <span class="logo-text">Bebé en Camino</span>
     </div>
     
-    <div class="cart-btn-container">
+    <div class="cart-btn-container" style="display: flex; gap: 10px; align-items: center;">
       <button class="cart-btn-main" onclick="toggleCart()">
         🛒 Carrito (<span id="cart-count">0</span>)
+      </button>
+      <button onclick="toggleAdminModal()" style="background: #2f2f2f; color: white; border: none; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; font-weight: bold;">
+        🔐 Admin
       </button>
     </div>
   </header>
@@ -52,7 +54,6 @@
         </div>
       </div>
     </div>
-    <!-- Indicadores -->
     <div class="slider-dots">
       <span class="dot active" onclick="setSlide(0)"></span>
       <span class="dot" onclick="setSlide(1)"></span>
@@ -60,11 +61,10 @@
     </div>
   </section>
 
-  <!-- Contenido Principal (Layout de 2 Columnas) -->
+  <!-- Contenido Principal -->
   <div class="main-layout" id="productos">
     <main class="content-area">
       
-      <!-- Barra de Búsqueda y Filtros por Categoría -->
       <div class="toolbar">
         <input type="text" id="search-bar" placeholder="🔍 Buscar productos..." oninput="filterProducts()">
         <div class="category-filters">
@@ -80,22 +80,15 @@
         </div>
       </div>
 
-      <!-- Sección: Lo Nuevo -->
       <section style="margin-bottom: 2rem;">
         <h2 class="section-title">Lo Nuevo</h2>
-        <div id="lo-nuevo-grid" class="products-grid">
-          <!-- Se carga dinámicamente -->
-        </div>
+        <div id="lo-nuevo-grid" class="products-grid"></div>
       </section>
 
-      <!-- Sección: Nuestros Productos -->
       <section style="margin-bottom: 2rem;">
         <h2 class="section-title">Nuestros Productos</h2>
-        <div id="nuestros-productos-grid" class="products-grid">
-          <!-- Se carga dinámicamente -->
-        </div>
+        <div id="nuestros-productos-grid" class="products-grid"></div>
         
-        <!-- Botón Ver Más -->
         <div style="text-align: center; margin-top: 1.5rem;">
           <button id="btn-ver-mas" onclick="cargarMasProductos()" style="background: #fb5c74; color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.95rem;">
             Ver más productos
@@ -105,88 +98,95 @@
 
     </main>
 
-    <!-- Sidebar (Derecha) -->
+    <!-- Sidebar -->
     <aside class="sidebar-area" id="blog">
-      
-      <!-- Sección de Ofertas en Slider -->
       <div class="blog-widget" style="border-top: 4px solid #fb5c74;">
         <h3 style="color: #fb5c74; margin-bottom: 1rem; font-size: 1.1rem;">Ofertas Especiales</h3>
         <div id="ofertas-slider"></div>
       </div>
 
-      <!-- Sección Por Temporada -->
       <div class="blog-widget" style="border-top: 4px solid #19efee;">
         <h3 style="color: #2f2f2f; margin-bottom: 1rem; font-size: 1.1rem;">Por Temporada</h3>
         <div id="temporada-container"></div>
       </div>
 
-      <!-- Sección del Blog -->
-      <div class="blog-widget" style="border-top: 4px solid #e84393; background: #fff; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+      <div class="blog-widget" style="border-top: 4px solid #e84393; background: #fff; padding: 1rem; border-radius: 8px;">
         <h3 style="color: #e84393; margin-bottom: 1rem; font-size: 1.1rem;">Tips y Consejos para Mamás</h3>
         <div id="blog-container"></div>
         <div style="text-align: center; margin-top: 1rem;">
           <button id="ver-mas-blog-btn" class="add-btn" style="background: #e84393; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; cursor: pointer; display: none; font-size: 0.85rem;">Ver más artículos</button>
         </div>
       </div>
-
     </aside>
   </div>
 
-  <!-- Pie de Página y Contacto Oficial -->
+  <!-- Footer -->
   <footer id="contacto" class="footer">
     <div class="footer-container">
-      
       <div class="footer-brand">
         <h3>Bebé en Camino</h3>
         <p>Acompañándote en la etapa más hermosa de la vida.</p>
       </div>
-
-      <!-- Tarjeta de Tienda Física -->
       <div class="footer-card">
         <h4 style="margin-top: 0; margin-bottom: 0.8rem; color: #19efee; font-size: 1.1rem; text-align: center;">📍 Visítanos o Contáctanos</h4>
         <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-location-dot" style="color: #fb5c74; width: 20px;"></i> <strong>Dirección:</strong> Argentina #4312 y calle 20ava, Guayaquil</p>
         <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-clock" style="color: #fb5c74; width: 20px;"></i> <strong>Horario:</strong> Lunes a Sábado 09:00 AM - 07:00 PM</p>
         <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-phone" style="color: #fb5c74; width: 20px;"></i> <strong>Teléfono / WhatsApp:</strong> +593 939669413</p>
-        <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-envelope" style="color: #fb5c74; width: 20px;"></i> <strong>Correo:</strong> contacto@bebeencamino.com</p>
       </div>
-
-      <!-- Redes Sociales -->
-      <div class="footer-socials" style="text-align: center;">
-        <h4 style="margin-bottom: 0.8rem; font-size: 1rem; color: #fff;">Síguenos en Redes Sociales</h4>
-        <div class="social-icons" style="justify-content: center;">
-          <a href="https://instagram.com/tu_usuario" target="_blank" title="Instagram" class="social-btn instagram"><i class="fa-brands fa-instagram"></i></a>
-          <a href="https://tiktok.com/@tu_usuario" target="_blank" title="TikTok" class="social-btn tiktok"><i class="fa-brands fa-tiktok"></i></a>
-          <a href="https://wa.me/593939669413" target="_blank" title="WhatsApp" class="social-btn whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
-          <a href="https://facebook.com/tu_pagina" target="_blank" title="Facebook" class="social-btn facebook"><i class="fa-brands fa-facebook-f"></i></a>
-        </div>
-      </div>
-
     </div>
-
-    <div class="footer-bottom">
-      © 2026 Bebé en Camino. Todos los derechos reservados.
-    </div>
+    <div class="footer-bottom">© 2026 Bebé en Camino. Todos los derechos reservados.</div>
   </footer>
 
-  <!-- Modal del Carrito -->
+  <!-- Modal del Carrito con Opciones de Cantidad y Vaciar -->
   <div id="cart-modal" class="modal hidden">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 450px;">
       <span class="close-btn" onclick="toggleCart()">&times;</span>
       <h2>Tu Carrito de Compras 🛒</h2>
-      <div id="cart-items" style="margin-top: 1rem;"></div>
-      <h3 style="margin-top: 1rem;">Total: $<span id="cart-total">0.00</span></h3>
+      
+      <div id="cart-items" style="margin-top: 1rem; max-height: 220px; overflow-y: auto; padding-right: 5px;"></div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; border-top: 1px solid #eee; padding-top: 0.8rem;">
+        <h3 style="margin: 0;">Total: $<span id="cart-total">0.00</span></h3>
+        <button onclick="vaciarCarrito()" style="background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: bold;">🗑️ Vaciar Carrito</button>
+      </div>
 
       <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-        <input type="text" id="cli-nombre" placeholder="Tu Nombre" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-        <input type="tel" id="cli-telefono" placeholder="WhatsApp / Teléfono" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-        <input type="text" id="cli-ciudad" placeholder="Ciudad (Ej. Guayaquil)" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-        <input type="email" id="cli-email" placeholder="Correo (Opcional)" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="text" id="cli-nombre" placeholder="Tu Nombre" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="tel" id="cli-telefono" placeholder="WhatsApp / Teléfono" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="text" id="cli-ciudad" placeholder="Ciudad (Ej. Guayaquil)" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
         <button class="checkout-btn" onclick="checkout()">Realizar Pedido por WhatsApp</button>
       </div>
     </div>
   </div>
 
-  <!-- Visor de Imagen Lightbox -->
+  <!-- Modal de Autenticación / Panel Admin Seguro -->
+  <div id="admin-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 400px;">
+      <span class="close-btn" onclick="toggleAdminModal()">&times;</span>
+      <div id="admin-auth-view">
+        <h2 style="margin-bottom: 1rem; color: #2f2f2f;">🔐 Acceso Administrador</h2>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">Debes iniciar sesión para administrar la tienda.</p>
+        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+          <input type="email" id="admin-email" placeholder="Correo electrónico" style="padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;">
+          <input type="password" id="admin-pass" placeholder="Contraseña" style="padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;">
+          <button onclick="loginAdmin()" style="background: #19efee; color: #2f2f2f; border: none; padding: 0.7rem; font-weight: bold; border-radius: 4px; cursor: pointer;">Iniciar Sesión</button>
+        </div>
+      </div>
+      
+      <div id="admin-dashboard-view" style="display: none;">
+        <h2 style="margin-bottom: 0.5rem; color: #fb5c74;">Panel de Control ⚙️</h2>
+        <p id="admin-user-email-display" style="font-size: 0.8rem; color: #666; margin-bottom: 1rem;"></p>
+        <div style="background: #f1f2f6; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+          <h4 style="margin-bottom: 0.5rem;">Gestión de Productos</h4>
+          <p style="font-size: 0.8rem; color: #555; margin-bottom: 0.8rem;">Aquí puedes agregar o revisar los productos conectados en Supabase.</p>
+          <button onclick="alert('Funcionalidad de gestión activa con sesión validada.')" style="background: #fb5c74; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">Ir a Gestión de Inventario</button>
+        </div>
+        <button onclick="logoutAdmin()" style="background: #2f2f2f; color: white; border: none; padding: 0.5rem; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold;">Cerrar Sesión</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visor Lightbox -->
   <div id="product-lightbox" onclick="cerrarLightbox()">
     <button class="close-lightbox" onclick="cerrarLightbox()">&times;</button>
     <img id="lightbox-img" src="" alt="Vista ampliada">
