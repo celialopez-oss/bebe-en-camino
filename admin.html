@@ -3,110 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control - Administración</title>
+    <title>Panel de Administración</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen">
-
-    <!-- Header -->
-    <header class="bg-white shadow-sm py-4 px-6 flex justify-between items-center">
+<body>
+    <header>
         <div>
-            <h1 class="text-xl font-bold text-gray-800">Panel de Control ⚙️</h1>
-            <p class="text-xs text-gray-500" id="user-email">Conectado...</p>
+            <span class="logo">⚙️ Panel de Administración</span>
+            <span id="user-email" style="font-size: 0.8rem; margin-left: 15px; color: #666;"></span>
         </div>
-        <button onclick="cerrarSesion()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition">Cerrar Sesión</button>
+        <nav>
+            <a href="index.html">Ver Tienda</a>
+            <button onclick="cerrarSesion()" style="background:none; border:none; color:#e63946; cursor:pointer; font-weight:bold; margin-left:15px;">Cerrar Sesión</button>
+        </nav>
     </header>
 
-    <!-- Navegación de Pestañas -->
-    <main class="max-w-6xl mx-auto p-6">
-        <div class="flex space-x-4 mb-6 border-b pb-3">
-            <button onclick="cambiarPestana('productos')" id="btn-tab-productos" class="px-5 py-2.5 rounded-lg font-semibold text-sm bg-pink-600 text-white shadow transition">Gestión de Productos</button>
-            <button onclick="cambiarPestana('tips')" id="btn-tab-tips" class="px-5 py-2.5 rounded-lg font-semibold text-sm bg-white text-gray-700 hover:bg-gray-200 transition">Tips y Consejos para Mamá</button>
+    <main class="container">
+        <!-- Pestañas de Navegación del Panel -->
+        <div style="margin-bottom: 20px;">
+            <button id="btn-tab-productos" onclick="cambiarPestana('productos')" style="padding: 8px 15px; background: #e63946; color: white; border: none; border-radius: 4px; cursor:pointer; font-weight:bold;">Gestión de Productos</button>
+            <button id="btn-tab-tips" onclick="cambiarPestana('tips')" style="padding: 8px 15px; background: #ddd; color: #333; border: none; border-radius: 4px; cursor:pointer; font-weight:bold; margin-left: 10px;">Tips para Mamá</button>
         </div>
 
-        <!-- SECCIÓN 1: PRODUCTOS -->
-        <section id="seccion-productos" class="space-y-6">
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h2 id="form-titulo-prod" class="text-lg font-bold text-gray-800 mb-4">Agregar Nuevo Producto</h2>
-                <form id="form-producto" onsubmit="guardarProducto(event)" class="space-y-4">
+        <!-- SECCIÓN PRODUCTOS -->
+        <section id="seccion-productos">
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <h3 id="form-titulo-prod" style="margin-bottom: 15px;">Agregar Nuevo Producto</h3>
+                <form id="form-producto" onsubmit="guardarProducto(event)" style="display: flex; flex-direction: column; gap: 12px;">
                     <input type="hidden" id="prod-id">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="prod-nombre" placeholder="Nombre del producto" required class="border p-2.5 rounded-lg w-full focus:ring-2 focus:ring-pink-500 outline-none">
-                        <input type="number" step="0.01" id="prod-precio" placeholder="Precio ($)" required class="border p-2.5 rounded-lg w-full focus:ring-2 focus:ring-pink-500 outline-none">
+                    <input type="text" id="prod-nombre" placeholder="Nombre del producto" required style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <input type="number" step="0.01" id="prod-precio" placeholder="Precio ($)" required style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <div>
+                        <label style="font-size: 0.85rem; display: block; margin-bottom: 4px;">Imagen Principal</label>
+                        <input type="file" id="prod-imagen-file" accept="image/*">
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">Imagen Principal (Archivo)</label>
-                            <input type="file" id="prod-imagen-file" accept="image/*" class="border p-2 rounded-lg w-full bg-gray-50 text-sm">
+                    <input type="text" id="prod-categoria" placeholder="Categoría" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <textarea id="prod-descripcion" placeholder="Descripción..." rows="3" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+                    
+                    <!-- Colores dinámicos -->
+                    <div style="background: #f1f1f1; padding: 10px; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.85rem; font-weight: bold;">Colores con Fotos</span>
+                            <button type="button" onclick="agregarCampoColor()" style="background: #ccc; border: none; padding: 4px 8px; font-size: 0.75rem; cursor:pointer; border-radius:3px;">+ Añadir Color</button>
                         </div>
-                        <input type="text" id="prod-categoria" placeholder="Categoría (ej. Ropa, Juguetes...)" class="border p-2.5 rounded-lg w-full focus:ring-2 focus:ring-pink-500 outline-none">
+                        <div id="contenedor-colores" style="display: flex; flex-direction: column; gap: 8px;"></div>
                     </div>
 
-                    <textarea id="prod-descripcion" placeholder="Descripción y características..." rows="3" class="border p-2.5 rounded-lg w-full focus:ring-2 focus:ring-pink-500 outline-none"></textarea>
-
-                    <!-- Colores Dinámicos con Archivos -->
-                    <div class="border p-4 rounded-lg bg-gray-50 space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="font-semibold text-sm text-gray-700">Colores Disponibles (Archivos de imagen)</span>
-                            <button type="button" onclick="agregarCampoColor()" class="bg-gray-200 text-gray-800 px-3 py-1 text-xs rounded hover:bg-gray-300 font-medium">+ Añadir Color</button>
-                        </div>
-                        <div id="contenedor-colores" class="space-y-2"></div>
+                    <div style="display: flex; gap: 20px;">
+                        <label><input type="checkbox" id="prod-oferta"> En Oferta</label>
+                        <label><input type="checkbox" id="prod-temporada"> De Temporada</label>
                     </div>
 
-                    <div class="flex items-center space-x-6">
-                        <label class="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                            <input type="checkbox" id="prod-oferta" class="w-4 h-4 text-pink-600 rounded">
-                            <span>Producto en Oferta</span>
-                        </label>
-                        <label class="flex items-center space-x-2 text-sm font-medium text-gray-700">
-                            <input type="checkbox" id="prod-temporada" class="w-4 h-4 text-pink-600 rounded">
-                            <span>Producto de Temporada</span>
-                        </label>
-                    </div>
-
-                    <div class="flex space-x-3">
-                        <button type="submit" id="btn-submit-prod" class="bg-green-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-green-700 transition">Guardar Producto</button>
-                        <button type="button" id="btn-cancelar-prod" onclick="limpiarFormProducto()" class="hidden bg-gray-400 text-white font-semibold px-4 py-2.5 rounded-lg hover:bg-gray-500 transition">Cancelar Edición</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" id="btn-submit-prod" style="background: #2a9d8f; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Guardar Producto</button>
+                        <button type="button" id="btn-cancelar-prod" onclick="limpiarFormProducto()" style="display:none; background: #6c757d; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer;">Cancelar</button>
                     </div>
                 </form>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Inventario Actual</h3>
-                <div id="lista-productos" class="space-y-3"></div>
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <h3 style="margin-bottom: 15px;">Listado de Productos</h3>
+                <div id="lista-productos" style="display: flex; flex-direction: column; gap: 10px;"></div>
             </div>
         </section>
 
-        <!-- SECCIÓN 2: TIPS Y CONSEJOS -->
-        <section id="seccion-tips" class="space-y-6 hidden">
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h2 id="form-titulo-tip" class="text-lg font-bold text-gray-800 mb-4">Publicar Nuevo Tip o Consejo</h2>
-                <form id="form-tip" onsubmit="guardarTip(event)" class="space-y-4">
+        <!-- SECCIÓN TIPS PARA MAMÁ -->
+        <section id="seccion-tips" style="display: none;">
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <h3 id="form-titulo-tip" style="margin-bottom: 15px;">Publicar Nuevo Tip para Mamá</h3>
+                <form id="form-tip" onsubmit="guardarTip(event)" style="display: flex; flex-direction: column; gap: 12px;">
                     <input type="hidden" id="tip-id">
-                    <input type="text" id="tip-titulo" placeholder="Título del Artículo" required class="border p-2.5 rounded-lg w-full focus:ring-2 focus:ring-pink-500 outline-none">
-                    <input type="text" id="tip-breve" placeholder="Breve mensaje o resumen corto" required class="border p-2.5 rounded-lg w-full focus:ring-2 focus:ring-pink-500 outline-none">
+                    <input type="text" id="tip-titulo" placeholder="Título del artículo" required style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <input type="text" id="tip-breve" placeholder="Breve resumen o frase gancho" required style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Imagen / Archivo ilustrativo</label>
-                        <input type="file" id="tip-imagen-file" accept="image/*" class="border p-2 rounded-lg w-full bg-gray-50 text-sm">
+                        <label style="font-size: 0.85rem; display: block; margin-bottom: 4px;">Imagen ilustrativa</label>
+                        <input type="file" id="tip-imagen-file" accept="image/*">
                     </div>
-                    <textarea id="tip-descripcion" placeholder="Descripción completa en formato de párrafo..." rows="5" required class="border p-2.5 rounded-lg w-full focus:ring-2 focus:ring-pink-500 outline-none"></textarea>
-                    
-                    <div class="flex space-x-3">
-                        <button type="submit" id="btn-submit-tip" class="bg-pink-600 text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-pink-700 transition">Publicar Tip</button>
-                        <button type="button" id="btn-cancelar-tip" onclick="limpiarFormTip()" class="hidden bg-gray-400 text-white font-semibold px-4 py-2.5 rounded-lg hover:bg-gray-500 transition">Cancelar Edición</button>
+                    <textarea id="tip-descripcion" placeholder="Contenido completo..." rows="4" required style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" id="btn-submit-tip" style="background: #e63946; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">Publicar Tip</button>
+                        <button type="button" id="btn-cancelar-tip" onclick="limpiarFormTip()" style="display:none; background: #6c757d; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer;">Cancelar</button>
                     </div>
                 </form>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-md">
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Tips Publicados</h3>
-                <div id="lista-tips" class="space-y-3"></div>
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <h3 style="margin-bottom: 15px;">Tips Publicados</h3>
+                <div id="lista-tips" style="display: flex; flex-direction: column; gap: 10px;"></div>
             </div>
         </section>
     </main>
 
-    <!-- Lógica JavaScript -->
     <script src="admin.js"></script>
 </body>
 </html>
