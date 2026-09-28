@@ -6,7 +6,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let todosLosProductos = [];
 let todosLosProductosGenerales = [];
-let productosMostradosCount = 8; // Empieza mostrando 8 productos en la sección principal
+let productosMostradosCount = 8; 
 let carrito = [];
 let currentSlide = 0;
 let selectedCategory = 'todos';
@@ -15,8 +15,6 @@ let indiceSliderOfertas = 0;
 document.addEventListener("DOMContentLoaded", () => {
   fetchProductosTienda();
   initSlider();
-  
-  // Cargamos el blog optimizado y las secciones especiales de la barra lateral
   loadFrontendBlog();
   cargarSeccionesSidebarDirecto();
 });
@@ -53,7 +51,7 @@ async function fetchProductosTienda() {
     const { data, error } = await supabaseClient
       .from("productos")
       .select("*")
-      .order("id", { ascending: false }); // Los más recientes primero
+      .order("id", { ascending: false });
 
     if (error) {
       console.error("Error al obtener productos:", error);
@@ -64,7 +62,6 @@ async function fetchProductosTienda() {
 
     todosLosProductos = data;
     
-    // Filtramos los productos generales (excluyendo la categoría fija de "ofertas" que va en el sidebar)
     todosLosProductosGenerales = data.filter(p => {
       const cat = p.categoria ? p.categoria.toLowerCase().trim() : "";
       return cat !== "ofertas";
@@ -78,7 +75,6 @@ async function fetchProductosTienda() {
 }
 
 function renderizarSeccionesGenerales() {
-  // Filtrar por categoría seleccionada si no es "todos"
   let productosAFiltrar = todosLosProductosGenerales;
   if (selectedCategory !== 'todos') {
     productosAFiltrar = todosLosProductosGenerales.filter(p => {
@@ -87,7 +83,6 @@ function renderizarSeccionesGenerales() {
     });
   }
 
-  // 1. RENDERIZAR "LO NUEVO" (Exactamente los primeros 3 productos más recientes)
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
   const productosNuevos = productosAFiltrar.slice(0, 3);
   
@@ -99,7 +94,6 @@ function renderizarSeccionesGenerales() {
     }
   }
 
-  // 2. RENDERIZAR "NUESTROS PRODUCTOS" (A partir del 4to producto en adelante)
   const productosRestantes = productosAFiltrar.slice(3);
   renderizarNuestrosProductosFiltrados(productosRestantes);
 }
@@ -119,29 +113,25 @@ function renderizarNuestrosProductosFiltrados(listaRestantes) {
 
   container.innerHTML = productosSlice.map(prod => generarTarjetaProducto(prod)).join('');
 
-  // Control estricto y seguro del botón Ver Más
   if (btnVerMas) {
     if (productosMostradosCount >= listaRestantes.length) {
-      btnVerMas.style.display = "none"; // Ocultar si ya se mostraron todos
+      btnVerMas.style.display = "none";
     } else {
-      btnVerMas.style.display = "inline-block"; // Mostrar si aún hay más por desplegar
+      btnVerMas.style.display = "inline-block";
     }
   }
 }
 
-// Función para cambiar de categoría desde los botones de la barra de herramientas
 function filterByCategory(cat, btnElement) {
   selectedCategory = cat;
-  productosMostradosCount = 8; // Resetear conteo a 8 al cambiar de categoría
+  productosMostradosCount = 8; 
 
-  // Actualizar clases activas de los botones
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   if (btnElement) btnElement.classList.add('active');
 
   renderizarSeccionesGenerales();
 }
 
-// Búsqueda en tiempo real por texto
 function filterProducts() {
   const query = document.getElementById("search-bar").value.toLowerCase();
   
@@ -164,7 +154,6 @@ function filterProducts() {
   renderizarNuestrosProductosFiltrados(restoFiltrado);
 }
 
-// Función que se ejecuta al hacer clic en el botón "Ver más" (suma 8 productos más del resto)
 function cargarMasProductos() {
   productosMostradosCount += 8;
   renderizarSeccionesGenerales();
@@ -177,7 +166,6 @@ function generarTarjetaProducto(prod) {
   return `
     <div class="product-card" style="position: relative;">
       ${badgeOferta}
-      <!-- Imagen con evento para abrir el Lightbox y actualizar la URL -->
       <img src="${imagen}" alt="${prod.nombre}" onclick="abrirLightbox('${imagen}', '${prod.nombre}', ${prod.id})" style="cursor: pointer;">
       <div>
         <h3>${prod.nombre}</h3>
@@ -191,7 +179,7 @@ function generarTarjetaProducto(prod) {
   `;
 }
 
-// ------------------- VISOR DE IMAGEN (LIGHTBOX) & URL -------------------
+// ------------------- VISOR DE IMAGEN (LIGHTBOX) -------------------
 function abrirLightbox(imagenUrl, nombreProducto, id) {
   const lightbox = document.getElementById("product-lightbox");
   const lightboxImg = document.getElementById("lightbox-img");
@@ -200,8 +188,6 @@ function abrirLightbox(imagenUrl, nombreProducto, id) {
     lightboxImg.src = imagenUrl;
     lightboxImg.alt = nombreProducto;
     lightbox.classList.add("active");
-
-    // Actualiza la URL del navegador con el ID del producto (ejemplo: #producto-1)
     history.pushState(null, null, `#producto-${id}`);
   }
 }
@@ -210,8 +196,6 @@ function cerrarLightbox() {
   const lightbox = document.getElementById("product-lightbox");
   if (lightbox) {
     lightbox.classList.remove("active");
-
-    // Limpia el hash de la URL al cerrar el visor
     history.pushState("", document.title, window.location.pathname + window.location.search);
   }
 }
@@ -259,7 +243,7 @@ function updateCartUI() {
   });
 }
 
-// ------------------- BLOG & TIPS (ADAPTADO AL SIDEBAR) -------------------
+// ------------------- BLOG & TIPS -------------------
 async function loadFrontendBlog() {
   const container = document.getElementById("blog-container");
   const btnVerMas = document.getElementById("ver-mas-blog-btn");
@@ -280,7 +264,7 @@ async function loadFrontendBlog() {
     return;
   }
 
-  const limiteInicial = 2; // Mostramos 2 inicialmente en el sidebar para mantenerlo compacto
+  const limiteInicial = 2; 
   const articulosAEmpezar = articulos.slice(0, limiteInicial);
 
   function renderizar(lista) {
@@ -318,7 +302,6 @@ async function loadFrontendBlog() {
   }
 }
 
-// Función para expandir el artículo completo en el sidebar
 function toggleLeerMas(id) {
   const contenidoDiv = document.getElementById(`contenido-completo-${id}`);
   const resumenP = document.getElementById(`resumen-${id}`);
@@ -385,10 +368,9 @@ async function checkout() {
   toggleCart();
 }
 
-// ------------------- SLIDER DE OFERTAS Y TEMPORADA (SIDEBAR) -------------------
+// ------------------- SIDEBAR: OFERTAS Y TEMPORADA -------------------
 async function cargarSeccionesSidebarDirecto() {
   try {
-    // Ofertas
     const { data: ofertas, error: errOfertas } = await supabaseClient
       .from("productos")
       .select("*")
@@ -421,7 +403,6 @@ async function cargarSeccionesSidebarDirecto() {
       }
     }
 
-    // Temporada
     const { data: temporada, error: errTemporada } = await supabaseClient
       .from("productos")
       .select("*")
