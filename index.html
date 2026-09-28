@@ -3,186 +3,129 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bebé en Camino | Tienda Online</title>
+  <title>Bebé en Camino | Tienda y Blog</title>
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* Estructura general de la tienda con Grid de 2 columnas */
+    .shop-main-layout {
+      display: grid;
+      grid-template-columns: 2.2fr 1fr;
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    @media (max-width: 900px) {
+      .shop-main-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    .products-column {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .sidebar-column {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    /* Estilo de la tarjeta de los Tips a la derecha */
+    .blog-sidebar-card {
+      background: #fff8fb;
+      border: 1px solid #f8c291;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    .blog-sidebar-card h3 {
+      color: #e84393;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      border-bottom: 2px solid #ffeaa7;
+      padding-bottom: 0.5rem;
+    }
+    .blog-sidebar-item {
+      margin-bottom: 1.2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #eee;
+    }
+    .blog-sidebar-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .blog-cat-tag {
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #e84393;
+      text-transform: uppercase;
+    }
+    .blog-sidebar-item h4 a {
+      color: #333;
+      text-decoration: none;
+      font-size: 1rem;
+    }
+    .blog-sidebar-item h4 a:hover {
+      color: #e84393;
+    }
+    .blog-sidebar-item p {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 0.3rem;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Navbar Limpio (Sin botón admin visible) -->
-  <header class="navbar">
-    <div class="logo">
-      <img src="logo.PNG" alt="Bebé en Camino" class="logo-img">
-      <span class="logo-text">Bebé en Camino</span>
-    </div>
-    
-    <div class="cart-btn-container">
-      <button class="cart-btn-main" onclick="toggleCart()">
-        🛒 Carrito (<span id="cart-count">0</span>)
-      </button>
-    </div>
+  <!-- Encabezado de la tienda -->
+  <header style="background: #fff; padding: 1rem 2rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+    <h1>Bebé en Camino</h1>
+    <nav>
+      <a href="index.html" style="margin-right: 15px; text-decoration: none; color: #333; font-weight: bold;">Inicio</a>
+      <a href="admin.html" style="text-decoration: none; color: #e84393; font-weight: bold;">Admin</a>
+    </nav>
   </header>
 
-  <!-- Botón Flotante de WhatsApp -->
-  <a href="https://wa.me/593996219444?text=¡Hola!%20Tengo%20una%20consulta%20sobre%20la%20tienda%20Bebé%20en%20camino." target="_blank" class="whatsapp-float">
-    <i class="fab fa-whatsapp"></i>
-  </a>
+  <!-- CONTENEDOR PRINCIPAL EN DOS COLUMNAS -->
+  <div class="shop-main-layout">
 
-  <!-- Slider / Carrusel Automático -->
-  <section class="slider-container">
-    <div class="slider-track" id="slider-track">
-      <div class="slide slide-1">
-        <div class="slide-content">
-          <h2>Nuevas Colecciones para Bebé</h2>
-          <p>Descubre prendas suaves 100% algodón orgánico</p>
-        </div>
-      </div>
-      <div class="slide slide-2">
-        <div class="slide-content">
-          <h2>Juguetes Didácticos</h2>
-          <p>Estimula el aprendizaje y la motricidad desde sus primeros meses</p>
-        </div>
-      </div>
-      <div class="slide slide-3">
-        <div class="slide-content">
-          <h2>Accesorios & Lactancia</h2>
-          <p>Todo lo que necesitas para el cuidado y confort de tu bebé</p>
-        </div>
-      </div>
-    </div>
-    <div class="slider-dots">
-      <span class="dot active" onclick="setSlide(0)"></span>
-      <span class="dot" onclick="setSlide(1)"></span>
-      <span class="dot" onclick="setSlide(2)"></span>
-    </div>
-  </section>
-
-  <!-- Contenido Principal -->
-  <div class="main-layout" id="productos">
-    <main class="content-area">
+    <!-- COLUMNA IZQUIERDA: Productos, Ofertas y Por Temporada -->
+    <div class="products-column">
       
-      <div class="toolbar">
-        <input type="text" id="search-bar" placeholder="🔍 Buscar productos..." oninput="filterProducts()">
-        <div class="category-filters">
-          <button class="cat-btn active" onclick="filterByCategory('todos', this)">Todos</button>
-          <button class="cat-btn" onclick="filterByCategory('ofertas', this)">Ofertas Especiales</button>
-          <button class="cat-btn" onclick="filterByCategory('paseo y transporte', this)">Paseo y transporte</button>
-          <button class="cat-btn" onclick="filterByCategory('dormitorio y descanso', this)">Dormitorio y descanso</button>
-          <button class="cat-btn" onclick="filterByCategory('alimentacion y lactancia', this)">Alimentación y lactancia</button>
-          <button class="cat-btn" onclick="filterByCategory('juguetes y estimulacion', this)">Juguetes y estimulación</button>
-          <button class="cat-btn" onclick="filterByCategory('higiene y cuidado del bebe', this)">Higiene y cuidado del bebé</button>
-          <button class="cat-btn" onclick="filterByCategory('ropa y moda', this)">Ropa y moda</button>
-          <button class="cat-btn" onclick="filterByCategory('seguridad para el hogar', this)">Seguridad para el hogar</button>
-        </div>
-      </div>
-
-      <section style="margin-bottom: 2rem;">
-        <h2 class="section-title">Lo Nuevo</h2>
-        <div id="lo-nuevo-grid" class="products-grid"></div>
-      </section>
-
-      <section style="margin-bottom: 2rem;">
-        <h2 class="section-title">Nuestros Productos</h2>
-        <div id="nuestros-productos-grid" class="products-grid"></div>
-        
-        <div style="text-align: center; margin-top: 1.5rem;">
-          <button id="btn-ver-mas" onclick="cargarMasProductos()" style="background: #fb5c74; color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.95rem;">
-            Ver más productos
-          </button>
+      <!-- Sección de Ofertas Especiales -->
+      <section id="seccion-ofertas">
+        <h2>Ofertas Especiales</h2>
+        <div id="productos-ofertas-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+          <!-- Se cargan por JS -->
         </div>
       </section>
 
-    </main>
-
-    <!-- Sidebar -->
-    <aside class="sidebar-area" id="blog">
-      <div class="blog-widget" style="border-top: 4px solid #fb5c74;">
-        <h3 style="color: #fb5c74; margin-bottom: 1rem; font-size: 1.1rem;">Ofertas Especiales</h3>
-        <div id="ofertas-slider"></div>
-      </div>
-
-      <div class="blog-widget" style="border-top: 4px solid #19efee;">
-        <h3 style="color: #2f2f2f; margin-bottom: 1rem; font-size: 1.1rem;">Por Temporada</h3>
-        <div id="temporada-container"></div>
-      </div>
-
-      <div class="blog-widget" style="border-top: 4px solid #e84393; background: #fff; padding: 1rem; border-radius: 8px;">
-        <h3 style="color: #e84393; margin-bottom: 1rem; font-size: 1.1rem;">Tips y Consejos para Mamás</h3>
-        <div id="blog-container"></div>
-        <div style="text-align: center; margin-top: 1rem;">
-          <button id="ver-mas-blog-btn" style="background: #e84393; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; cursor: pointer; display: none; font-size: 0.85rem;">Ver más artículos</button>
+      <!-- Sección Por Temporada -->
+      <section id="seccion-temporada" style="margin-top: 1rem;">
+        <h2>Por Temporada</h2>
+        <div id="productos-temporada-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+          <!-- Se cargan por JS -->
         </div>
-      </div>
-    </aside>
-  </div>
+      </section>
 
-  <!-- Footer -->
-  <footer id="contacto" class="footer">
-    <div class="footer-container">
-      <div class="footer-brand">
-        <h3>Bebé en Camino</h3>
-        <p>Acompañándote en la etapa más hermosa de la vida.</p>
-      </div>
-      <div class="footer-card">
-        <h4 style="margin-top: 0; margin-bottom: 0.8rem; color: #19efee; font-size: 1.1rem; text-align: center;">📍 Visítanos o Contáctanos</h4>
-        <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-location-dot" style="color: #fb5c74; width: 20px;"></i> <strong>Dirección:</strong> Argentina #4312 y calle 20ava, Guayaquil</p>
-        <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-clock" style="color: #fb5c74; width: 20px;"></i> <strong>Horario:</strong> Lunes a Sábado 09:00 AM - 07:00 PM</p>
-        <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-phone" style="color: #fb5c74; width: 20px;"></i> <strong>Teléfono / WhatsApp:</strong> +593 939669413</p>
-      </div>
     </div>
-    <div class="footer-bottom">© 2026 Bebé en Camino. Todos los derechos reservados.</div>
-  </footer>
 
-  <!-- Modal del Carrito con Control de Cantidades, Colores y Vaciar -->
-  <div id="cart-modal" class="modal hidden">
-    <div class="modal-content" style="max-width: 450px;">
-      <span class="close-btn" onclick="toggleCart()">&times;</span>
-      <h2>Tu Carrito de Compras 🛒</h2>
+    <!-- COLUMNA DERECHA: Tips y Consejos de Mamá (Debajo de Temporada visualmente) -->
+    <div class="sidebar-column">
       
-      <div id="cart-items" style="margin-top: 1rem; max-height: 220px; overflow-y: auto; padding-right: 5px;"></div>
-      
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; border-top: 1px solid #eee; padding-top: 0.8rem;">
-        <h3 style="margin: 0;">Total: $<span id="cart-total">0.00</span></h3>
-        <button onclick="vaciarCarrito()" style="background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-weight: bold;">🗑️ Vaciar Carrito</button>
-      </div>
-
-      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-        <input type="text" id="cli-nombre" placeholder="Tu Nombre" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-        <input type="tel" id="cli-telefono" placeholder="WhatsApp / Teléfono" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-        <input type="text" id="cli-ciudad" placeholder="Ciudad (Ej. Guayaquil)" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
-        <button class="checkout-btn" onclick="checkout()">Realizar Pedido por WhatsApp</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Visor Lightbox Detallado con Colores y Características -->
-  <div id="product-lightbox" class="lightbox-modal" style="display:none;">
-    <div class="lightbox-content">
-      <button class="close-lightbox" onclick="cerrarLightbox()">&times;</button>
-      <div class="lightbox-grid">
-        <div class="lightbox-img-container">
-          <img id="lightbox-img" src="" alt="Vista ampliada">
-        </div>
-        <div class="lightbox-info">
-          <h2 id="lightbox-title"></h2>
-          <p id="lightbox-price" class="price" style="font-size: 1.3rem; margin: 10px 0; color: #fb5c74; font-weight: bold;"></p>
-          <p id="lightbox-desc" style="font-size: 0.9rem; color: #666; margin-bottom: 1rem; line-height: 1.4;"></p>
-          
-          <div id="lightbox-colors-section" style="margin-bottom: 1rem;">
-            <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 5px;">Colores disponibles:</p>
-            <div id="lightbox-colors-list" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
-          </div>
-
-          <div style="display: flex; align-items: center; gap: 10px; margin-top: 1.5rem;">
-            <input type="number" id="lightbox-cantidad" value="1" min="1" style="width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-weight: bold;">
-            <button id="lightbox-add-btn" style="flex-grow: 1; background: #fb5c74; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">Agregar al Carrito</button>
-          </div>
+      <div class="blog-sidebar-card">
+        <h3>💡 Tips y Consejos de Mamá</h3>
+        <div id="blog-container-sidebar">
+          <!-- Los artículos del blog se inyectan aquí automáticamente -->
         </div>
       </div>
+
     </div>
+
   </div>
-  
+
   <script src="app.js"></script>
 </body>
 </html>
