@@ -10,19 +10,16 @@
 </head>
 <body>
 
-  <!-- Navbar -->
+  <!-- Navbar Limpio (Sin botón admin visible) -->
   <header class="navbar">
     <div class="logo">
       <img src="logo.PNG" alt="Bebé en Camino" class="logo-img">
       <span class="logo-text">Bebé en Camino</span>
     </div>
     
-    <div class="cart-btn-container" style="display: flex; gap: 10px; align-items: center;">
+    <div class="cart-btn-container">
       <button class="cart-btn-main" onclick="toggleCart()">
         🛒 Carrito (<span id="cart-count">0</span>)
-      </button>
-      <button onclick="toggleAdminModal()" style="background: #2f2f2f; color: white; border: none; padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; font-weight: bold;">
-        🔐 Admin
       </button>
     </div>
   </header>
@@ -114,7 +111,7 @@
         <h3 style="color: #e84393; margin-bottom: 1rem; font-size: 1.1rem;">Tips y Consejos para Mamás</h3>
         <div id="blog-container"></div>
         <div style="text-align: center; margin-top: 1rem;">
-          <button id="ver-mas-blog-btn" class="add-btn" style="background: #e84393; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; cursor: pointer; display: none; font-size: 0.85rem;">Ver más artículos</button>
+          <button id="ver-mas-blog-btn" style="background: #e84393; color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; cursor: pointer; display: none; font-size: 0.85rem;">Ver más artículos</button>
         </div>
       </div>
     </aside>
@@ -137,7 +134,7 @@
     <div class="footer-bottom">© 2026 Bebé en Camino. Todos los derechos reservados.</div>
   </footer>
 
-  <!-- Modal del Carrito con Opciones de Cantidad y Vaciar -->
+  <!-- Modal del Carrito con Control de Cantidades, Colores y Vaciar -->
   <div id="cart-modal" class="modal hidden">
     <div class="modal-content" style="max-width: 450px;">
       <span class="close-btn" onclick="toggleCart()">&times;</span>
@@ -159,37 +156,31 @@
     </div>
   </div>
 
-  <!-- Modal de Autenticación / Panel Admin Seguro -->
-  <div id="admin-modal" class="modal hidden">
-    <div class="modal-content" style="max-width: 400px;">
-      <span class="close-btn" onclick="toggleAdminModal()">&times;</span>
-      <div id="admin-auth-view">
-        <h2 style="margin-bottom: 1rem; color: #2f2f2f;">🔐 Acceso Administrador</h2>
-        <p style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">Debes iniciar sesión para administrar la tienda.</p>
-        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
-          <input type="email" id="admin-email" placeholder="Correo electrónico" style="padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;">
-          <input type="password" id="admin-pass" placeholder="Contraseña" style="padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;">
-          <button onclick="loginAdmin()" style="background: #19efee; color: #2f2f2f; border: none; padding: 0.7rem; font-weight: bold; border-radius: 4px; cursor: pointer;">Iniciar Sesión</button>
+  <!-- Visor Lightbox Detallado con Colores y Características -->
+  <div id="product-lightbox" class="lightbox-modal" style="display:none;">
+    <div class="lightbox-content">
+      <button class="close-lightbox" onclick="cerrarLightbox()">&times;</button>
+      <div class="lightbox-grid">
+        <div class="lightbox-img-container">
+          <img id="lightbox-img" src="" alt="Vista ampliada">
         </div>
-      </div>
-      
-      <div id="admin-dashboard-view" style="display: none;">
-        <h2 style="margin-bottom: 0.5rem; color: #fb5c74;">Panel de Control ⚙️</h2>
-        <p id="admin-user-email-display" style="font-size: 0.8rem; color: #666; margin-bottom: 1rem;"></p>
-        <div style="background: #f1f2f6; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
-          <h4 style="margin-bottom: 0.5rem;">Gestión de Productos</h4>
-          <p style="font-size: 0.8rem; color: #555; margin-bottom: 0.8rem;">Aquí puedes agregar o revisar los productos conectados en Supabase.</p>
-          <button onclick="alert('Funcionalidad de gestión activa con sesión validada.')" style="background: #fb5c74; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 0.85rem;">Ir a Gestión de Inventario</button>
+        <div class="lightbox-info">
+          <h2 id="lightbox-title"></h2>
+          <p id="lightbox-price" class="price" style="font-size: 1.3rem; margin: 10px 0; color: #fb5c74; font-weight: bold;"></p>
+          <p id="lightbox-desc" style="font-size: 0.9rem; color: #666; margin-bottom: 1rem; line-height: 1.4;"></p>
+          
+          <div id="lightbox-colors-section" style="margin-bottom: 1rem;">
+            <p style="font-size: 0.85rem; font-weight: bold; margin-bottom: 5px;">Colores disponibles:</p>
+            <div id="lightbox-colors-list" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; margin-top: 1.5rem;">
+            <input type="number" id="lightbox-cantidad" value="1" min="1" style="width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-weight: bold;">
+            <button id="lightbox-add-btn" style="flex-grow: 1; background: #fb5c74; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; cursor: pointer;">Agregar al Carrito</button>
+          </div>
         </div>
-        <button onclick="logoutAdmin()" style="background: #2f2f2f; color: white; border: none; padding: 0.5rem; width: 100%; border-radius: 4px; cursor: pointer; font-weight: bold;">Cerrar Sesión</button>
       </div>
     </div>
-  </div>
-
-  <!-- Visor Lightbox -->
-  <div id="product-lightbox" onclick="cerrarLightbox()">
-    <button class="close-lightbox" onclick="cerrarLightbox()">&times;</button>
-    <img id="lightbox-img" src="" alt="Vista ampliada">
   </div>
   
   <script src="app.js"></script>
