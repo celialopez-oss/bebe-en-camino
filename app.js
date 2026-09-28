@@ -14,10 +14,10 @@ let indiceSliderOfertas = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchProductosTienda();
-  fetchBlogArticles();
   initSlider();
   
-  // Cargamos las secciones especiales de la barra lateral de inmediato
+  // Cargamos el blog optimizado y las secciones especiales de la barra lateral
+  loadFrontendBlog();
   cargarSeccionesSidebarDirecto();
 });
 
@@ -190,39 +190,7 @@ function generarTarjetaProducto(prod) {
   `;
 }
 
-// ------------------- BLOG & CARRITO -------------------
-async function fetchBlogArticles() {
-  const container = document.querySelector(".blog-posts");
-  if (!container) return;
-
-  try {
-    const { data: articulos, error } = await supabaseClient
-      .from("blog")
-      .select("*")
-      .order("id", { ascending: false });
-
-    if (error || !articulos || articulos.length === 0) return;
-
-    container.innerHTML = "";
-    articulos.forEach((art) => {
-      const imgArt = art.imagen_url || art.imagen;
-      const htmlImagen = imgArt ? `<img src="${imgArt}" alt="${art.titulo}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">` : '';
-
-      const card = document.createElement("article");
-      card.className = "blog-card";
-      card.innerHTML = `
-        ${htmlImagen}
-        <span class="blog-tag">${art.categoria}</span>
-        <h4>${art.titulo}</h4>
-        <p>${art.resumen}</p>
-      `;
-      container.appendChild(card);
-    });
-  } catch (err) {
-    console.error("Error al cargar blog:", err);
-  }
-}
-
+// ------------------- CARRITO -------------------
 function addToCart(id, nombre, precio) {
   const itemExistente = carrito.find((item) => item.id === id);
   if (itemExistente) {
@@ -265,12 +233,12 @@ function updateCartUI() {
   });
 }
 
+// ------------------- BLOG & TIPS -------------------
 async function loadFrontendBlog() {
   const container = document.getElementById("blog-container");
   const btnVerMas = document.getElementById("ver-mas-blog-btn");
   if (!container) return;
 
-  // Traemos todos los artículos ordenados del más nuevo al más antiguo
   const { data: articulos, error } = await supabaseClient
     .from("blog")
     .select("*")
@@ -286,15 +254,13 @@ async function loadFrontendBlog() {
     return;
   }
 
-  // Definimos cuántos mostrar inicialmente (por ejemplo, los 3 más recientes)
   const limiteInicial = 3;
   const articulosAEmpezar = articulos.slice(0, limiteInicial);
 
-  // Función para renderizar los artículos en HTML
   function renderizar(lista) {
     container.innerHTML = "";
     lista.forEach(a => {
-      const img = a.imagen_url || "placeholder.png";
+      const img = a.imagen_url || "logo.PNG";
       const card = document.createElement("div");
       card.className = "blog-card";
       card.style.cssText = "background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 1rem;";
@@ -304,31 +270,44 @@ async function loadFrontendBlog() {
         <div style="padding: 1rem;">
           <span style="font-size: 0.8rem; color: #e84393; font-weight: bold; text-transform: uppercase;">${a.categoria}</span>
           <h3 style="font-size: 1.1rem; margin: 0.5rem 0; color: #333;">${a.titulo}</h3>
-          <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">${a.resumen}</p>
-          <a href="#" onclick="alert('Pronto abriremos el artículo completo: ${a.titulo}')" style="color: #e84393; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Leer más &rarr;</a>
+          <p id="resumen-${a.id}" style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">${a.resumen}</p>
+          <div id="contenido-completo-${a.id}" style="display: none; font-size: 0.9rem; color: #444; margin-bottom: 1rem; line-height: 1.5;">
+            ${a.contenido || a.resumen}
+          </div>
+          <button onclick="toggleLeerMas(${a.id})" id="btn-leer-${a.id}" style="background: none; border: none; color: #e84393; font-weight: bold; font-size: 0.9rem; cursor: pointer; padding: 0;">Leer más &rarr;</button>
         </div>
       `;
       container.appendChild(card);
     });
   }
 
-  // Mostramos los primeros 3 al cargar
   renderizar(articulosAEmpezar);
 
-  // Si hay más de 3 artículos, habilitamos el botón "Ver más"
   if (articulos.length > limiteInicial && btnVerMas) {
     btnVerMas.style.display = "inline-block";
     btnVerMas.onclick = () => {
-      renderizar(articulos); // Muestra todos
-      btnVerMas.style.display = "none"; // Oculta el botón una vez expandido
+      renderizar(articulos);
+      btnVerMas.style.display = "none";
     };
   }
 }
 
-// Ejecutar al cargar la página principal
-document.addEventListener("DOMContentLoaded", () => {
-  loadFrontendBlog();
-});
+// Función para expandir el artículo completo al hacer clic
+function toggleLeerMas(id) {
+  const contenidoDiv = document.getElementById(`contenido-completo-${id}`);
+  const resumenP = document.getElementById(`resumen-${id}`);
+  const btn = document.getElementById(`btn-leer-${id}`);
+
+  if (contenidoDiv.style.display === "none") {
+    contenidoDiv.style.display = "block";
+    resumenP.style.display = "none";
+    btn.innerHTML = "&larr; Leer menos";
+  } else {
+    contenidoDiv.style.display = "none";
+    resumenP.style.display = "block";
+    btn.innerHTML = "Leer más &rarr;";
+  }
+}
 
 function toggleCart() {
   document.getElementById("cart-modal").classList.toggle("hidden");
