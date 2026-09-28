@@ -104,7 +104,7 @@
       </section>
     </main>
 
-    <!-- Sidebar (Derecha) -->
+    <!-- Sidebar del Blog y Nuevas Secciones (Derecha) -->
     <aside class="sidebar-area" style="display: flex; flex-direction: column; gap: 1.5rem;" id="blog">
       
       <!-- Sección de Ofertas en Slider -->
@@ -122,19 +122,16 @@
           <!-- Los productos de temporada se cargarán aquí -->
         </div>
       </div>
-      
-      <!-- Sección del Blog -->
-      <section class="blog-section" style="background: #fff; padding: 1rem; border-radius: 8px;">
-        <h3 style="color: #2f2f2f; margin-bottom: 0.3rem; font-size: 1.1rem;">Tips y Consejos para Mamás</h3>
-        
-        <!-- Aquí se cargarán automáticamente los artículos -->
-        <div id="blog-container" class="blog-grid"></div>
-        
-        <!-- Botón para ver más -->
-        <div style="text-align: center; margin-top: 1.5rem;">
-          <button id="ver-mas-blog-btn" class="add-btn" style="background: #e84393; color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 20px; cursor: pointer; display: none;">Ver más artículos</button>
+
+      <!-- Widget del Blog & Tips -->
+      <div class="blog-widget" style="border-top: 4px solid #a0a2ad;">
+        <h3 style="color: #2f2f2f; margin-bottom: 0.3rem; font-size: 1.1rem;">💡 Blog & Tips</h3>
+        <p style="font-size: 0.85rem; color: #a0a2ad; margin-bottom: 1rem;">Aprende más sobre el cuidado de tu bebé</p>
+        <div class="blog-posts">
+          <!-- Cargados desde Supabase -->
         </div>
-      </section>
+      </div>
+
     </aside>
   </div>
 
@@ -156,13 +153,17 @@
         <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-envelope" style="color: #fb5c74; width: 20px;"></i> <strong>Correo:</strong> contacto@bebeencamino.com</p>
       </div>
 
-      <!-- Redes Sociales -->
+      <!-- Redes Sociales con Iconos Profesionales y Colores Oficiales -->
       <div class="footer-socials" style="text-align: center;">
         <h4 style="margin-bottom: 0.8rem; font-size: 1rem; color: #fff;">Síguenos en Redes Sociales</h4>
         <div class="social-icons" style="justify-content: center;">
+          <!-- Instagram -->
           <a href="https://instagram.com/tu_usuario" target="_blank" title="Instagram" class="social-btn instagram"><i class="fa-brands fa-instagram"></i></a>
+          <!-- TikTok -->
           <a href="https://tiktok.com/@tu_usuario" target="_blank" title="TikTok" class="social-btn tiktok"><i class="fa-brands fa-tiktok"></i></a>
+          <!-- WhatsApp -->
           <a href="https://wa.me/593939669413" target="_blank" title="WhatsApp" class="social-btn whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
+          <!-- Facebook -->
           <a href="https://facebook.com/tu_pagina" target="_blank" title="Facebook" class="social-btn facebook"><i class="fa-brands fa-facebook-f"></i></a>
         </div>
       </div>
@@ -195,3 +196,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+
