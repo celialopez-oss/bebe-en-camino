@@ -1,396 +1,304 @@
 const SUPABASE_URL = "https://bwkohmeobwplthvjihtd.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_MfylsjMrOCQIK2fGwmPEdg_gXB-zhRo";
-
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-document.addEventListener("DOMContentLoaded", async () => {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session) {
-    showPanel();
-  }
-});
-
-// Autenticación de Administrador
-document.getElementById("login-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const errorMsg = document.getElementById("login-error");
-
-  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    errorMsg.textContent = "Error: Credenciales incorrectas.";
-  } else {
-    errorMsg.textContent = "";
-    showPanel();
-  }
-});
-
-function switchTab(tabId) {
-  document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
-  
-  document.getElementById(tabId).classList.remove("hidden");
-  event.currentTarget.classList.add("active");
-}
-
-async function showPanel() {
-  document.getElementById("login-section").classList.add("hidden");
-  document.getElementById("admin-panel").classList.remove("hidden");
-  await loadAdminProducts();
-  await loadAdminBlog();
-}
-
-// Función auxiliar para subir imágenes a Supabase Storage
-async function uploadImageToStorage(fileInput, bucketName = 'productos') {
-  const file = fileInput.files[0];
-  if (!file) return null;
-
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-
-  const { error: uploadError } = await supabaseClient
-    .storage
-    .from(bucketName)
-    .upload(fileName, file);
-
-  if (uploadError) {
-    throw new Error("Error al subir imagen: " + uploadError.message);
-  }
-
-  const { data: publicUrlData } = supabaseClient
-    .storage
-    .from(bucketName)
-    .getPublicUrl(fileName);
-
-  return publicUrlData.publicUrl;
-}
-
-// ------------------- GESTIÓN DE PRODUCTOS -------------------
-
-async function loadAdminProducts() {
-  const listEl = document.getElementById("product-list");
-  if (!listEl) return;
-
-  const { data: productos, error } = await supabaseClient.from("productos").select("*").order("id", { ascending: false });
-
-  if (error) return console.error(error);
-
-  listEl.innerHTML = "";
-  productos.forEach(p => {
-    const tr = document.createElement("tr");
-    const pJson = JSON.stringify(p).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
-    
-    tr.innerHTML = `
-      <td><img src="${p.imagen_url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
-      <td>${p.nombre} ${p.en_oferta ? '<span style="color:red; font-weight:bold; font-size:0.8rem;">(OFERTA)</span>' : ''}</td>
-      <td>$${parseFloat(p.precio).toFixed(2)}</td>
-      <td>${p.categoria}</td>
-      <td>
-        <button class="edit-btn" onclick='openEditModal(${pJson})'>Editar</button>
-        <button class="delete-btn" onclick="deleteProduct(${p.id})">Eliminar</button>
-      </td>
-    `;
-    listEl.appendChild(tr);
-  });
-}
-
-// Guardar Nuevo Producto
-document.getElementById("product-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const msg = document.getElementById("product-msg");
-  const saveBtn = document.getElementById("btn-save-prod");
-
-  saveBtn.disabled = true;
-  saveBtn.textContent = "Subiendo imagen y guardando...";
-  msg.textContent = "";
-
-  try {
-    const fileInput = document.getElementById("p-imagen-file");
-    const imagenUrl = await uploadImageToStorage(fileInput, 'productos');
-
-    if (!imagenUrl) {
-      alert("Por favor selecciona una imagen JPG/PNG válida.");
-      saveBtn.disabled = false;
-      saveBtn.textContent = "Guardar Producto";
-      return;
-    }
-
-    const enOfertaCheckbox = document.getElementById("p-en-oferta");
-    const enOferta = enOfertaCheckbox ? enOfertaCheckbox.checked : false;
-
-    const nuevoProducto = {
-      nombre: document.getElementById("p-nombre").value,
-      descripcion: document.getElementById("p-descripcion").value,
-      precio: parseFloat(document.getElementById("p-precio").value),
-      categoria: document.getElementById("p-categoria").value,
-      imagen_url: imagenUrl,
-      en_oferta: enOferta
-    };
-
-    const { error } = await supabaseClient.from("productos").insert([nuevoProducto]);
-
-    if (error) {
-      msg.style.color = "red";
-      msg.textContent = "Error al guardar: " + error.message;
-    } else {
-      msg.style.color = "green";
-      msg.textContent = "¡Producto guardado exitosamente!";
-      document.getElementById("product-form").reset();
-      loadAdminProducts();
-    }
-  } catch (err) {
-    msg.style.color = "red";
-    msg.textContent = err.message;
-  } finally {
-    saveBtn.disabled = false;
-    saveBtn.textContent = "Guardar Producto";
-  }
-});
-
-function openEditModal(producto) {
-  document.getElementById("edit-p-id").value = producto.id;
-  document.getElementById("edit-p-nombre").value = producto.nombre;
-  document.getElementById("edit-p-descripcion").value = producto.descripcion;
-  document.getElementById("edit-p-precio").value = producto.precio;
-  document.getElementById("edit-p-categoria").value = producto.categoria;
-  document.getElementById("edit-p-imagen-actual").value = producto.imagen_url;
-  
-  const editOfertaCheckbox = document.getElementById("edit-p-en-oferta");
-  if (editOfertaCheckbox) {
-    editOfertaCheckbox.checked = producto.en_oferta === true;
-  }
-
-  document.getElementById("edit-modal").classList.remove("hidden");
-}
-
-function closeEditModal() {
-  document.getElementById("edit-modal").classList.add("hidden");
-  document.getElementById("edit-p-imagen-file").value = "";
-}
-
-document.getElementById("edit-product-form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const updateBtn = document.getElementById("btn-update-prod");
-  updateBtn.disabled = true;
-  updateBtn.textContent = "Guardando cambios...";
-
-  const id = document.getElementById("edit-p-id").value;
-  const imagenActual = document.getElementById("edit-p-imagen-actual").value;
-  const fileInput = document.getElementById("edit-p-imagen-file");
-
-  try {
-    let imagenUrl = imagenActual;
-
-    if (fileInput.files.length > 0) {
-      const nuevaUrl = await uploadImageToStorage(fileInput, 'productos');
-      if (nuevaUrl) imagenUrl = nuevaUrl;
-    }
-
-    const editOfertaCheckbox = document.getElementById("edit-p-en-oferta");
-    const enOferta = editOfertaCheckbox ? editOfertaCheckbox.checked : false;
-
-    const productoActualizado = {
-      nombre: document.getElementById("edit-p-nombre").value,
-      descripcion: document.getElementById("edit-p-descripcion").value,
-      precio: parseFloat(document.getElementById("edit-p-precio").value),
-      categoria: document.getElementById("edit-p-categoria").value,
-      imagen_url: imagenUrl,
-      en_oferta: enOferta
-    };
-
-    const { error } = await supabaseClient
-      .from("productos")
-      .update(productoActualizado)
-      .eq("id", id);
-
-    if (error) {
-      alert("Error al actualizar: " + error.message);
-    } else {
-      closeEditModal();
-      loadAdminProducts();
-    }
-  } catch (err) {
-    alert("Error: " + err.message);
-  } finally {
-    updateBtn.disabled = false;
-    updateBtn.textContent = "Actualizar";
-  }
-});
-
-async function deleteProduct(id) {
-  if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
-
-  const { error } = await supabaseClient.from("productos").delete().eq("id", id);
-  if (error) {
-    alert("Error al eliminar el producto: " + error.message);
-  } else {
-    loadAdminProducts();
-  }
-}
-
-// ------------------- GESTIÓN DEL BLOG -------------------
+const supabaseClient = supabase.createClient(https://bwkohmeobwplthvjihtd.supabase.co, sb_publishable_MfylsjMrOCQIK2fGwmPEdg_gXB-zhRo);
 
 document.addEventListener("DOMContentLoaded", () => {
-  const blogForm = document.getElementById("blog-form");
-  if (blogForm) {
-    blogForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const msg = document.getElementById("blog-msg");
-      const submitBtn = document.getElementById("b-submit-btn");
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Procesando artículo...";
-
-      if (msg) {
-        msg.style.color = "blue";
-        msg.textContent = "Guardando artículo...";
-      }
-
-      try {
-        const idEdicion = document.getElementById("b-id").value;
-        const fileInput = document.getElementById("b-imagen-file");
-        let imagenUrlFinal = document.getElementById("b-imagen-actual").value;
-
-        if (fileInput && fileInput.files && fileInput.files[0]) {
-          const nuevaUrl = await uploadImageToStorage(fileInput, 'productos');
-          if (nuevaUrl) {
-            imagenUrlFinal = nuevaUrl;
-          }
-        }
-
-        const contenidoCrudo = document.getElementById("b-contenido").value;
-        const contenidoFormateado = contenidoCrudo
-          .split("\n")
-          .filter(parrafo => parrafo.trim() !== "")
-          .map(parrafo => `<p style="margin-bottom: 1rem;">${parrafo.trim()}</p>`)
-          .join("");
-
-        const datosArticulo = {
-          titulo: document.getElementById("b-titulo").value.trim(),
-          categoria: document.getElementById("b-categoria").value.trim(),
-          resumen: document.getElementById("b-resumen").value.trim(),
-          contenido: contenidoFormateado,
-          imagen_url: imagenUrlFinal
-        };
-
-        let errorSupabase = null;
-
-        if (idEdicion) {
-          const { error } = await supabaseClient
-            .from("blog")
-            .update(datosArticulo)
-            .eq("id", idEdicion);
-          errorSupabase = error;
-        } else {
-          const { error } = await supabaseClient
-            .from("blog")
-            .insert([datosArticulo]);
-          errorSupabase = error;
-        }
-
-        if (errorSupabase) {
-          alert("Error al guardar en la base de datos: " + errorSupabase.message);
-          if (msg) {
-            msg.style.color = "red";
-            msg.textContent = "Error: " + errorSupabase.message;
-          }
-        } else {
-          if (msg) {
-            msg.style.color = "green";
-            msg.textContent = idEdicion ? "¡Artículo actualizado con éxito!" : "¡Artículo publicado con éxito!";
-          }
-          cancelarEdicionBlog();
-          loadAdminBlog();
-        }
-
-      } catch (err) {
-        alert("Ocurrió un error inesperado: " + err.message);
-        console.error(err);
-        if (msg) {
-          msg.style.color = "red";
-          msg.textContent = "Error crítico en el script.";
-        }
-      } finally {
-        submitBtn.disabled = false;
-      }
-    });
-  }
+    verificarSesion();
+    cargarProductosAdmin();
+    cargarTipsAdmin();
 });
 
-async function loadAdminBlog() {
-  const listEl = document.getElementById("blog-list");
-  if (!listEl) return;
+async function verificarSesion() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+        window.location.href = 'login.html';
+    } else {
+        const emailSpan = document.getElementById('user-email');
+        if(emailSpan) emailSpan.innerText = `Conectado: ${session.user.email}`;
+    }
+}
 
-  const { data: articulos, error } = await supabaseClient.from("blog").select("*").order("id", { ascending: false });
+async function cerrarSesion() {
+    await supabaseClient.auth.signOut();
+    window.location.href = 'login.html';
+}
 
-  if (error) return console.error(error);
+function cambiarPestana(pestana) {
+    const secProd = document.getElementById('seccion-productos');
+    const secTips = document.getElementById('seccion-tips');
+    const btnProd = document.getElementById('btn-tab-productos');
+    const btnTips = document.getElementById('btn-tab-tips');
 
-  listEl.innerHTML = "";
-  articulos.forEach(a => {
-    const tr = document.createElement("tr");
-    const imgMini = a.imagen_url || a.imagen;
-    const tdImg = imgMini ? `<img src="${imgMini}" alt="Miniatura" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">` : 'Sin foto';
-    
-    const aJson = JSON.stringify(a).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+    if (pestana === 'productos') {
+        secProd.style.display = 'block';
+        secTips.style.display = 'none';
+        btnProd.style.background = '#e63946';
+        btnProd.style.color = 'white';
+        btnTips.style.background = '#ddd';
+        btnTips.style.color = '#333';
+    } else {
+        secProd.style.display = 'none';
+        secTips.style.display = 'block';
+        btnTips.style.background = '#e63946';
+        btnTips.style.color = 'white';
+        btnProd.style.background = '#ddd';
+        btnProd.style.color = '#333';
+    }
+}
 
-    tr.innerHTML = `
-      <td>${tdImg}</td>
-      <td>${a.titulo}</td>
-      <td>${a.categoria}</td>
-      <td>
-        <button class="edit-btn" onclick='prepararEdicionBlog(${aJson})'>Editar</button>
-        <button class="delete-btn" onclick="deleteBlogArticle(${a.id})">Eliminar</button>
-      </td>
+async function subirArchivo(file, bucket) {
+    const fileName = `${Date.now()}_${file.name}`;
+    const { error } = await supabaseClient.storage.from(bucket).upload(fileName, file);
+    if (error) throw error;
+    const { data: publicURL } = supabaseClient.storage.from(bucket).getPublicUrl(fileName);
+    return publicURL.publicUrl;
+}
+
+// --- GESTIÓN DE COLORES ---
+function agregarCampoColor(nombreColor = '', urlImagen = '') {
+    const contenedor = document.getElementById('contenedor-colores');
+    const div = document.createElement('div');
+    div.style.cssText = "display: flex; gap: 5px; align-items: center; background: white; padding: 5px; border-radius: 3px;";
+    div.innerHTML = `
+        <input type="text" placeholder="Nombre (ej. Rosa)" value="${nombreColor}" class="input-nombre-color" style="padding: 4px; font-size: 0.8rem; border:1px solid #ccc; border-radius:3px; width:35%;">
+        <input type="file" accept="image/*" class="input-file-color" style="font-size: 0.75rem; width: 50%;">
+        ${urlImagen ? `<input type="hidden" class="input-url-color" value="${urlImagen}">` : ''}
+        <button type="button" onclick="this.parentElement.remove()" style="background:#e63946; color:white; border:none; padding:3px 6px; border-radius:3px; font-size:0.75rem; cursor:pointer;">X</button>
     `;
-    listEl.appendChild(tr);
-  });
+    contenedor.appendChild(div);
 }
 
-function prepararEdicionBlog(articulo) {
-  document.getElementById("b-id").value = articulo.id;
-  document.getElementById("b-titulo").value = articulo.titulo;
-  document.getElementById("b-categoria").value = articulo.categoria;
-  document.getElementById("b-resumen").value = articulo.resumen;
-  document.getElementById("b-imagen-actual").value = articulo.imagen_url || "";
-  
-  let contenidoLimpio = "";
-  if (articulo.contenido) {
-    contenidoLimpio = articulo.contenido
-      .replace(/<\/?p[^>]*>/g, "\n")
-      .trim();
-  }
-  document.getElementById("b-contenido").value = contenidoLimpio;
+// --- PRODUCTOS ---
+async function guardarProducto(e) {
+    e.preventDefault();
+    const id = document.getElementById('prod-id').value;
+    const nombre = document.getElementById('prod-nombre').value;
+    const precio = parseFloat(document.getElementById('prod-precio').value);
+    const categoria = document.getElementById('prod-categoria').value;
+    const descripcion = document.getElementById('prod-descripcion').value;
+    const en_oferta = document.getElementById('prod-oferta').checked;
+    const es_temporada = document.getElementById('prod-temporada').checked;
+    const fileInput = document.getElementById('prod-imagen-file');
 
-  document.getElementById("blog-form-title").textContent = "✏️ Editar Artículo del Blog";
-  document.getElementById("b-submit-btn").textContent = "Actualizar Artículo";
-  document.getElementById("b-cancel-btn").style.display = "inline-block";
+    let imagen_url = document.getElementById('prod-id').getAttribute('data-img-actual') || '';
 
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+        if (fileInput.files.length > 0) {
+            imagen_url = await subirArchivo(fileInput.files[0], 'productos');
+        }
+
+        if (!imagen_url && !id) {
+            alert('Debes subir una imagen principal.');
+            return;
+        }
+
+        const productoData = { nombre, precio, categoria, descripcion, imagen_url, en_oferta, es_temporada };
+        let productoId = id;
+
+        if (id) {
+            const { error } = await supabaseClient.from('productos').update(productoData).eq('id', id);
+            if (error) throw error;
+        } else {
+            const { data, error } = await supabaseClient.from('productos').insert([productoData]).select();
+            if (error) throw error;
+            productoId = data[0].id;
+        }
+
+        // Guardar colores dinámicos
+        const filasColores = document.querySelectorAll('#contenedor-colores > div');
+        for (let fila of filasColores) {
+            const nombreColor = fila.querySelector('.input-nombre-color').value;
+            const fileColorInput = fila.querySelector('.input-file-color');
+            let urlColor = fila.querySelector('.input-url-color') ? fila.querySelector('.input-url-color').value : '';
+
+            if (fileColorInput.files.length > 0) {
+                urlColor = await subirArchivo(fileColorInput.files[0], 'productos');
+            }
+
+            if (nombreColor && urlColor) {
+                await supabaseClient.from('colores_producto').insert([{
+                    producto_id: productoId,
+                    nombre_color: nombreColor,
+                    imagen_color: urlColor
+                }]);
+            }
+        }
+
+        alert('¡Producto guardado exitosamente!');
+        limpiarFormProducto();
+        cargarProductosAdmin();
+    } catch (error) {
+        console.error(error);
+        alert('Error: ' + error.message);
+    }
 }
 
-function cancelarEdicionBlog() {
-  document.getElementById("blog-form").reset();
-  document.getElementById("b-id").value = "";
-  document.getElementById("b-imagen-actual").value = "";
-  document.getElementById("blog-form-title").textContent = "Escribir Nuevo Artículo / Tip";
-  document.getElementById("b-submit-btn").textContent = "Publicar Artículo";
-  document.getElementById("b-cancel-btn").style.display = "none";
+async function cargarProductosAdmin() {
+    const { data, error } = await supabaseClient.from('productos').select('*').order('id', { ascending: false });
+    const contenedor = document.getElementById('lista-productos');
+    if (!contenedor) return;
+    contenedor.innerHTML = '';
+
+    if (error || !data) return;
+
+    data.forEach(prod => {
+        contenedor.innerHTML += `
+            <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; padding: 10px; border-radius: 4px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img src="${prod.imagen_url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 3px;">
+                    <div>
+                        <h4 style="font-size: 0.9rem;">${prod.nombre}</h4>
+                        <span style="font-size: 0.75rem; color: #666;">$${prod.precio}</span>
+                    </div>
+                </div>
+                <div>
+                    <button onclick="editarProducto(${prod.id})" style="background: #3a86ff; color: white; border: none; padding: 5px 10px; font-size: 0.75rem; border-radius: 3px; cursor:pointer;">Editar</button>
+                    <button onclick="eliminarProducto(${prod.id})" style="background: #e63946; color: white; border: none; padding: 5px 10px; font-size: 0.75rem; border-radius: 3px; cursor:pointer;">Eliminar</button>
+                </div>
+            </div>
+        `;
+    });
 }
 
-async function deleteBlogArticle(id) {
-  if (!confirm("¿Seguro que deseas eliminar este artículo?")) return;
+async function editarProducto(id) {
+    const { data, error } = await supabaseClient.from('productos').select('*').eq('id', id).single();
+    if (error) return alert('No se pudo cargar el producto');
 
-  const { error } = await supabaseClient.from("blog").delete().eq("id", id);
-  if (error) {
-    alert("Error al eliminar el artículo: " + error.message);
-  } else {
-    loadAdminBlog();
-  }
+    document.getElementById('prod-id').value = data.id;
+    document.getElementById('prod-id').setAttribute('data-img-actual', data.imagen_url);
+    document.getElementById('prod-nombre').value = data.nombre;
+    document.getElementById('prod-precio').value = data.precio;
+    document.getElementById('prod-categoria').value = data.categoria || '';
+    document.getElementById('prod-descripcion').value = data.descripcion || '';
+    document.getElementById('prod-oferta').checked = data.en_oferta;
+    document.getElementById('prod-temporada').checked = data.es_temporada;
+
+    document.getElementById('form-titulo-prod').innerText = "Editar Producto";
+    document.getElementById('btn-submit-prod').innerText = "Actualizar Producto";
+    document.getElementById('btn-cancelar-prod').style.display = 'inline-block';
+
+    const { data: colores } = await supabaseClient.from('colores_producto').select('*').eq('producto_id', id);
+    document.getElementById('contenedor-colores').innerHTML = '';
+    if (colores) {
+        colores.forEach(c => agregarCampoColor(c.nombre_color, c.imagen_color));
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-async function logout() {
-  await supabaseClient.auth.signOut();
-  location.reload();
+function limpiarFormProducto() {
+    document.getElementById('form-producto').reset();
+    document.getElementById('prod-id').value = '';
+    document.getElementById('prod-id').removeAttribute('data-img-actual');
+    document.getElementById('contenedor-colores').innerHTML = '';
+    document.getElementById('form-titulo-prod').innerText = "Agregar Nuevo Producto";
+    document.getElementById('btn-submit-prod').innerText = "Guardar Producto";
+    document.getElementById('btn-cancelar-prod').style.display = 'none';
+}
+
+async function eliminarProducto(id) {
+    if (confirm('¿Eliminar producto?')) {
+        await supabaseClient.from('productos').delete().eq('id', id);
+        cargarProductosAdmin();
+    }
+}
+
+// --- TIPS PARA MAMÁ ---
+async function guardarTip(e) {
+    e.preventDefault();
+    const id = document.getElementById('tip-id').value;
+    const titulo = document.getElementById('tip-titulo').value;
+    const breve_mensaje = document.getElementById('tip-breve').value;
+    const descripcion = document.getElementById('tip-descripcion').value;
+    const fileInput = document.getElementById('tip-imagen-file');
+
+    let imagen_url = document.getElementById('tip-id').getAttribute('data-img-actual') || '';
+
+    try {
+        if (fileInput.files.length > 0) {
+            imagen_url = await subirArchivo(fileInput.files[0], 'tips');
+        }
+
+        if (!imagen_url && !id) {
+            alert('Debes subir una imagen.');
+            return;
+        }
+
+        const tipData = { titulo, breve_mensaje, descripcion, imagen_url };
+
+        if (id) {
+            const { error } = await supabaseClient.from('tips_mamas').update(tipData).eq('id', id);
+            if (error) throw error;
+        } else {
+            const { error } = await supabaseClient.from('tips_mamas').insert([tipData]);
+            if (error) throw error;
+        }
+
+        alert('¡Tip guardado exitosamente!');
+        limpiarFormTip();
+        cargarTipsAdmin();
+    } catch (error) {
+        console.error(error);
+        alert('Error: ' + error.message);
+    }
+}
+
+async function cargarTipsAdmin() {
+    const { data, error } = await supabaseClient.from('tips_mamas').select('*').order('id', { ascending: false });
+    const contenedor = document.getElementById('lista-tips');
+    if (!contenedor) return;
+    contenedor.innerHTML = '';
+
+    if (error || !data) return;
+
+    data.forEach(tip => {
+        contenedor.innerHTML += `
+            <div style="display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; padding: 10px; border-radius: 4px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img src="${tip.imagen_url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 3px;">
+                    <div>
+                        <h4 style="font-size: 0.9rem;">${tip.titulo}</h4>
+                        <span style="font-size: 0.75rem; color: #666;">${tip.breve_mensaje}</span>
+                    </div>
+                </div>
+                <div>
+                    <button onclick="editarTip(${tip.id})" style="background: #3a86ff; color: white; border: none; padding: 5px 10px; font-size: 0.75rem; border-radius: 3px; cursor:pointer;">Editar</button>
+                    <button onclick="eliminarTip(${tip.id})" style="background: #e63946; color: white; border: none; padding: 5px 10px; font-size: 0.75rem; border-radius: 3px; cursor:pointer;">Eliminar</button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+async function editarTip(id) {
+    const { data, error } = await supabaseClient.from('tips_mamas').select('*').eq('id', id).single();
+    if (error) return alert('No se pudo cargar el tip');
+
+    document.getElementById('tip-id').value = data.id;
+    document.getElementById('tip-id').setAttribute('data-img-actual', data.imagen_url);
+    document.getElementById('tip-titulo').value = data.titulo;
+    document.getElementById('tip-breve').value = data.breve_mensaje;
+    document.getElementById('tip-descripcion').value = data.descripcion;
+
+    document.getElementById('form-titulo-tip').innerText = "Editar Tip";
+    document.getElementById('btn-submit-tip').innerText = "Actualizar Tip";
+    document.getElementById('btn-cancelar-tip').style.display = 'inline-block';
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function limpiarFormTip() {
+    document.getElementById('form-tip').reset();
+    document.getElementById('tip-id').value = '';
+    document.getElementById('tip-id').removeAttribute('data-img-actual');
+    document.getElementById('form-titulo-tip').innerText = "Publicar Nuevo Tip para Mamá";
+    document.getElementById('btn-submit-tip').innerText = "Publicar Tip";
+    document.getElementById('btn-cancelar-tip').style.display = 'none';
+}
+
+async function eliminarTip(id) {
+    if (confirm('¿Eliminar este tip?')) {
+        await supabaseClient.from('tips_mamas').delete().eq('id', id);
+        cargarTipsAdmin();
+    }
 }
