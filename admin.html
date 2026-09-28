@@ -73,7 +73,6 @@
           <option value="seguridad para el hogar">Seguridad para el hogar</option>
         </select>
         
-        <!-- Casilla para activar la etiqueta automática de oferta -->
         <label style="display: flex; align-items: center; gap: 8px; margin-top: 0.5rem; cursor: pointer; font-weight: bold;">
           <input type="checkbox" id="p-en-oferta" style="width: 18px; height: 18px;">
           ¿Marcar con etiqueta de Oferta flotante en la foto?
@@ -104,49 +103,54 @@
     </div>
 
     <!-- Pestaña del Blog -->
-<div id="blog-tab" class="tab-content hidden">
-  <h3>Escribir Nuevo Artículo / Tip</h3>
-  <form id="blog-form" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-    
-    <input type="text" id="b-titulo" placeholder="Título del artículo" required style="padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px;">
-    
-    <input type="text" id="b-categoria" placeholder="Categoría (Ej: Cuidado, Alimentación, Sueño)" required style="padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px;">
-    
-    <!-- SECCIÓN DE CARGA DE IMAGEN (JPG / PNG) -->
-    <div style="background: #f9f9f9; padding: 0.8rem; border: 2px dashed #e84393; border-radius: 6px; display: flex; flex-direction: column; gap: 0.4rem;">
-      <label for="b-imagen-file" style="font-size: 0.9rem; font-weight: bold; color: #333;">📸 Selecciona la imagen del artículo (PNG o JPG):</label>
-      <input type="file" id="b-imagen-file" accept=".png, .jpg, .jpeg" style="padding: 0.4rem; background: #fff; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+    <div id="blog-tab" class="tab-content hidden">
+      <h3 id="blog-form-title">Escribir Nuevo Artículo / Tip</h3>
+      <form id="blog-form" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+        
+        <input type="hidden" id="b-id">
+        <input type="hidden" id="b-imagen-actual">
+        
+        <input type="text" id="b-titulo" placeholder="Título del artículo" required style="padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px;">
+        
+        <input type="text" id="b-categoria" placeholder="Categoría (Ej: Cuidado, Alimentación, Sueño)" required style="padding: 0.8rem; border: 1px solid #ccc; border-radius: 4px;">
+        
+        <!-- SECCIÓN DE CARGA DE IMAGEN (JPG / PNG) -->
+        <div style="background: #f9f9f9; padding: 0.8rem; border: 2px dashed #e84393; border-radius: 6px; display: flex; flex-direction: column; gap: 0.4rem;">
+          <label for="b-imagen-file" style="font-size: 0.9rem; font-weight: bold; color: #333;">📸 Selecciona la imagen del artículo (PNG o JPG):</label>
+          <input type="file" id="b-imagen-file" accept=".png, .jpg, .jpeg" style="padding: 0.4rem; background: #fff; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+        </div>
+        
+        <textarea id="b-resumen" placeholder="Resumen corto (aparecerá en la vista previa lateral)" required style="padding: 0.8rem; height: 70px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+        
+        <textarea id="b-contenido" placeholder="Contenido completo del artículo. Puedes escribir varios párrafos (cada salto de línea se guardará como párrafo independiente)" required style="padding: 0.8rem; height: 120px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+        
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="submit" id="b-submit-btn" class="add-btn" style="background: #e84393; color: white; border: none; padding: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer; flex: 1;">Publicar Artículo</button>
+          <button type="button" id="b-cancel-btn" onclick="cancelarEdicionBlog()" style="background: #95a5a6; color: white; border: none; padding: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer; display: none;">Cancelar</button>
+        </div>
+      
+      </form>
+      
+      <p id="blog-msg" style="margin-top: 0.5rem; font-weight: bold;"></p>
+
+      <h3 style="margin-top: 2rem;">Artículos Publicados</h3>
+      <table class="item-list-table">
+        <thead>
+          <tr>
+            <th>Imagen</th>
+            <th>Título</th>
+            <th>Categoría</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="blog-list">
+          <!-- Se cargan dinámicamente -->
+        </tbody>
+      </table>
     </div>
-    
-    <textarea id="b-resumen" placeholder="Resumen corto (aparecerá en la vista previa lateral)" required style="padding: 0.8rem; height: 70px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
-    
-    <textarea id="b-contenido" placeholder="Contenido completo del artículo (opcional)" style="padding: 0.8rem; height: 120px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
-    
-    <button type="submit" class="add-btn" style="background: #e84393; color: white; border: none; padding: 0.8rem; font-weight: bold; border-radius: 4px; cursor: pointer;">Publicar Artículo</button>
-  
-  </form>
-  
-  <p id="blog-msg" style="margin-top: 0.5rem; font-weight: bold;"></p>
-
-  <h3 style="margin-top: 2rem;">Artículos Publicados</h3>
-  <table class="item-list-table">
-    <thead>
-      <tr>
-        <th>Imagen</th>
-        <th>Título</th>
-        <th>Categoría</th>
-        <th>Acción</th>
-      </tr>
-    </thead>
-    <tbody id="blog-list">
-      <!-- Se cargan dinámicamente -->
-    </tbody>
-  </table>
-</div>
 
   </div>
 
-  </div>
   <!-- Modal para Editar Producto -->
   <div id="edit-modal" class="modal-overlay hidden">
     <div class="modal-box">
@@ -166,8 +170,8 @@
         
         <label for="edit-p-categoria">Categoría del Producto:</label>
         <select id="edit-p-categoria" required style="padding: 0.6rem; border-radius: 4px; border: 1px solid #ccc;">
-          <option value="ofertas">🔥 Ofertas Especiales</option>
-          <option value="temporada">🌟 Por Temporada</option>
+          <option value="ofertas">Ofertas Especiales</option>
+          <option value="temporada">Por Temporada</option>
           <option value="paseo y transporte">Paseo y transporte</option>
           <option value="dormitorio y descanso">Dormitorio y descanso</option>
           <option value="alimentacion y lactancia">Alimentación y lactancia</option>
@@ -177,7 +181,6 @@
           <option value="seguridad para el hogar">Seguridad para el hogar</option>
         </select>
         
-        <!-- Casilla de oferta para el modal de edición -->
         <label style="display: flex; align-items: center; gap: 8px; margin-top: 0.3rem; cursor: pointer; font-weight: bold;">
           <input type="checkbox" id="edit-p-en-oferta" style="width: 18px; height: 18px;">
           ¿Marcar con etiqueta de Oferta flotante en la foto?
