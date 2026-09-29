@@ -6,7 +6,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let todosLosProductos = [];
 let todosLosProductosGenerales = [];
-let productosMostradosCount = 8; // Empieza mostrando 8 productos en la sección principal
+let productosMostradosCount = 8;
 let carrito = [];
 let currentSlide = 0;
 let selectedCategory = 'todos';
@@ -14,10 +14,8 @@ let indiceSliderOfertas = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchProductosTienda();
+  fetchBlogArticles();
   initSlider();
-  
-  // Cargamos el blog optimizado y las secciones especiales de la barra lateral
-  loadFrontendBlog();
   cargarSeccionesSidebarDirecto();
 });
 
@@ -53,7 +51,7 @@ async function fetchProductosTienda() {
     const { data, error } = await supabaseClient
       .from("productos")
       .select("*")
-      .order("id", { ascending: false }); // Los más recientes primero
+      .order("id", { ascending: false });
 
     if (error) {
       console.error("Error al obtener productos:", error);
@@ -64,7 +62,6 @@ async function fetchProductosTienda() {
 
     todosLosProductos = data;
     
-    // Filtramos los productos generales (excluyendo la categoría fija de "ofertas" que va en el sidebar)
     todosLosProductosGenerales = data.filter(p => {
       const cat = p.categoria ? p.categoria.toLowerCase().trim() : "";
       return cat !== "ofertas";
@@ -78,7 +75,6 @@ async function fetchProductosTienda() {
 }
 
 function renderizarSeccionesGenerales() {
-  // Filtrar por categoría seleccionada si no es "todos"
   let productosAFiltrar = todosLosProductosGenerales;
   if (selectedCategory !== 'todos') {
     productosAFiltrar = todosLosProductosGenerales.filter(p => {
@@ -87,11 +83,9 @@ function renderizarSeccionesGenerales() {
     });
   }
 
-  // 1. RENDERIZAR "LO NUEVO" (Exactamente los primeros 3 productos más recientes)
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
-  const productosNuevos = productosAFiltrar.slice(0, 3);
-  
   if (loNuevoContainer) {
+    const productosNuevos = productosAFiltrar.slice(0, 4);
     if (productosNuevos.length === 0) {
       loNuevoContainer.innerHTML = "<p>No hay novedades disponibles en esta categoría.</p>";
     } else {
@@ -99,49 +93,43 @@ function renderizarSeccionesGenerales() {
     }
   }
 
-  // 2. RENDERIZAR "NUESTROS PRODUCTOS" (A partir del 4to producto en adelante)
-  const productosRestantes = productosAFiltrar.slice(3);
-  renderizarNuestrosProductosFiltrados(productosRestantes);
+  renderizarNuestrosProductosFiltrados(productosAFiltrar);
 }
 
-function renderizarNuestrosProductosFiltrados(listaRestantes) {
+function renderizarNuestrosProductosFiltrados(listaProductos) {
   const container = document.getElementById("nuestros-productos-grid");
   const btnVerMas = document.getElementById("btn-ver-mas");
   if (!container) return;
 
-  const productosSlice = listaRestantes.slice(0, productosMostradosCount);
+  const productosSlice = listaProductos.slice(0, productosMostradosCount);
 
   if (productosSlice.length === 0) {
-    container.innerHTML = "<p>No hay más productos disponibles en este momento.</p>";
+    container.innerHTML = "<p>No hay productos disponibles en este momento.</p>";
     if (btnVerMas) btnVerMas.style.display = "none";
     return;
   }
 
   container.innerHTML = productosSlice.map(prod => generarTarjetaProducto(prod)).join('');
 
-  // Control estricto y seguro del botón Ver Más
   if (btnVerMas) {
-    if (productosMostradosCount >= listaRestantes.length) {
-      btnVerMas.style.display = "none"; // Ocultar si ya se mostraron todos
+    if (productosMostradosCount >= listaProductos.length) {
+      btnVerMas.style.display = "none";
     } else {
-      btnVerMas.style.display = "inline-block"; // Mostrar si aún hay más por desplegar
+      btnVerMas.style.display = "inline-block";
     }
   }
 }
 
-// Función para cambiar de categoría desde los botones de la barra de herramientas
 function filterByCategory(cat, btnElement) {
   selectedCategory = cat;
-  productosMostradosCount = 8; // Resetear conteo a 8 al cambiar de categoría
+  productosMostradosCount = 8;
 
-  // Actualizar clases activas de los botones
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   if (btnElement) btnElement.classList.add('active');
 
   renderizarSeccionesGenerales();
 }
 
-// Búsqueda en tiempo real por texto
 function filterProducts() {
   const query = document.getElementById("search-bar").value.toLowerCase();
   
@@ -157,14 +145,12 @@ function filterProducts() {
 
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
   if (loNuevoContainer) {
-    loNuevoContainer.innerHTML = filtered.slice(0, 3).map(prod => generarTarjetaProducto(prod)).join('') || "<p>No se encontraron novedades.</p>";
+    loNuevoContainer.innerHTML = filtered.slice(0, 4).map(prod => generarTarjetaProducto(prod)).join('') || "<p>No se encontraron novedades.</p>";
   }
 
-  const restoFiltrado = filtered.slice(3);
-  renderizarNuestrosProductosFiltrados(restoFiltrado);
+  renderizarNuestrosProductosFiltrados(filtered);
 }
 
-// Función que se ejecuta al hacer clic en el botón "Ver más" (suma 8 productos más del resto)
 function cargarMasProductos() {
   productosMostradosCount += 8;
   renderizarSeccionesGenerales();
@@ -190,7 +176,35 @@ function generarTarjetaProducto(prod) {
   `;
 }
 
-// ------------------- CARRITO -------------------
+// ------------------- BLOG & CARRITO -------------------
+async function fetchBlogArticles() {
+  const container = document.querySelector(".blog-posts");
+  if (!container) return;
+
+  try {
+    const { data: articulos, error } = await supabaseClient
+      .from("blog")
+      .select("*")
+      .order("id", { ascending: false });
+
+    if (error || !articulos || articulos.length === 0) return;
+
+    container.innerHTML = "";
+    articulos.forEach((art) => {
+      const card = document.createElement("article");
+      card.className = "blog-card";
+      card.innerHTML = `
+        <span class="blog-tag">${art.categoria}</span>
+        <h4>${art.titulo}</h4>
+        <p>${art.resumen}</p>
+      `;
+      container.appendChild(card);
+    });
+  } catch (err) {
+    console.error("Error al cargar blog:", err);
+  }
+}
+
 function addToCart(id, nombre, precio) {
   const itemExistente = carrito.find((item) => item.id === id);
   if (itemExistente) {
@@ -231,82 +245,6 @@ function updateCartUI() {
     `;
     itemsContainer.appendChild(div);
   });
-}
-
-// ------------------- BLOG & TIPS -------------------
-async function loadFrontendBlog() {
-  const container = document.getElementById("blog-container");
-  const btnVerMas = document.getElementById("ver-mas-blog-btn");
-  if (!container) return;
-
-  const { data: articulos, error } = await supabaseClient
-    .from("blog")
-    .select("*")
-    .order("id", { ascending: false });
-
-  if (error) {
-    console.error("Error al cargar el blog:", error);
-    return;
-  }
-
-  if (!articulos || articulos.length === 0) {
-    container.innerHTML = "<p>Pronto subiremos nuevos tips y consejos para ti.</p>";
-    return;
-  }
-
-  const limiteInicial = 3;
-  const articulosAEmpezar = articulos.slice(0, limiteInicial);
-
-  function renderizar(lista) {
-    container.innerHTML = "";
-    lista.forEach(a => {
-      const img = a.imagen_url || "logo.PNG";
-      const card = document.createElement("div");
-      card.className = "blog-card";
-      card.style.cssText = "background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 1rem;";
-      
-      card.innerHTML = `
-        <img src="${img}" alt="${a.titulo}" style="width: 100%; height: 160px; object-fit: cover;">
-        <div style="padding: 1rem;">
-          <span style="font-size: 0.8rem; color: #e84393; font-weight: bold; text-transform: uppercase;">${a.categoria}</span>
-          <h3 style="font-size: 1.1rem; margin: 0.5rem 0; color: #333;">${a.titulo}</h3>
-          <p id="resumen-${a.id}" style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">${a.resumen}</p>
-          <div id="contenido-completo-${a.id}" style="display: none; font-size: 0.9rem; color: #444; margin-bottom: 1rem; line-height: 1.5;">
-            ${a.contenido || a.resumen}
-          </div>
-          <button onclick="toggleLeerMas(${a.id})" id="btn-leer-${a.id}" style="background: none; border: none; color: #e84393; font-weight: bold; font-size: 0.9rem; cursor: pointer; padding: 0;">Leer más &rarr;</button>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
-
-  renderizar(articulosAEmpezar);
-
-  if (articulos.length > limiteInicial && btnVerMas) {
-    btnVerMas.style.display = "inline-block";
-    btnVerMas.onclick = () => {
-      renderizar(articulos);
-      btnVerMas.style.display = "none";
-    };
-  }
-}
-
-// Función para expandir el artículo completo al hacer clic
-function toggleLeerMas(id) {
-  const contenidoDiv = document.getElementById(`contenido-completo-${id}`);
-  const resumenP = document.getElementById(`resumen-${id}`);
-  const btn = document.getElementById(`btn-leer-${id}`);
-
-  if (contenidoDiv.style.display === "none") {
-    contenidoDiv.style.display = "block";
-    resumenP.style.display = "none";
-    btn.innerHTML = "&larr; Leer menos";
-  } else {
-    contenidoDiv.style.display = "none";
-    resumenP.style.display = "block";
-    btn.innerHTML = "Leer más &rarr;";
-  }
 }
 
 function toggleCart() {
@@ -399,25 +337,19 @@ async function cargarSeccionesSidebarDirecto() {
     const { data: temporada, error: errTemporada } = await supabaseClient
       .from("productos")
       .select("*")
-      .eq("categoria", "temporada");
+      .eq("categoria", "dormitorio y descanso");
 
-    const temporadaContainer = document.getElementById("temporada-container");
-    if (temporadaContainer && !errTemporada) {
-      if (!temporada || temporada.length === 0) {
-        temporadaContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay productos de temporada</p>";
-      } else {
-        temporadaContainer.innerHTML = temporada.map(prod => `
-          <div style="background: white; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.8rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">
-            <h4 style="font-size: 0.95rem; margin: 6px 0 3px; color: #2f2f2f;">${prod.nombre}</h4>
-            <p style="color: #19efee; filter: brightness(0.6); font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
-            <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #19efee; color: #2f2f2f; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Comprar</button>
-          </div>
-        `).join('');
-      }
+    const temporadaContainer = document.getElementById("temporada-box-content");
+    if (temporadaContainer && !errTemporada && temporada && temporada.length > 0) {
+      const prodTemp = temporada[0];
+      temporadaContainer.innerHTML = `
+        <img src="${prodTemp.imagen_url || prodTemp.imagen || 'logo.PNG'}" alt="${prodTemp.nombre}" style="width: 100%; height: 130px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">
+        <h4 style="font-size: 0.95rem; margin-bottom: 4px; color: #2f2f2f;">${prodTemp.nombre}</h4>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 8px;">${prodTemp.descripcion || ''}</p>
+        <button onclick="addToCart(${prodTemp.id}, '${prodTemp.nombre}', ${prodTemp.precio})" style="background: #19efee; color: #2f2f2f; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Ver Detalles</button>
+      `;
     }
-
   } catch (err) {
-    console.error("Error cargando secciones laterales:", err);
+    console.error("Error al cargar secciones del sidebar:", err);
   }
 }
