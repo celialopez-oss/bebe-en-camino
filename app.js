@@ -6,7 +6,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let todosLosProductos = [];
 let todosLosProductosGenerales = [];
-let productosMostradosCount = 8;
+let productosMostradosCount = 8; // Empieza mostrando 8 productos en la sección principal
 let carrito = [];
 let currentSlide = 0;
 let selectedCategory = 'todos';
@@ -16,6 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchProductosTienda();
   fetchBlogArticles();
   initSlider();
+  
+  // Cargamos las secciones especiales de la barra lateral de inmediato
   cargarSeccionesSidebarDirecto();
 });
 
@@ -51,7 +53,7 @@ async function fetchProductosTienda() {
     const { data, error } = await supabaseClient
       .from("productos")
       .select("*")
-      .order("id", { ascending: false });
+      .order("id", { ascending: false }); // Los más recientes primero
 
     if (error) {
       console.error("Error al obtener productos:", error);
@@ -62,6 +64,7 @@ async function fetchProductosTienda() {
 
     todosLosProductos = data;
     
+    // Filtramos los productos generales (excluyendo la categoría fija de "ofertas" que va en el sidebar)
     todosLosProductosGenerales = data.filter(p => {
       const cat = p.categoria ? p.categoria.toLowerCase().trim() : "";
       return cat !== "ofertas";
@@ -75,6 +78,7 @@ async function fetchProductosTienda() {
 }
 
 function renderizarSeccionesGenerales() {
+  // Filtrar por categoría seleccionada si no es "todos"
   let productosAFiltrar = todosLosProductosGenerales;
   if (selectedCategory !== 'todos') {
     productosAFiltrar = todosLosProductosGenerales.filter(p => {
@@ -83,6 +87,7 @@ function renderizarSeccionesGenerales() {
     });
   }
 
+  // 1. RENDERIZAR "LO NUEVO" (Exactamente los primeros 4)
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
   if (loNuevoContainer) {
     const productosNuevos = productosAFiltrar.slice(0, 4);
@@ -93,6 +98,7 @@ function renderizarSeccionesGenerales() {
     }
   }
 
+  // 2. RENDERIZAR "NUESTROS PRODUCTOS"
   renderizarNuestrosProductosFiltrados(productosAFiltrar);
 }
 
@@ -120,16 +126,19 @@ function renderizarNuestrosProductosFiltrados(listaProductos) {
   }
 }
 
+// Función para cambiar de categoría desde los botones de la barra de herramientas
 function filterByCategory(cat, btnElement) {
   selectedCategory = cat;
-  productosMostradosCount = 8;
+  productosMostradosCount = 8; // Resetear conteo al cambiar de categoría
 
+  // Actualizar clases activas de los botones
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   if (btnElement) btnElement.classList.add('active');
 
   renderizarSeccionesGenerales();
 }
 
+// Búsqueda en tiempo real por texto
 function filterProducts() {
   const query = document.getElementById("search-bar").value.toLowerCase();
   
@@ -151,6 +160,7 @@ function filterProducts() {
   renderizarNuestrosProductosFiltrados(filtered);
 }
 
+// Función que se ejecuta al hacer clic en el botón "Ver más"
 function cargarMasProductos() {
   productosMostradosCount += 8;
   renderizarSeccionesGenerales();
@@ -158,6 +168,7 @@ function cargarMasProductos() {
 
 function generarTarjetaProducto(prod) {
   const imagen = prod.imagen_url || prod.imagen || 'logo.PNG';
+  // Etiqueta visual flotante si el producto tiene marcada la casilla de oferta en el admin
   const badgeOferta = prod.en_oferta ? '<span style="position: absolute; top: 10px; left: 10px; background: #e84393; color: white; padding: 3px 8px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; z-index: 10;">🔥 OFERTA</span>' : '';
   
   return `
@@ -337,19 +348,25 @@ async function cargarSeccionesSidebarDirecto() {
     const { data: temporada, error: errTemporada } = await supabaseClient
       .from("productos")
       .select("*")
-      .eq("categoria", "dormitorio y descanso");
+      .eq("categoria", "temporada");
 
-    const temporadaContainer = document.getElementById("temporada-box-content");
-    if (temporadaContainer && !errTemporada && temporada && temporada.length > 0) {
-      const prodTemp = temporada[0];
-      temporadaContainer.innerHTML = `
-        <img src="${prodTemp.imagen_url || prodTemp.imagen || 'logo.PNG'}" alt="${prodTemp.nombre}" style="width: 100%; height: 130px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">
-        <h4 style="font-size: 0.95rem; margin-bottom: 4px; color: #2f2f2f;">${prodTemp.nombre}</h4>
-        <p style="font-size: 0.85rem; color: #666; margin-bottom: 8px;">${prodTemp.descripcion || ''}</p>
-        <button onclick="addToCart(${prodTemp.id}, '${prodTemp.nombre}', ${prodTemp.precio})" style="background: #19efee; color: #2f2f2f; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Ver Detalles</button>
-      `;
+    const temporadaContainer = document.getElementById("temporada-container");
+    if (temporadaContainer && !errTemporada) {
+      if (!temporada || temporada.length === 0) {
+        temporadaContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay productos de temporada</p>";
+      } else {
+        temporadaContainer.innerHTML = temporada.map(prod => `
+          <div style="background: white; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.8rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">
+            <h4 style="font-size: 0.95rem; margin: 6px 0 3px; color: #2f2f2f;">${prod.nombre}</h4>
+            <p style="color: #19efee; filter: brightness(0.6); font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
+            <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #19efee; color: #2f2f2f; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Comprar</button>
+          </div>
+        `).join('');
+      }
     }
+
   } catch (err) {
-    console.error("Error al cargar secciones del sidebar:", err);
+    console.error("Error cargando secciones laterales:", err);
   }
 }
