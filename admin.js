@@ -84,7 +84,7 @@ async function loadAdminProducts() {
     
     tr.innerHTML = `
       <td><img src="${p.imagen_url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
-      <td>${p.nombre} ${p.en_oferta ? '<span style="color:red; font-weight:bold; font-size:0.8rem;">(OFERTA)</span>' : ''}</td>
+      <td>${p.nombre}</td>
       <td>$${parseFloat(p.precio).toFixed(2)}</td>
       <td>${p.categoria}</td>
       <td>
@@ -117,16 +117,12 @@ document.getElementById("product-form").addEventListener("submit", async (e) => 
       return;
     }
 
-    const enOfertaCheckbox = document.getElementById("p-en-oferta");
-    const enOferta = enOfertaCheckbox ? enOfertaCheckbox.checked : false;
-
     const nuevoProducto = {
       nombre: document.getElementById("p-nombre").value,
       descripcion: document.getElementById("p-descripcion").value,
       precio: parseFloat(document.getElementById("p-precio").value),
       categoria: document.getElementById("p-categoria").value,
-      imagen_url: imagenUrl,
-      en_oferta: enOferta
+      imagen_url: imagenUrl
     };
 
     const { error } = await supabaseClient.from("productos").insert([nuevoProducto]);
@@ -157,11 +153,6 @@ function openEditModal(producto) {
   document.getElementById("edit-p-precio").value = producto.precio;
   document.getElementById("edit-p-categoria").value = producto.categoria;
   document.getElementById("edit-p-imagen-actual").value = producto.imagen_url;
-  
-  const editOfertaCheckbox = document.getElementById("edit-p-en-oferta");
-  if (editOfertaCheckbox) {
-    editOfertaCheckbox.checked = producto.en_oferta === true;
-  }
 
   document.getElementById("edit-modal").classList.remove("hidden");
 }
@@ -185,21 +176,18 @@ document.getElementById("edit-product-form").addEventListener("submit", async (e
   try {
     let imagenUrl = imagenActual;
 
+    // Si seleccionó una nueva foto, la subimos
     if (fileInput.files.length > 0) {
       const nuevaUrl = await uploadImageToStorage(fileInput);
       if (nuevaUrl) imagenUrl = nuevaUrl;
     }
-
-    const editOfertaCheckbox = document.getElementById("edit-p-en-oferta");
-    const enOferta = editOfertaCheckbox ? editOfertaCheckbox.checked : false;
 
     const productoActualizado = {
       nombre: document.getElementById("edit-p-nombre").value,
       descripcion: document.getElementById("edit-p-descripcion").value,
       precio: parseFloat(document.getElementById("edit-p-precio").value),
       categoria: document.getElementById("edit-p-categoria").value,
-      imagen_url: imagenUrl,
-      en_oferta: enOferta
+      imagen_url: imagenUrl
     };
 
     const { error } = await supabaseClient
