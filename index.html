@@ -75,43 +75,23 @@
       <div class="sidebar-box">
         <h3>Categorías</h3>
         <div class="categories-list">
-          <button class="cat-btn active" onclick="filterByCategory('todos', this)">🌟 Todos los productos</button>
-          <button class="cat-btn" onclick="filterByCategory('paseo y transporte', this)">🚗 Paseo y transporte</button>
-          <button class="cat-btn" onclick="filterByCategory('dormitorio y descanso', this)">🛏️ Dormitorio y descanso</button>
-          <button class="cat-btn" onclick="filterByCategory('alimentacion y lactancia', this)">🍼 Alimentación y lactancia</button>
-          <button class="cat-btn" onclick="filterByCategory('juguetes y estimulacion', this)">🧸 Juguetes y estimulación</button>
-          <button class="cat-btn" onclick="filterByCategory('higiene y cuidado del bebe', this)">🛁 Higiene y cuidado del bebé</button>
-          <button class="cat-btn" onclick="filterByCategory('ropa y moda', this)">👕 Ropa y moda</button>
-          <button class="cat-btn" onclick="filterByCategory('seguridad para el hogar', this)">🛡️ Seguridad para el hogar</button>
+          <button class="cat-btn active" onclick="filterByCategory('todos', this)">Todos los productos</button>
+          <button class="cat-btn" onclick="filterByCategory('paseo y transporte', this)">Paseo y transporte</button>
+          <button class="cat-btn" onclick="filterByCategory('dormitorio y descanso', this)">Dormitorio y descanso</button>
+          <button class="cat-btn" onclick="filterByCategory('alimentacion y lactancia', this)">Alimentación y lactancia</button>
+          <button class="cat-btn" onclick="filterByCategory('juguetes y estimulacion', this)">Juguetes y estimulación</button>
+          <button class="cat-btn" onclick="filterByCategory('higiene y cuidado del bebe', this)">Higiene y cuidado del bebé</button>
+          <button class="cat-btn" onclick="filterByCategory('ropa y moda', this)">Ropa y moda</button>
+          <button class="cat-btn" onclick="filterByCategory('seguridad para el hogar', this)">Seguridad para el hogar</button>
         </div>
       </div>
-
-      <!-- Ofertas Especiales (Slider lateral dinámico) -->
-      <div class="sidebar-box">
-        <h3>🔥 Ofertas Especiales</h3>
-        <div id="ofertas-slider">
-          <!-- Cargado dinámicamente desde app.js -->
-          <p style="font-size: 0.85rem; color: #666;">Cargando ofertas...</p>
-        </div>
-      </div>
-
-      <!-- Destacado de Temporada -->
-      <div class="sidebar-box">
-        <h3>⭐ Destacado de Temporada</h3>
-        <div id="temporada-box-content">
-          <!-- Cargado dinámicamente desde app.js -->
-          <p style="font-size: 0.85rem; color: #666;">Cargando temporada...</p>
-        </div>
-      </div>
-
-    </aside>
 
     <!-- ÁREA DE CONTENIDO PRINCIPAL -->
     <main class="content-area">
       
       <!-- Sección: Lo Nuevo -->
       <section>
-        <h2 class="section-title">✨ Lo Nuevo</h2>
+        <h2 class="section-title">Lo Nuevo</h2>
         <div class="products-grid" id="lo-nuevo-grid">
           <!-- Tarjetas cargadas dinámicamente -->
         </div>
@@ -119,7 +99,7 @@
 
       <!-- Sección: Nuestros Productos -->
       <section id="nuestros-productos">
-        <h2 class="section-title">📦 Nuestros Productos</h2>
+        <h2 class="section-title">Nuestros Productos</h2>
         <div class="products-grid" id="nuestros-productos-grid">
           <!-- Tarjetas cargadas dinámicamente -->
         </div>
@@ -128,13 +108,34 @@
         </div>
       </section>
 
-      <!-- Sección: Consejos / Blog -->
-      <section>
-        <h2 class="section-title">💡 Tips y Consejos para Mamás</h2>
-        <div class="blog-posts">
-          <!-- Cargado dinámicamente desde app.js -->
+      <!-- SIDEBAR DE NAVEGACIÓN Y TIPS -->
+    <aside class="sidebar">
+      
+      <!-- Categorías -->
+      <div class="sidebar-box">
+        <h3>Categorías</h3>
+        <div class="categories-list">
+          <button class="cat-btn active" onclick="filterByCategory('todos', this)">Todos los productos</button>
+          <button class="cat-btn" onclick="filterByCategory('paseo y transporte', this)">Paseo y transporte</button>
+          <button class="cat-btn" onclick="filterByCategory('dormitorio y descanso', this)">Dormitorio y descanso</button>
+          <button class="cat-btn" onclick="filterByCategory('alimentacion y lactancia', this)">Alimentación y lactancia</button>
+          <button class="cat-btn" onclick="filterByCategory('juguetes y estimulacion', this)">Juguetes y estimulación</button>
+          <button class="cat-btn" onclick="filterByCategory('higiene y cuidado del bebe', this)">Higiene y cuidado del bebé</button>
+          <button class="cat-btn" onclick="filterByCategory('ropa y moda', this)">Ropa y moda</button>
+          <button class="cat-btn" onclick="filterByCategory('seguridad para el hogar', this)">Seguridad para el hogar</button>
         </div>
-      </section>
+      </div>
+
+      <!-- Tips y Consejos (Movido a la barra lateral) -->
+      <div class="sidebar-box">
+        <h3>Tips y Consejos</h3>
+        <div class="blog-posts" id="sidebar-blog-container" style="display: flex; flex-direction: column; gap: 1rem;">
+          <!-- Cargado dinámicamente desde app.js -->
+          <p style="font-size: 0.85rem; color: #666;">Cargando consejos...</p>
+        </div>
+      </div>
+
+    </aside>
 
     </main>
   </div>
