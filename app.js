@@ -98,6 +98,71 @@ function renderizarSeccionesGenerales() {
     }
   }
 
+async function loadFrontendBlog() {
+  const container = document.getElementById("blog-container");
+  const btnVerMas = document.getElementById("ver-mas-blog-btn");
+  if (!container) return;
+
+  // Traemos todos los artículos ordenados del más nuevo al más antiguo
+  const { data: articulos, error } = await supabaseClient
+    .from("blog")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) {
+    console.error("Error al cargar el blog:", error);
+    return;
+  }
+
+  if (!articulos || articulos.length === 0) {
+    container.innerHTML = "<p>Pronto subiremos nuevos tips y consejos para ti.</p>";
+    return;
+  }
+
+  // Definimos cuántos mostrar inicialmente (por ejemplo, los 3 más recientes)
+  const limiteInicial = 3;
+  const articulosAEmpezar = articulos.slice(0, limiteInicial);
+
+  // Función para renderizar los artículos en HTML
+  function renderizar(lista) {
+    container.innerHTML = "";
+    lista.forEach(a => {
+      const img = a.imagen_url || "placeholder.png";
+      const card = document.createElement("div");
+      card.className = "blog-card";
+      card.style.cssText = "background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 1rem;";
+      
+      card.innerHTML = `
+        <img src="${img}" alt="${a.titulo}" style="width: 100%; height: 160px; object-fit: cover;">
+        <div style="padding: 1rem;">
+          <span style="font-size: 0.8rem; color: #e84393; font-weight: bold; text-transform: uppercase;">${a.categoria}</span>
+          <h3 style="font-size: 1.1rem; margin: 0.5rem 0; color: #333;">${a.titulo}</h3>
+          <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">${a.resumen}</p>
+          <a href="#" onclick="alert('Pronto abriremos el artículo completo: ${a.titulo}')" style="color: #e84393; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Leer más &rarr;</a>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  // Mostramos los primeros 3 al cargar
+  renderizar(articulosAEmpezar);
+
+  // Si hay más de 3 artículos, habilitamos el botón "Ver más"
+  if (articulos.length > limiteInicial && btnVerMas) {
+    btnVerMas.style.display = "inline-block";
+    btnVerMas.onclick = () => {
+      renderizar(articulos); // Muestra todos
+      btnVerMas.style.display = "none"; // Oculta el botón una vez expandido
+    };
+  }
+}
+
+// Ejecutar al cargar la página principal
+document.addEventListener("DOMContentLoaded", () => {
+  loadFrontendBlog();
+});
+  
   // 2. RENDERIZAR "NUESTROS PRODUCTOS"
   renderizarNuestrosProductosFiltrados(productosAFiltrar);
 }
