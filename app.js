@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchProductosTienda();
   fetchBlogArticles();
   initSlider();
-  cargarSeccionesSidebarDirecto();
 });
 
 // ------------------- SLIDER PRINCIPAL -------------------
@@ -63,6 +62,9 @@ async function fetchProductosTienda() {
 
     todosLosProductos = data;
     renderizarSeccionesGenerales();
+    
+    // Cargamos los sliders del sidebar una vez que los datos estén descargados
+    cargarSeccionesSidebarDirecto();
 
   } catch (err) {
     console.error("Excepción cargando tienda:", err);
@@ -239,7 +241,6 @@ function renderizarBlogParcial(limite) {
     container.appendChild(card);
   });
 
-  // Gestionar botón "Ver más artículos" del blog si existe en el HTML
   const btnVerMasBlog = document.getElementById("ver-mas-blog-btn");
   if (btnVerMasBlog) {
     if (listaArticulosBlogGlobal.length > limite) {
@@ -383,7 +384,7 @@ async function cargarSeccionesSidebarDirecto() {
       }
     }
 
-    // 2. POR TEMPORADA (Convertido en Slider automático exactamente igual a ofertas)
+    // 2. POR TEMPORADA (Slider automático)
     const temporada = todosLosProductos.filter(p => {
       const dest = p.destino ? p.destino.toLowerCase().trim() : "";
       return dest === "temporada";
