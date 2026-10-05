@@ -42,7 +42,6 @@ async function showPanel() {
   await loadAdminBlog();
 }
 
-// Función auxiliar para subir imágenes a Supabase Storage
 async function uploadImageToStorage(fileInput) {
   const file = fileInput.files[0];
   if (!file) return null;
@@ -86,7 +85,8 @@ async function loadAdminProducts() {
       <td><img src="${p.imagen_url}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
       <td>${p.nombre}</td>
       <td>$${parseFloat(p.precio).toFixed(2)}</td>
-      <td>${p.categoria}</td>
+      <td>${p.categoria || 'Sin categoría'}</td>
+      <td><b>${p.destino || 'catalogo'}</b></td>
       <td>
         <button class="edit-btn" onclick='openEditModal(${pJson})'>Editar</button>
         <button class="delete-btn" onclick="deleteProduct(${p.id})">Eliminar</button>
@@ -122,6 +122,7 @@ document.getElementById("product-form").addEventListener("submit", async (e) => 
       descripcion: document.getElementById("p-descripcion").value,
       precio: parseFloat(document.getElementById("p-precio").value),
       categoria: document.getElementById("p-categoria").value,
+      destino: document.getElementById("p-destino").value,
       imagen_url: imagenUrl
     };
 
@@ -145,13 +146,13 @@ document.getElementById("product-form").addEventListener("submit", async (e) => 
   }
 });
 
-// Modal de Edición de Productos
 function openEditModal(producto) {
   document.getElementById("edit-p-id").value = producto.id;
   document.getElementById("edit-p-nombre").value = producto.nombre;
   document.getElementById("edit-p-descripcion").value = producto.descripcion;
   document.getElementById("edit-p-precio").value = producto.precio;
-  document.getElementById("edit-p-categoria").value = producto.categoria;
+  document.getElementById("edit-p-categoria").value = producto.categoria || "paseo y transporte";
+  document.getElementById("edit-p-destino").value = producto.destino || "catalogo";
   document.getElementById("edit-p-imagen-actual").value = producto.imagen_url;
 
   document.getElementById("edit-modal").classList.remove("hidden");
@@ -162,7 +163,6 @@ function closeEditModal() {
   document.getElementById("edit-p-imagen-file").value = "";
 }
 
-// Actualizar Producto Editado
 document.getElementById("edit-product-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const updateBtn = document.getElementById("btn-update-prod");
@@ -186,6 +186,7 @@ document.getElementById("edit-product-form").addEventListener("submit", async (e
       descripcion: document.getElementById("edit-p-descripcion").value,
       precio: parseFloat(document.getElementById("edit-p-precio").value),
       categoria: document.getElementById("edit-p-categoria").value,
+      destino: document.getElementById("edit-p-destino").value,
       imagen_url: imagenUrl
     };
 
@@ -208,7 +209,6 @@ document.getElementById("edit-product-form").addEventListener("submit", async (e
   }
 });
 
-// Eliminar Producto
 async function deleteProduct(id) {
   if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
 
@@ -229,7 +229,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (blogForm) {
     blogForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-
       const msg = document.getElementById("blog-msg");
       if (msg) {
         msg.style.color = "blue";
@@ -251,10 +250,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (uploadError) {
             alert("Error al subir la imagen: " + uploadError.message);
-            if (msg) {
-              msg.style.color = "red";
-              msg.textContent = "Error al subir la imagen.";
-            }
             return;
           }
 
@@ -277,10 +272,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (error) {
           alert("Error al guardar en la base de datos: " + error.message);
-          if (msg) {
-            msg.style.color = "red";
-            msg.textContent = "Error: " + error.message;
-          }
         } else {
           if (msg) {
             msg.style.color = "green";
@@ -289,18 +280,12 @@ document.addEventListener("DOMContentLoaded", () => {
           blogForm.reset();
           loadAdminBlog();
         }
-
       } catch (err) {
         alert("Ocurrió un error inesperado: " + err.message);
-        if (msg) {
-          msg.style.color = "red";
-          msg.textContent = "Error crítico en el script.";
-        }
       }
     });
   }
 
-  // Listener para el formulario de Edición del Blog
   const editBlogForm = document.getElementById("edit-blog-form");
   if (editBlogForm) {
     editBlogForm.addEventListener("submit", async (e) => {
