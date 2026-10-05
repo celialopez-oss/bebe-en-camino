@@ -5,12 +5,13 @@ const TELEFONO_TIENDA = "593996219444"; // Número de WhatsApp
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let todosLosProductos = [];
-let todosLosProductosGenerales = [];
-let productosMostradosCount = 8; // Empieza mostrando 8 productos en la sección principal
+let productosMostradosCount = 6; // Cantidad para "Nuestros Productos"
 let carrito = [];
 let currentSlide = 0;
 let selectedCategory = 'todos';
 let indiceSliderOfertas = 0;
+let indiceSliderTemporada = 0;
+let listaArticulosBlogGlobal = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   fetchProductosTienda();
@@ -61,13 +62,6 @@ async function fetchProductosTienda() {
     if (!data) return;
 
     todosLosProductos = data;
-    
-    // Filtramos los productos generales (excluyendo la categoría fija de "ofertas" que va en el sidebar)
-    todosLosProductosGenerales = data.filter(p => {
-      const cat = p.categoria ? p.categoria.toLowerCase().trim() : "";
-      return cat !== "ofertas";
-    });
-
     renderizarSeccionesGenerales();
 
   } catch (err) {
@@ -76,19 +70,24 @@ async function fetchProductosTienda() {
 }
 
 function renderizarSeccionesGenerales() {
+  // Tomamos solo los productos cuyo destino principal sea el catálogo general
+  let productosBase = todosLosProductos.filter(p => {
+    const dest = p.destino ? p.destino.toLowerCase().trim() : "catalogo";
+    return dest === "catalogo";
+  });
+
   // Filtrar por categoría seleccionada si no es "todos"
-  let productosAFiltrar = todosLosProductosGenerales;
   if (selectedCategory !== 'todos') {
-    productosAFiltrar = todosLosProductosGenerales.filter(p => {
+    productosBase = productosBase.filter(p => {
       const cat = p.categoria ? p.categoria.toLowerCase().trim() : "";
       return cat === selectedCategory.toLowerCase().trim();
     });
   }
 
-  // 1. RENDERIZAR "LO NUEVO" (Exactamente los primeros 4)
+  // 1. RENDERIZAR "LO NUEVO" (Estrictamente los primeros 3)
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
   if (loNuevoContainer) {
-    const productosNuevos = productosAFiltrar.slice(0, 4);
+    const productosNuevos = productosBase.slice(0, 3);
     if (productosNuevos.length === 0) {
       loNuevoContainer.innerHTML = "<p>No hay novedades disponibles en esta categoría.</p>";
     } else {
@@ -96,19 +95,20 @@ function renderizarSeccionesGenerales() {
     }
   }
 
-  // 2. RENDERIZAR "NUESTROS PRODUCTOS"
-  renderizarNuestrosProductosFiltrados(productosAFiltrar);
+  // 2. RENDERIZAR "NUESTROS PRODUCTOS" (Los siguientes a partir del índice 3)
+  const nuestrosProductosRestantes = productosBase.slice(3);
+  renderizarNuestrosProductosFiltrados(nuestrosProductosRestantes);
 }
 
-function renderizarNuestrosProductosFiltrados(listaProductos) {
+function renderizarNuestrosProductosFiltrados(listaRestantes) {
   const container = document.getElementById("nuestros-productos-grid");
   const btnVerMas = document.getElementById("btn-ver-mas");
   if (!container) return;
 
-  const productosSlice = listaProductos.slice(0, productosMostradosCount);
+  const productosSlice = listaRestantes.slice(0, productosMostradosCount);
 
   if (productosSlice.length === 0) {
-    container.innerHTML = "<p>No hay productos disponibles en este momento.</p>";
+    container.innerHTML = "<p>No hay más productos disponibles en este momento.</p>";
     if (btnVerMas) btnVerMas.style.display = "none";
     return;
   }
@@ -116,7 +116,7 @@ function renderizarNuestrosProductosFiltrados(listaProductos) {
   container.innerHTML = productosSlice.map(prod => generarTarjetaProducto(prod)).join('');
 
   if (btnVerMas) {
-    if (productosMostradosCount >= listaProductos.length) {
+    if (productosMostradosCount >= listaRestantes.length) {
       btnVerMas.style.display = "none";
     } else {
       btnVerMas.style.display = "inline-block";
@@ -124,12 +124,11 @@ function renderizarNuestrosProductosFiltrados(listaProductos) {
   }
 }
 
-// Función para cambiar de categoría desde los botones de la barra de herramientas
+// Cambiar de categoría desde la barra de herramientas
 function filterByCategory(cat, btnElement) {
   selectedCategory = cat;
-  productosMostradosCount = 8; // Resetear conteo al cambiar de categoría
+  productosMostradosCount = 6; // Resetear el contador de "Ver más" al cambiar categoría
 
-  // Actualizar clases activas de los botones
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   if (btnElement) btnElement.classList.add('active');
 
@@ -138,9 +137,13 @@ function filterByCategory(cat, btnElement) {
 
 // Búsqueda en tiempo real por texto
 function filterProducts() {
-  const query = document.getElementById("search-bar").value.toLowerCase();
+  const query = document.getElementById("search-bar").value.toLowerCase().trim();
   
-  let baseList = todosLosProductosGenerales;
+  let baseList = todosLosProductos.filter(p => {
+    const dest = p.destino ? p.destino.toLowerCase().trim() : "catalogo";
+    return dest === "catalogo";
+  });
+
   if (selectedCategory !== 'todos') {
     baseList = baseList.filter(p => (p.categoria || "").toLowerCase().trim() === selectedCategory.toLowerCase().trim());
   }
@@ -152,25 +155,23 @@ function filterProducts() {
 
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
   if (loNuevoContainer) {
-    loNuevoContainer.innerHTML = filtered.slice(0, 4).map(prod => generarTarjetaProducto(prod)).join('') || "<p>No se encontraron novedades.</p>";
+    loNuevoContainer.innerHTML = filtered.slice(0, 3).map(prod => generarTarjetaProducto(prod)).join('') || "<p>No se encontraron novedades.</p>";
   }
 
-  renderizarNuestrosProductosFiltrados(filtered);
+  renderizarNuestrosProductosFiltrados(filtered.slice(3));
 }
 
-// Función que se ejecuta al hacer clic en el botón "Ver más"
+// Botón "Ver más" de productos
 function cargarMasProductos() {
-  productosMostradosCount += 8;
+  productosMostradosCount += 6;
   renderizarSeccionesGenerales();
 }
 
 function generarTarjetaProducto(prod) {
   const imagen = prod.imagen_url || prod.imagen || 'logo.PNG';
-  const badgeOferta = prod.en_oferta ? '<span style="position: absolute; top: 10px; left: 10px; background: #e84393; color: white; padding: 3px 8px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; z-index: 10;">🔥 OFERTA</span>' : '';
   
   return `
     <div class="product-card" style="position: relative;">
-      ${badgeOferta}
       <img src="${imagen}" alt="${prod.nombre}">
       <div>
         <h3>${prod.nombre}</h3>
@@ -184,9 +185,8 @@ function generarTarjetaProducto(prod) {
   `;
 }
 
-// ------------------- BLOG & TIPS EN SIDEBAR -------------------
+// ------------------- BLOG & TIPS (MÁXIMO 3 + VER MÁS) -------------------
 async function fetchBlogArticles() {
-  // Buscamos cualquiera de los dos posibles contenedores para evitar que falle
   const container = document.getElementById("sidebar-blog-container") || document.querySelector(".blog-posts");
   if (!container) return;
 
@@ -206,27 +206,51 @@ async function fetchBlogArticles() {
       return;
     }
 
-    container.innerHTML = "";
-    articulos.forEach((art) => {
-      // Leemos imagen_url o imagen de forma segura
-      const imgArticulo = art.imagen_url || art.imagen;
-      const imagenHtml = imgArticulo 
-        ? `<img src="${imgArticulo}" alt="${art.titulo}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 6px;">` 
-        : '';
+    listaArticulosBlogGlobal = articulos;
+    renderizarBlogParcial(3); // Mostrar inicialmente solo los 3 últimos
 
-      const card = document.createElement("div");
-      card.style.cssText = "background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); margin-bottom: 12px;";
-      
-      card.innerHTML = `
-        ${imagenHtml}
-        <span style="background: #fff0f5; color: #e84393; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; font-weight: bold; display: inline-block; margin-bottom: 4px;">${art.categoria}</span>
-        <h4 style="font-size: 0.9rem; margin-bottom: 4px; color: #2f2f2f;">${art.titulo}</h4>
-        <p style="font-size: 0.8rem; color: #666; margin-bottom: 0;">${art.resumen || ''}</p>
-      `;
-      container.appendChild(card);
-    });
   } catch (err) {
     console.error("Error al cargar blog en tienda:", err);
+  }
+}
+
+function renderizarBlogParcial(limite) {
+  const container = document.getElementById("sidebar-blog-container") || document.querySelector(".blog-posts");
+  if (!container) return;
+
+  const articulosSlice = listaArticulosBlogGlobal.slice(0, limite);
+  container.innerHTML = "";
+
+  articulosSlice.forEach((art) => {
+    const imgArticulo = art.imagen_url || art.imagen;
+    const imagenHtml = imgArticulo 
+      ? `<img src="${imgArticulo}" alt="${art.titulo}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 6px;">` 
+      : '';
+
+    const card = document.createElement("div");
+    card.style.cssText = "background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); margin-bottom: 12px;";
+    
+    card.innerHTML = `
+      ${imagenHtml}
+      <span style="background: #fff0f5; color: #e84393; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; font-weight: bold; display: inline-block; margin-bottom: 4px;">${art.categoria}</span>
+      <h4 style="font-size: 0.9rem; margin-bottom: 4px; color: #2f2f2f;">${art.titulo}</h4>
+      <p style="font-size: 0.8rem; color: #666; margin-bottom: 0;">${art.resumen || ''}</p>
+    `;
+    container.appendChild(card);
+  });
+
+  // Gestionar botón "Ver más artículos" del blog si existe en el HTML
+  const btnVerMasBlog = document.getElementById("ver-mas-blog-btn");
+  if (btnVerMasBlog) {
+    if (listaArticulosBlogGlobal.length > limite) {
+      btnVerMasBlog.style.display = "inline-block";
+      btnVerMasBlog.onclick = () => {
+        renderizarBlogParcial(listaArticulosBlogGlobal.length); // Muestra todos
+        btnVerMasBlog.style.display = "none";
+      };
+    } else {
+      btnVerMasBlog.style.display = "none";
+    }
   }
 }
 
@@ -323,17 +347,17 @@ async function checkout() {
   toggleCart();
 }
 
-// ------------------- SLIDER DE OFERTAS Y TEMPORADA (SIDEBAR) -------------------
+// ------------------- SLIDERS LATERALES (OFERTAS Y TEMPORADA) -------------------
 async function cargarSeccionesSidebarDirecto() {
   try {
-    // Ofertas
-    const { data: ofertas, error: errOfertas } = await supabaseClient
-      .from("productos")
-      .select("*")
-      .eq("categoria", "ofertas");
+    // 1. OFERTAS (Slider)
+    const ofertas = todosLosProductos.filter(p => {
+      const dest = p.destino ? p.destino.toLowerCase().trim() : "";
+      return dest === "ofertas";
+    });
 
     const ofertasContainer = document.getElementById("ofertas-slider");
-    if (ofertasContainer && !errOfertas) {
+    if (ofertasContainer) {
       if (!ofertas || ofertas.length === 0) {
         ofertasContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay ofertas activas</p>";
       } else {
@@ -359,25 +383,36 @@ async function cargarSeccionesSidebarDirecto() {
       }
     }
 
-    // Temporada
-    const { data: temporada, error: errTemporada } = await supabaseClient
-      .from("productos")
-      .select("*")
-      .eq("categoria", "temporada");
+    // 2. POR TEMPORADA (Convertido en Slider automático exactamente igual a ofertas)
+    const temporada = todosLosProductos.filter(p => {
+      const dest = p.destino ? p.destino.toLowerCase().trim() : "";
+      return dest === "temporada";
+    });
 
     const temporadaContainer = document.getElementById("temporada-container");
-    if (temporadaContainer && !errTemporada) {
+    if (temporadaContainer) {
       if (!temporada || temporada.length === 0) {
         temporadaContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay productos de temporada</p>";
       } else {
-        temporadaContainer.innerHTML = temporada.map(prod => `
-          <div style="background: white; border-radius: 6px; padding: 0.5rem; margin-bottom: 0.8rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">
+        temporadaContainer.innerHTML = temporada.map((prod, index) => `
+          <div class="temporada-slide" style="display: ${index === 0 ? 'block' : 'none'}; text-align: center;">
+            <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
             <h4 style="font-size: 0.95rem; margin: 6px 0 3px; color: #2f2f2f;">${prod.nombre}</h4>
-            <p style="color: #19efee; filter: brightness(0.6); font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
+            <p style="color: #19efee; filter: brightness(0.7); font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
             <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #19efee; color: #2f2f2f; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Comprar</button>
           </div>
         `).join('');
+
+        if (temporada.length > 1 && !window.temporadaIntervalo) {
+          window.temporadaIntervalo = setInterval(() => {
+            const slidesTemp = document.querySelectorAll('.temporada-slide');
+            if (slidesTemp.length === 0) return;
+            
+            slidesTemp[indiceSliderTemporada].style.display = 'none';
+            indiceSliderTemporada = (indiceSliderTemporada + 1) % slidesTemp.length;
+            slidesTemp[indiceSliderTemporada].style.display = 'block';
+          }, 4000);
+        }
       }
     }
 
