@@ -186,7 +186,8 @@ function generarTarjetaProducto(prod) {
 
 // ------------------- BLOG & TIPS EN SIDEBAR -------------------
 async function fetchBlogArticles() {
-  const container = document.getElementById("sidebar-blog-container");
+  // Buscamos cualquiera de los dos posibles contenedores para evitar que falle
+  const container = document.getElementById("sidebar-blog-container") || document.querySelector(".blog-posts");
   if (!container) return;
 
   try {
