@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bebé en Camino 👶 | Tienda Online</title>
+  <title>Bebé en Camino | Tienda Online</title>
   <link rel="stylesheet" href="styles.css">
   <!-- Íconos de FontAwesome para Redes Sociales -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,19 +11,24 @@
 </head>
 <body>
 
-  <!-- Encabezado / Navbar -->
-  <header class="navbar">
-    <div class="logo">Bebé en Camino 👶</div>
+  <!-- Encabezado / Navbar Limpio (Solo Logo, Nombre y Carrito) -->
+  <header class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <div class="logo" style="display: flex; align-items: center; gap: 10px;">
+      <img src="logo.PNG" alt="Bebé en Camino" class="logo-img" style="height: 45px; width: 45px; object-fit: cover; border-radius: 50%;">
+      <span class="logo-text" style="font-size: 1.25rem; font-weight: bold; color: #2f2f2f;">Bebé en Camino</span>
+    </div>
     
-    <!-- Menú de Navegación del Cliente -->
-    <nav class="nav-links">
-      <a href="#productos">Productos</a>
-      <a href="#blog">Blog</a>
-      <a href="#contacto">Ubicación & Contacto</a>
-    </nav>
-
-    <button class="cart-btn" onclick="toggleCart()">🛒 Carrito (<span id="cart-count">0</span>)</button>
+    <div class="cart-btn-container">
+      <button onclick="toggleCart()" style="background: #fb5c74; color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 0.95rem;">
+        🛒 Carrito (<span id="cart-count">0</span>)
+      </button>
+    </div>
   </header>
+
+  <!-- Botón Flotante de WhatsApp -->
+  <a href="https://wa.me/593996219444?text=¡Hola!%20Tengo%20una%20consulta%20sobre%20la%20tienda%20Bebé%20en%20camino." target="_blank" class="whatsapp-float" style="position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; border-radius: 50px; width: 60px; height: 60px; text-align: center; font-size: 30px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+    <i class="fab fa-whatsapp"></i>
+  </a>
 
   <!-- Slider / Carrusel Automático -->
   <section class="slider-container">
@@ -55,80 +60,127 @@
     </div>
   </section>
 
-  <!-- Contenido Principal -->
+  <!-- Contenido Principal (Layout de 2 Columnas) -->
   <div class="main-layout" id="productos">
-    <main class="shop-section">
+    <main class="content-area">
       
       <!-- Barra de Búsqueda y Filtros por Categoría -->
       <div class="toolbar">
         <input type="text" id="search-bar" placeholder="🔍 Buscar productos..." oninput="filterProducts()">
         <div class="category-filters">
           <button class="cat-btn active" onclick="filterByCategory('todos', this)">Todos</button>
-          <button class="cat-btn" onclick="filterByCategory('ropa', this)">Ropa</button>
-          <button class="cat-btn" onclick="filterByCategory('juguetes', this)">Juguetes</button>
-          <button class="cat-btn" onclick="filterByCategory('accesorios', this)">Accesorios</button>
+          <button class="cat-btn" onclick="filterByCategory('ofertas', this)">🔥 Ofertas Especiales</button>
+          <button class="cat-btn" onclick="filterByCategory('paseo y transporte', this)">Paseo y transporte</button>
+          <button class="cat-btn" onclick="filterByCategory('dormitorio y descanso', this)">Dormitorio y descanso</button>
+          <button class="cat-btn" onclick="filterByCategory('alimentacion y lactancia', this)">Alimentación y lactancia</button>
+          <button class="cat-btn" onclick="filterByCategory('juguetes y estimulacion', this)">Juguetes y estimulación</button>
+          <button class="cat-btn" onclick="filterByCategory('higiene y cuidado del bebe', this)">Higiene y cuidado del bebé</button>
+          <button class="cat-btn" onclick="filterByCategory('ropa y moda', this)">Ropa y moda</button>
+          <button class="cat-btn" onclick="filterByCategory('seguridad para el hogar', this)">Seguridad para el hogar</button>
         </div>
       </div>
 
-      <h2 class="section-title">Nuestros Productos</h2>
-      <div id="products-container" class="products-grid">
-        <p>Cargando catálogo...</p>
-      </div>
+      <!-- Sección: Lo Nuevo -->
+      <section style="margin-bottom: 2rem;">
+        <h2 class="section-title">✨ Lo Nuevo</h2>
+        <div id="lo-nuevo-grid" class="products-grid">
+          <!-- Se carga dinámicamente (máx 4) -->
+        </div>
+      </section>
+
+      <!-- Sección: Nuestros Productos -->
+      <section style="margin-bottom: 2rem;">
+        <h2 class="section-title">🛍️ Nuestros Productos</h2>
+        <div id="nuestros-productos-grid" class="products-grid">
+          <!-- Se carga dinámicamente de 8 en 8 -->
+        </div>
+        
+        <!-- Botón Ver Más -->
+        <div style="text-align: center; margin-top: 1.5rem;">
+          <button id="btn-ver-mas" onclick="cargarMasProductos()" style="background: #fb5c74; color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.95rem;">
+            Ver más productos
+          </button>
+        </div>
+      </section>
     </main>
 
-    <!-- Sidebar del Blog -->
-    <aside class="sidebar" id="blog">
-      <div class="blog-widget">
-        <h3>💡 Blog & Tips para Mamás y Papás</h3>
-        <p>Aprende más sobre el cuidado de tu bebé</p>
+    <!-- Sidebar del Blog y Nuevas Secciones (Derecha) -->
+    <aside class="sidebar-area" style="display: flex; flex-direction: column; gap: 1.5rem;" id="blog">
+      
+      <!-- Sección de Ofertas en Slider -->
+      <div class="blog-widget" id="ofertas-container" style="border-top: 4px solid #fb5c74;">
+        <h3 style="color: #fb5c74; margin-bottom: 1rem; font-size: 1.1rem;">🔥 Ofertas Especiales</h3>
+        <div id="ofertas-slider">
+          <!-- Las imágenes/productos en oferta rotarán aquí automáticamente -->
+        </div>
+      </div>
+
+      <!-- Sección Por Temporada -->
+      <div class="blog-widget" style="border-top: 4px solid #19efee;">
+        <h3 style="color: #2f2f2f; margin-bottom: 1rem; font-size: 1.1rem;">🌟 Por Temporada</h3>
+        <div id="temporada-container">
+          <!-- Los productos de temporada se cargarán aquí -->
+        </div>
+      </div>
+
+      <!-- Widget del Blog & Tips -->
+      <div class="blog-widget" style="border-top: 4px solid #a0a2ad;">
+        <h3 style="color: #2f2f2f; margin-bottom: 0.3rem; font-size: 1.1rem;">💡 Blog & Tips</h3>
+        <p style="font-size: 0.85rem; color: #a0a2ad; margin-bottom: 1rem;">Aprende más sobre el cuidado de tu bebé</p>
         <div class="blog-posts">
           <!-- Cargados desde Supabase -->
         </div>
       </div>
+    
+  <!-- Aquí se cargarán automáticamente los artículos -->
+  <div id="blog-container" class="blog-grid"></div>
+  
+  <!-- Botón para ver más (opcional si quieres desplegarlos todos o abrir un modal/otra vista) -->
+  <div style="text-align: center; margin-top: 1.5rem;">
+    <button id="ver-mas-blog-btn" class="add-btn" style="background: #e84393; padding: 0.6rem 1.5rem; display: none;">Ver más artículos</button>
+  </div>
+</section>
+
     </aside>
   </div>
 
-  <!-- Sección de Ubicación y Mapa -->
-  <section class="location-section" id="contacto">
-    <h2>📍 Visítanos o Contáctanos</h2>
-    <div class="location-container">
-      <div class="location-info">
-        <h3>Nuestra Tienda Física</h3>
-        <p><i class="fa-solid fa-location-dot"></i> Av. Principal 123 y Calle 4ta (Ecuador)</p>
-        <p><i class="fa-solid fa-clock"></i> Lunes a Sábado: 09:00 AM - 07:00 PM</p>
-        <p><i class="fa-solid fa-phone"></i> +593 99 999 9999</p>
-        <p><i class="fa-solid fa-envelope"></i> contacto@bebeencamino.com</p>
-      </div>
-      <div class="map-box">
-        <iframe 
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127538.93237190002!2d-79.95299!3d-2.17099!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x902d13c200000001%3A0x87978e85847e0a2!2sGuayaquil!5e0!3m2!1ses!2sec!4v1700000000000" 
-          width="100%" height="220" style="border:0; border-radius: 8px;" allowfullscreen="" loading="lazy">
-        </iframe>
-      </div>
-    </div>
-  </section>
-
-  <!-- Pie de Página (Footer) -->
-  <footer class="footer">
+  <!-- Pie de Página y Contacto Oficial -->
+  <footer id="contacto" class="footer">
     <div class="footer-container">
+      
       <div class="footer-brand">
-        <h3>Bebé en Camino 👶</h3>
+        <h3>Bebé en Camino</h3>
         <p>Acompañándote en la etapa más hermosa de la vida.</p>
       </div>
 
-      <div class="footer-socials">
-        <h4>Síguenos en Redes Sociales</h4>
-        <div class="social-icons">
-          <a href="https://instagram.com" target="_blank" class="social-btn instagram" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-          <a href="https://facebook.com" target="_blank" class="social-btn facebook" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-          <a href="https://wa.me/593999999999" target="_blank" class="social-btn whatsapp" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-          <a href="https://tiktok.com" target="_blank" class="social-btn tiktok" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+      <!-- Tarjeta de Tienda Física -->
+      <div style="background: rgba(255,255,255,0.07); padding: 1.2rem; border-radius: 8px; width: 100%; max-width: 450px; box-sizing: border-box;">
+        <h4 style="margin-top: 0; margin-bottom: 0.8rem; color: #19efee; font-size: 1.1rem; text-align: center;">📍 Visítanos o Contáctanos</h4>
+        <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-location-dot" style="color: #fb5c74; width: 20px;"></i> <strong>Dirección:</strong> Argentina #4312 y calle 20ava, Guayaquil</p>
+        <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-clock" style="color: #fb5c74; width: 20px;"></i> <strong>Horario:</strong> Lunes a Sábado 09:00 AM - 07:00 PM</p>
+        <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-phone" style="color: #fb5c74; width: 20px;"></i> <strong>Teléfono / WhatsApp:</strong> +593 939669413</p>
+        <p style="font-size: 0.9rem; margin: 5px 0; color: #fff;"><i class="fa-solid fa-envelope" style="color: #fb5c74; width: 20px;"></i> <strong>Correo:</strong> contacto@bebeencamino.com</p>
+      </div>
+
+      <!-- Redes Sociales con Iconos Profesionales y Colores Oficiales -->
+      <div class="footer-socials" style="text-align: center;">
+        <h4 style="margin-bottom: 0.8rem; font-size: 1rem; color: #fff;">Síguenos en Redes Sociales</h4>
+        <div class="social-icons" style="justify-content: center;">
+          <!-- Instagram -->
+          <a href="https://instagram.com/tu_usuario" target="_blank" title="Instagram" class="social-btn instagram"><i class="fa-brands fa-instagram"></i></a>
+          <!-- TikTok -->
+          <a href="https://tiktok.com/@tu_usuario" target="_blank" title="TikTok" class="social-btn tiktok"><i class="fa-brands fa-tiktok"></i></a>
+          <!-- WhatsApp -->
+          <a href="https://wa.me/593939669413" target="_blank" title="WhatsApp" class="social-btn whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
+          <!-- Facebook -->
+          <a href="https://facebook.com/tu_pagina" target="_blank" title="Facebook" class="social-btn facebook"><i class="fa-brands fa-facebook-f"></i></a>
         </div>
       </div>
+
     </div>
 
     <div class="footer-bottom">
-      <p>&copy; 2026 Bebé en Camino. Todos los derechos reservados.</p>
+      © 2026 Bebé en Camino. Todos los derechos reservados.
     </div>
   </footer>
 
@@ -141,9 +193,10 @@
       <h3 style="margin-top: 1rem;">Total: $<span id="cart-total">0.00</span></h3>
 
       <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-        <input type="text" id="cli-nombre" placeholder="Tu Nombre" required style="padding: 0.5rem;">
-        <input type="tel" id="cli-telefono" placeholder="WhatsApp / Teléfono" required style="padding: 0.5rem;">
-        <input type="email" id="cli-email" placeholder="Correo (Opcional)" style="padding: 0.5rem;">
+        <input type="text" id="cli-nombre" placeholder="Tu Nombre" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="tel" id="cli-telefono" placeholder="WhatsApp / Teléfono" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="text" id="cli-ciudad" placeholder="Ciudad (Ej. Guayaquil)" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="email" id="cli-email" placeholder="Correo (Opcional)" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
         <button class="checkout-btn" onclick="checkout()">Realizar Pedido por WhatsApp</button>
       </div>
     </div>
@@ -152,4 +205,11 @@
   <script src="app.js"></script>
 </body>
 </html>
-          
+
+ 
+
+ 
+
+ 
+
+ 
