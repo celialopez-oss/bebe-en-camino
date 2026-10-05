@@ -314,12 +314,27 @@ body {
   background: #11d5d4;
 }
 
-/* --- SIDEBAR DEL BLOG --- */
+/* --- SIDEBAR DEL BLOG Y TIPS (ESTÉTICO CON SCROLL) --- */
 .blog-widget {
   background: white;
   padding: 1.2rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.blog-posts {
+  max-height: 480px;       /* Altura máxima fija en la barra lateral */
+  overflow-y: auto;        /* Añade barra de desplazamiento vertical interna */
+  padding-right: 4px;      /* Espacio estético para el scroll */
+}
+
+/* Estilo moderno para la barra de desplazamiento del blog */
+.blog-posts::-webkit-scrollbar {
+  width: 5px;
+}
+.blog-posts::-webkit-scrollbar-thumb {
+  background: #dcdde1;
+  border-radius: 10px;
 }
 
 .blog-card {
@@ -507,4 +522,3 @@ body {
 .checkout-btn:hover {
   opacity: 0.9;
 }
-
