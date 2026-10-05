@@ -305,9 +305,9 @@ function toggleCart() {
 async function checkout() {
   if (carrito.length === 0) return alert("El carrito está vacío.");
 
-  const nombre = document.getElementById("cli-nombre").value.trim();
-  const telefono = document.getElementById("cli-telefono").value.trim();
-  const email = document.getElementById("cli-email").value.trim();
+const nombre = sanitizarTexto(document.getElementById("cli-nombre").value.trim());
+const telefono = sanitizarTexto(document.getElementById("cli-telefono").value.trim());
+const email = sanitizarTexto(document.getElementById("cli-email").value.trim());
 
   if (!nombre || !telefono) {
     return alert("Por favor, completa tu Nombre y Teléfono.");
@@ -420,4 +420,19 @@ async function cargarSeccionesSidebarDirecto() {
   } catch (err) {
     console.error("Error cargando secciones laterales:", err);
   }
+}
+
+// Función para sanitizar textos y prevenir XSS
+function sanitizarTexto(texto) {
+    if (!texto) return "";
+    const mapa = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;',
+        '/': '&#x2F;',
+    };
+    const reg = /[&<>"'/]/g;
+    return texto.replace(reg, (match) => mapa[match]);
 }
