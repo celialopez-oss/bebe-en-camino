@@ -139,7 +139,7 @@ function filterByCategory(cat, btnElement) {
 
 // Búsqueda en tiempo real por texto
 function filterProducts() {
-  const query = document.getElementById("search-bar").value.toLowerCase().trim();
+  const query = sanitizarTexto(document.getElementById("search-bar").value).toLowerCase().trim();
   
   let baseList = todosLosProductos.filter(p => {
     const dest = p.destino ? p.destino.toLowerCase().trim() : "catalogo";
@@ -305,9 +305,6 @@ function toggleCart() {
 async function checkout() {
   if (carrito.length === 0) return alert("El carrito está vacío.");
 
-const nombre = sanitizarTexto(document.getElementById("cli-nombre").value.trim());
-const telefono = sanitizarTexto(document.getElementById("cli-telefono").value.trim());
-const email = sanitizarTexto(document.getElementById("cli-email").value.trim());
 
   if (!nombre || !telefono) {
     return alert("Por favor, completa tu Nombre y Teléfono.");
