@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalle del Producto - Bebé en Camino</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="background-color: #fcf6f7; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px;">
+
+  <header style="max-width: 900px; margin: 0 auto 20px auto; display: flex; justify-content: space-between; align-items: center;">
+    <a href="index.html" style="text-decoration: none; color: #333; font-weight: bold; background: #fff; padding: 8px 16px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">← Volver al Catálogo</a>
+    <h2 style="margin: 0; color: #e84393; font-size: 1.3rem;">Bebé en Camino 👶</h2>
+  </header>
+
+  <main style="max-width: 900px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+    
+    <!-- Contenedor de Carga / Spinner inicial -->
+    <div id="loading-detalle" style="text-align: center; padding: 40px;">
+      <p>Cargando información del producto...</p>
+    </div>
+
+    <!-- Contenido Detallado (Oculto hasta que cargue) -->
+    <div id="detalle-container" class="hidden" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start;">
+      
+      <!-- Columna de Imagen -->
+      <div style="text-align: center;">
+        <img id="det-imagen" src="" alt="Imagen del producto" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        
+        <!-- Botón para Compartir Imagen / Producto -->
+        <button id="btn-compartir" onclick="compartirProducto()" style="margin-top: 15px; width: 100%; background: #4a5568; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          🔗 Compartir Producto
+        </button>
+      </div>
+
+      <!-- Columna de Información -->
+      <div>
+        <span id="det-categoria" style="background: #fff0f5; color: #e84393; padding: 4px 10px; font-size: 0.75rem; border-radius: 4px; font-weight: bold; display: inline-block; margin-bottom: 10px;">Categoría</span>
+        <h1 id="det-nombre" style="font-size: 1.8rem; color: #2f2f2f; margin-top: 0; margin-bottom: 10px;"></h1>
+        <p id="det-precio" style="font-size: 1.5rem; font-weight: bold; color: #e84393; margin-bottom: 20px;"></p>
+        
+        <div style="border-top: 1px solid #eee; padding-top: 15px; margin-bottom: 20px;">
+          <h3 style="font-size: 1rem; color: #444; margin-bottom: 8px;">Descripción:</h3>
+          <!-- white-space: pre-line respeta los saltos de línea del textarea original -->
+          <p id="det-descripcion" style="font-size: 0.95rem; color: #666; line-height: 1.6; white-space: pre-line;"></p>
+        </div>
+
+        <button id="det-btn-agregar" style="width: 100%; background: #ff85a1; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer;">
+          🛒 Agregar al Carrito
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Script específico de la vista de detalles -->
+  <script src="detalle-producto.js"></script>
+</body>
+</html>

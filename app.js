@@ -51,7 +51,7 @@ async function fetchProductosTienda() {
     const { data, error } = await supabaseClient
       .from("productos")
       .select("*")
-      .order("id", { ascending: false }); // Los más recientes primero
+      .order("id", { ascending: false });
 
     if (error) {
       console.error("Error al obtener productos:", error);
@@ -62,8 +62,6 @@ async function fetchProductosTienda() {
 
     todosLosProductos = data;
     renderizarSeccionesGenerales();
-    
-    // Cargamos los sliders del sidebar una vez que los datos estén descargados
     cargarSeccionesSidebarDirecto();
 
   } catch (err) {
@@ -72,13 +70,11 @@ async function fetchProductosTienda() {
 }
 
 function renderizarSeccionesGenerales() {
-  // Tomamos solo los productos cuyo destino principal sea el catálogo general
   let productosBase = todosLosProductos.filter(p => {
     const dest = p.destino ? p.destino.toLowerCase().trim() : "catalogo";
     return dest === "catalogo";
   });
 
-  // Filtrar por categoría seleccionada si no es "todos"
   if (selectedCategory !== 'todos') {
     productosBase = productosBase.filter(p => {
       const cat = p.categoria ? p.categoria.toLowerCase().trim() : "";
@@ -86,7 +82,6 @@ function renderizarSeccionesGenerales() {
     });
   }
 
-  // 1. RENDERIZAR "LO NUEVO" (Estrictamente los primeros 3)
   const loNuevoContainer = document.getElementById("lo-nuevo-grid");
   if (loNuevoContainer) {
     const productosNuevos = productosBase.slice(0, 3);
@@ -97,7 +92,6 @@ function renderizarSeccionesGenerales() {
     }
   }
 
-  // 2. RENDERIZAR "NUESTROS PRODUCTOS" (Los siguientes a partir del índice 3)
   const nuestrosProductosRestantes = productosBase.slice(3);
   renderizarNuestrosProductosFiltrados(nuestrosProductosRestantes);
 }
@@ -129,7 +123,7 @@ function renderizarNuestrosProductosFiltrados(listaRestantes) {
 // Cambiar de categoría desde la barra de herramientas
 function filterByCategory(cat, btnElement) {
   selectedCategory = cat;
-  productosMostradosCount = 6; // Resetear el contador de "Ver más" al cambiar categoría
+  productosMostradosCount = 6;
 
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
   if (btnElement) btnElement.classList.add('active');
@@ -174,15 +168,15 @@ function generarTarjetaProducto(prod) {
   const prodJson = JSON.stringify(prod).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
   
   return `
-    <div class="product-card" style="position: relative;">
-      <img src="${imagen}" alt="${prod.nombre}">
-      <div>
-        <h3>${prod.nombre}</h3>
-        <p>${prod.descripcion || ''}</p>
+    <div class="product-card" style="position: relative; cursor: pointer;">
+      <div onclick="window.location.href='producto.html?id=${prod.id}'">
+        <img src="${imagen}" alt="${prod.nombre}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px;">
+        <h3 style="margin: 8px 0 4px; font-size: 1rem;">${prod.nombre}</h3>
+        <p style="font-size: 0.8rem; color: #666; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${prod.descripcion || ''}</p>
       </div>
-      <div>
-        <p class="price">$${parseFloat(prod.precio).toFixed(2)}</p>
-        <button onclick='abrirModalCantidad(${prodJson})'>Agregar al Carrito</button>
+      <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <p class="price" style="margin: 0; font-weight: bold; color: #e84393;">$${parseFloat(prod.precio).toFixed(2)}</p>
+        <button onclick='abrirModalCantidad(${prodJson})' style="background: #ff85a1; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Agregar</button>
       </div>
     </div>
   `;
@@ -210,7 +204,7 @@ async function fetchBlogArticles() {
     }
 
     listaArticulosBlogGlobal = articulos;
-    renderizarBlogParcial(3); // Mostrar inicialmente solo los 3 últimos
+    renderizarBlogParcial(3);
 
   } catch (err) {
     console.error("Error al cargar blog en tienda:", err);
@@ -247,7 +241,7 @@ function renderizarBlogParcial(limite) {
     if (listaArticulosBlogGlobal.length > limite) {
       btnVerMasBlog.style.display = "inline-block";
       btnVerMasBlog.onclick = () => {
-        renderizarBlogParcial(listaArticulosBlogGlobal.length); // Muestra todos
+        renderizarBlogParcial(listaArticulosBlogGlobal.length);
         btnVerMasBlog.style.display = "none";
       };
     } else {
@@ -446,7 +440,6 @@ window.addEventListener('beforeunload', (event) => {
 // ------------------- SLIDERS LATERALES (OFERTAS Y TEMPORADA) -------------------
 async function cargarSeccionesSidebarDirecto() {
   try {
-    // 1. OFERTAS (Slider)
     const ofertas = todosLosProductos.filter(p => {
       const dest = p.destino ? p.destino.toLowerCase().trim() : "";
       return dest === "ofertas";
@@ -482,7 +475,6 @@ async function cargarSeccionesSidebarDirecto() {
       }
     }
 
-    // 2. POR TEMPORADA (Slider automático)
     const temporada = todosLosProductos.filter(p => {
       const dest = p.destino ? p.destino.toLowerCase().trim() : "";
       return dest === "temporada";
