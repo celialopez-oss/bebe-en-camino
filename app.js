@@ -6,7 +6,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let todosLosProductos = [];
 let productosMostradosCount = 6; // Cantidad para "Nuestros Productos"
-let carrito = [];
+let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
 let currentSlide = 0;
 let selectedCategory = 'todos';
 let indiceSliderOfertas = 0;
@@ -334,6 +334,9 @@ function eliminarDelCarrito(id) {
 }
 
 function updateCartUI() {
+  // Guardar el estado actual del carrito en el almacenamiento local del navegador
+  localStorage.setItem('carrito', JSON.stringify(carrito));
+
   const countEl = document.getElementById("cart-count");
   const totalEl = document.getElementById("cart-total");
   const itemsContainer = document.getElementById("cart-items");
@@ -529,3 +532,9 @@ function sanitizarTexto(texto) {
     const reg = /[&<>"'/]/g;
     return texto.replace(reg, (match) => mapa[match]);
 }
+
+// Sintonizar el carrito automáticamente cuando el usuario regresa a la página principal
+window.addEventListener('pageshow', (event) => {
+  carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+  updateCartUI();
+});

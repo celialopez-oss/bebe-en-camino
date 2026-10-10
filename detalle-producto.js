@@ -6,7 +6,6 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let productoActual = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // 1. Leer el parámetro ?id= de la URL
   const params = new URLSearchParams(window.location.search);
   const productoId = params.get("id");
 
@@ -19,7 +18,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    // 2. Consultar el producto específico a Supabase usando .single()
     const { data: producto, error } = await supabaseClient
       .from("productos")
       .select("*")
@@ -27,29 +25,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       .single();
 
     if (error || !producto) {
-      console.error("Error al buscar producto:", error);
       loadingEl.innerHTML = "<p style='color: red;'>El producto no existe o fue eliminado.</p>";
       return;
     }
 
     productoActual = producto;
 
-    // 3. Pintar los datos dinámicamente en el HTML
     document.getElementById("det-imagen").src = producto.imagen_url || producto.imagen || "logo.PNG";
     document.getElementById("det-nombre").textContent = producto.nombre;
     document.getElementById("det-precio").textContent = `$${parseFloat(producto.precio).toFixed(2)}`;
     document.getElementById("det-categoria").textContent = producto.categoria || "General";
-    
-    // Soporte nativo para saltos de línea en la descripción
     document.getElementById("det-descripcion").textContent = producto.descripcion || "Sin descripción detallada.";
 
-    // Configurar acción del botón de agregar al carrito local
     const btnAgregar = document.getElementById("det-btn-agregar");
     btnAgregar.onclick = () => {
-      agregarAlCarritoDirecto(producto);
+      const inputCant = document.getElementById("input-det-cantidad");
+      const cantidad = parseInt(inputCant ? inputCant.value : 1) || 1;
+      agregarAlCarritoDesdeDetalle(producto, cantidad);
     };
 
-    // Ocultar loader y mostrar el contenedor de detalles
     loadingEl.style.display = "none";
     detalleContainer.classList.remove("hidden");
 
@@ -59,22 +53,59 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// Función auxiliar para agregar al carrito desde la vista interna
-function agregarAlCarritoDirecto(prod) {
+function cambiarCantidadDetalle(cambio) {
+  const inputCant = document.getElementById("input-det-cantidad");
+  if (!inputCant) return;
+  let val = parseInt(inputCant.value) || 1;
+  val += cambio;
+  if (val < 1) val = 1;
+  if (val > 99) val = 99;
+  inputCant.value = val;
+}
+
+function agregarAlCarritoDesdeDetalle(prod, cantidad) {
   let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-  const itemExistente = carrito.find((item) => item.id === prod.id);
   
+  const itemExistente = carrito.find((item) => item.id === prod.id);
   if (itemExistente) {
-    itemExistente.cantidad += 1;
+    itemExistente.cantidad += cantidad;
   } else {
-    carrito.push({ ...prod, cantidad: 1 });
+    carrito.push({ ...prod, cantidad });
   }
 
   localStorage.setItem('carrito', JSON.stringify(carrito));
-  alert(`¡${prod.nombre} se agregó al carrito exitosamente! 🛒`);
+
+  mostrarNotificacionSuave(`¡Se agregaron ${cantidad} unidad(es) de "${prod.nombre}" al carrito! 🛒`);
 }
 
-// 4. Función para compartir producto e imagen
+function mostrarNotificacionSuave(mensaje) {
+  const existingNotification = document.getElementById('toast-notificacion');
+  if (existingNotification) existingNotification.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'toast-notificacion';
+  toast.textContent = mensaje;
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #48bb78;
+    color: white;
+    padding: 12px 22px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    z-index: 1000;
+    font-size: 0.9rem;
+    font-weight: 600;
+  `;
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
+
 async function compartirProducto() {
   if (!productoActual) return;
 
@@ -88,9 +119,8 @@ async function compartirProducto() {
     if (navigator.share) {
       await navigator.share(shareData);
     } else {
-      // Fallback si el navegador de escritorio no soporta Web Share API
       await navigator.clipboard.writeText(window.location.href);
-      alert("¡Enlace del producto copiado al portapapeles para compartir!");
+      mostrarNotificacionSuave("¡Enlace copiado al portapapeles!");
     }
   } catch (err) {
     console.error("Error al compartir:", err);
