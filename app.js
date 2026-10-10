@@ -171,6 +171,7 @@ function cargarMasProductos() {
 
 function generarTarjetaProducto(prod) {
   const imagen = prod.imagen_url || prod.imagen || 'logo.PNG';
+  const prodJson = JSON.stringify(prod).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
   
   return `
     <div class="product-card" style="position: relative;">
@@ -181,7 +182,7 @@ function generarTarjetaProducto(prod) {
       </div>
       <div>
         <p class="price">$${parseFloat(prod.precio).toFixed(2)}</p>
-        <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})">Agregar al Carrito</button>
+        <button onclick='abrirModalCantidad(${prodJson})'>Agregar al Carrito</button>
       </div>
     </div>
   `;
@@ -255,14 +256,86 @@ function renderizarBlogParcial(limite) {
   }
 }
 
-// ------------------- CARRITO DE COMPRAS -------------------
-function addToCart(id, nombre, precio) {
-  const itemExistente = carrito.find((item) => item.id === id);
-  if (itemExistente) {
-    itemExistente.cantidad++;
-  } else {
-    carrito.push({ id, nombre, precio, cantidad: 1 });
+// ------------------- CARRITO DE COMPRAS Y MODAL DE CANTIDAD -------------------
+let productoParaAgregar = null;
+
+function abrirModalCantidad(producto) {
+  productoParaAgregar = producto;
+  const nombreEl = document.getElementById('modal-producto-nombre');
+  if (nombreEl) nombreEl.textContent = producto.nombre;
+  
+  const inputCantidad = document.getElementById('input-cantidad');
+  if (inputCantidad) inputCantidad.value = 1;
+
+  const modal = document.getElementById('modal-cantidad');
+  if (modal) modal.classList.remove('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('modal-cantidad');
+  const inputCantidad = document.getElementById('input-cantidad');
+  
+  const btnMenos = document.getElementById('btn-menos');
+  if (btnMenos) {
+    btnMenos.addEventListener('click', () => {
+      let cant = parseInt(inputCantidad.value) || 1;
+      if (cant > 1) inputCantidad.value = cant - 1;
+    });
   }
+
+  const btnMas = document.getElementById('btn-mas');
+  if (btnMas) {
+    btnMas.addEventListener('click', () => {
+      let cant = parseInt(inputCantidad.value) || 1;
+      if (cant < 99) inputCantidad.value = cant + 1;
+    });
+  }
+
+  const btnCancelarModal = document.getElementById('btn-cancelar-modal');
+  if (btnCancelarModal) {
+    btnCancelarModal.addEventListener('click', () => {
+      if (modal) modal.classList.add('hidden');
+      productoParaAgregar = null;
+    });
+  }
+
+  const btnAceptarModal = document.getElementById('btn-aceptar-modal');
+  if (btnAceptarModal) {
+    btnAceptarModal.addEventListener('click', () => {
+      if (productoParaAgregar && inputCantidad) {
+        const cantidad = parseInt(inputCantidad.value) || 1;
+        agregarAlCarritoConfirmado(productoParaAgregar, cantidad);
+      }
+      if (modal) modal.classList.add('hidden');
+      productoParaAgregar = null;
+    });
+  }
+});
+
+function agregarAlCarritoConfirmado(producto, cantidad) {
+  const itemExistente = carrito.find((item) => item.id === producto.id);
+  if (itemExistente) {
+    itemExistente.cantidad += cantidad;
+  } else {
+    carrito.push({ ...producto, cantidad });
+  }
+  updateCartUI();
+}
+
+function modificarCantidadCarrito(id, nuevaCantidad) {
+  if (nuevaCantidad <= 0) {
+    eliminarDelCarrito(id);
+    return;
+  }
+  const item = carrito.find(p => p.id === id);
+  if (item) {
+    item.cantidad = parseInt(nuevaCantidad);
+    updateCartUI();
+  }
+}
+
+function eliminarDelCarrito(id) {
+  carrito = carrito.filter(p => p.id !== id);
   updateCartUI();
 }
 
@@ -289,10 +362,20 @@ function updateCartUI() {
     const div = document.createElement("div");
     div.style.display = "flex";
     div.style.justifyContent = "space-between";
+    div.style.alignItems = "center";
     div.style.marginBottom = "0.5rem";
+    div.style.borderBottom = "1px solid #eee";
+    div.style.paddingBottom = "5px";
+
     div.innerHTML = `
-      <span>${item.nombre} (x${item.cantidad})</span>
-      <span>$${(item.precio * item.cantidad).toFixed(2)}</span>
+      <div style="flex: 1;">
+        <span style="font-size: 0.9rem; font-weight: 500;">${item.nombre}</span><br>
+        <span style="font-size: 0.8rem; color: #666;">$${parseFloat(item.precio).toFixed(2)} c/u</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <input type="number" value="${item.cantidad}" min="1" style="width: 45px; text-align: center;" onchange="modificarCantidadCarrito(${item.id}, this.value)">
+        <button onclick="eliminarDelCarrito(${item.id})" style="background: #ff4d4d; color: white; border: none; border-radius: 4px; padding: 2px 6px; cursor: pointer; font-size: 0.8rem;">🗑️</button>
+      </div>
     `;
     itemsContainer.appendChild(div);
   });
@@ -305,6 +388,13 @@ function toggleCart() {
 async function checkout() {
   if (carrito.length === 0) return alert("El carrito está vacío.");
 
+  const nombreInput = document.getElementById("cli-nombre");
+  const telefonoInput = document.getElementById("cli-telefono");
+  const emailInput = document.getElementById("cli-email");
+
+  const nombre = nombreInput ? nombreInput.value.trim() : "";
+  const telefono = telefonoInput ? telefonoInput.value.trim() : "";
+  const email = emailInput ? emailInput.value.trim() : "";
 
   if (!nombre || !telefono) {
     return alert("Por favor, completa tu Nombre y Teléfono.");
@@ -338,12 +428,20 @@ async function checkout() {
   window.open(url, "_blank");
 
   carrito = [];
-  document.getElementById("cli-nombre").value = "";
-  document.getElementById("cli-telefono").value = "";
-  document.getElementById("cli-email").value = "";
+  if (nombreInput) nombreInput.value = "";
+  if (telefonoInput) telefonoInput.value = "";
+  if (emailInput) emailInput.value = "";
   updateCartUI();
   toggleCart();
 }
+
+// Alerta de carrito abandonado al intentar salir o cerrar la página
+window.addEventListener('beforeunload', (event) => {
+  if (carrito.length > 0) {
+    event.preventDefault();
+    event.returnValue = 'Tienes productos en tu carrito. ¿Seguro que deseas salir?';
+  }
+});
 
 // ------------------- SLIDERS LATERALES (OFERTAS Y TEMPORADA) -------------------
 async function cargarSeccionesSidebarDirecto() {
@@ -359,14 +457,17 @@ async function cargarSeccionesSidebarDirecto() {
       if (!ofertas || ofertas.length === 0) {
         ofertasContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay ofertas activas</p>";
       } else {
-        ofertasContainer.innerHTML = ofertas.map((prod, index) => `
-          <div class="oferta-slide" style="display: ${index === 0 ? 'block' : 'none'}; text-align: center;">
-            <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
-            <h4 style="font-size: 0.95rem; margin: 6px 0 3px; color: #2f2f2f;">${prod.nombre}</h4>
-            <p style="color: #fb5c74; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
-            <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #fb5c74; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">¡Aprovechar Oferta!</button>
-          </div>
-        `).join('');
+        ofertasContainer.innerHTML = ofertas.map((prod, index) => {
+          const prodJson = JSON.stringify(prod).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+          return `
+            <div class="oferta-slide" style="display: ${index === 0 ? 'block' : 'none'}; text-align: center;">
+              <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
+              <h4 style="font-size: 0.95rem; margin: 6px 0 3px; color: #2f2f2f;">${prod.nombre}</h4>
+              <p style="color: #fb5c74; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
+              <button onclick='abrirModalCantidad(${prodJson})' style="background: #fb5c74; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">¡Aprovechar Oferta!</button>
+            </div>
+          `;
+        }).join('');
 
         if (ofertas.length > 1 && !window.ofertasIntervalo) {
           window.ofertasIntervalo = setInterval(() => {
@@ -392,14 +493,17 @@ async function cargarSeccionesSidebarDirecto() {
       if (!temporada || temporada.length === 0) {
         temporadaContainer.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No hay productos de temporada</p>";
       } else {
-        temporadaContainer.innerHTML = temporada.map((prod, index) => `
-          <div class="temporada-slide" style="display: ${index === 0 ? 'block' : 'none'}; text-align: center;">
-            <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
-            <h4 style="font-size: 0.95rem; margin: 6px 0 3px; color: #2f2f2f;">${prod.nombre}</h4>
-            <p style="color: #19efee; filter: brightness(0.7); font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
-            <button onclick="addToCart(${prod.id}, '${prod.nombre}', ${prod.precio})" style="background: #19efee; color: #2f2f2f; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Comprar</button>
-          </div>
-        `).join('');
+        temporadaContainer.innerHTML = temporada.map((prod, index) => {
+          const prodJson = JSON.stringify(prod).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+          return `
+            <div class="temporada-slide" style="display: ${index === 0 ? 'block' : 'none'}; text-align: center;">
+              <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
+              <h4 style="font-size: 0.95rem; margin: 6px 0 3px; color: #2f2f2f;">${prod.nombre}</h4>
+              <p style="color: #19efee; filter: brightness(0.7); font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
+              <button onclick='abrirModalCantidad(${prodJson})' style="background: #19efee; color: #2f2f2f; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Comprar</button>
+            </div>
+          `;
+        }).join('');
 
         if (temporada.length > 1 && !window.temporadaIntervalo) {
           window.temporadaIntervalo = setInterval(() => {

@@ -202,6 +202,25 @@
     </div>
   </div>
 
+  <!-- Modal Flotante para Seleccionar Cantidad -->
+<div id="modal-cantidad" class="modal-overlay hidden">
+  <div class="modal-contenido">
+    <h3>Seleccionar Cantidad</h3>
+    <p id="modal-producto-nombre" class="modal-subtitulo"></p>
+    
+    <div class="modal-selector-cantidad">
+      <button type="button" id="btn-menos">-</button>
+      <input type="number" id="input-cantidad" value="1" min="1" max="99" readonly />
+      <button type="button" id="btn-mas">+</button>
+    </div>
+
+    <div class="modal-acciones">
+      <button type="button" id="btn-cancelar-modal" class="btn-secundario">Cancelar</button>
+      <button type="button" id="btn-aceptar-modal" class="btn-primario">Aceptar</button>
+    </div>
+  </div>
+</div>
+
   <script src="app.js"></script>
 </body>
 </html>
