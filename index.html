@@ -11,19 +11,26 @@
 </head>
 <body>
 
-  <!-- Encabezado / Navbar Limpio (Solo Logo, Nombre y Carrito) -->
-  <header class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-    <div class="logo" style="display: flex; align-items: center; gap: 10px;">
-      <img src="logo.PNG" alt="Bebé en Camino" class="logo-img" style="height: 100px; width: auto; object-fit: contain;">
-      <span class="logo-text" style="font-size: 1.25rem; font-weight: bold; color: #3d2354;">Bebé en Camino</span>
-    </div>
-    
-    <div class="cart-btn-container">
-     <button onclick="toggleCart()" style="background: #fb5c74; color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 0.95rem;">
-  <i class="fa-solid fa-shopping-cart" style="font-size: 0.9rem;"></i> Carrito (<span id="cart-count">0</span>)
-</button>
-    </div>
-  </header>
+  <!-- Encabezado / Navbar Limpio (Logo Grande en el Centro y Carrito a la Derecha) -->
+<header class="navbar" style="display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; padding: 1.5rem 2rem; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+  
+  <!-- Columna Izquierda: Vacía para equilibrar matemáticamente el centro -->
+  <div class="nav-left" style="display: flex; justify-content: flex-start;"></div>
+  
+  <!-- Columna Central: Logotipo Grande y Centrado -->
+  <div class="logo" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; text-align: center;">
+    <img src="logo.PNG" alt="Bebé en Camino" class="logo-img" style="width: 100%; max-width: 450px; height: auto; object-fit: contain;">
+    <span class="logo-text" style="font-size: 1.6rem; font-weight: bold; color: #3d2354; margin-top: 5px;">Bebé en Camino</span>
+  </div>
+  
+  <!-- Columna Derecha: Carrito de compras alineado al extremo derecho -->
+  <div class="cart-btn-container" style="display: flex; justify-content: flex-end;">
+    <button onclick="toggleCart()" style="background: #fb5c74; color: white; border: none; padding: 10px 22px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; white-space: nowrap;">
+      <i class="fa-solid fa-shopping-cart" style="font-size: 0.9rem;"></i> Carrito (<span id="cart-count">0</span>)
+    </button>
+  </div>
+  
+</header>
 
   <!-- Botón Flotante de WhatsApp -->
   <a href="https://wa.me/593939669413?text=¡Hola!%20Tengo%20una%20consulta%20sobre%20la%20tienda%20Bebé%20en%20camino." target="_blank" class="whatsapp-float" style="position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; border-radius: 50px; width: 60px; height: 60px; text-align: center; font-size: 30px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; justify-content: center; text-decoration: none;">
