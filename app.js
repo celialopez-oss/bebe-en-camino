@@ -1,6 +1,6 @@
 const SUPABASE_URL = "https://bwkohmeobwplthvjihtd.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_MfylsjMrOCQIK2fGwmPEdg_gXB-zhRo";
-const TELEFONO_TIENDA = "593996219444"; // Número de WhatsApp
+const TELEFONO_TIENDA = "593939669413"; // Número de WhatsApp
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
