@@ -397,12 +397,24 @@ async function checkout() {
     return alert("Por favor, completa tu Nombre y Teléfono.");
   }
 
+  // 1. Creamos el texto resumen con los productos y cantidades del carrito
+  const resumenPedido = carrito.map(item => `${item.nombre} (x${item.cantidad}) - $${(item.precio * item.cantidad).toFixed(2)}`).join(" | ");
+  const totalPedido = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+
   try {
-    await supabaseClient.from("clientes").insert([{ nombre, telefono, email }]);
+    // 2. Guardamos el cliente junto con el detalle de su pedido y el total
+    await supabaseClient.from("clientes").insert([{ 
+      nombre, 
+      telefono, 
+      email,
+      pedido_detalle: resumenPedido,
+      total: totalPedido
+    }]);
   } catch (err) {
-    console.error("Error al guardar cliente:", err);
+    console.error("Error al guardar cliente y pedido:", err);
   }
 
+  // 3. Generamos el mensaje para WhatsApp (tal como lo tenías)
   let mensaje = "¡Hola *Bebé en camino*! 👶🛒\n";
   mensaje += "Tengo un nuevo pedido:\n\n";
   mensaje += `👤 *Cliente:* ${nombre}\n`;
@@ -416,6 +428,21 @@ async function checkout() {
     total += subtotal;
     mensaje += `${index + 1}. *${item.nombre}* (x${item.cantidad}) - $${subtotal.toFixed(2)}\n`;
   });
+
+  mensaje += `\n---------------------------\n`;
+  mensaje += `*Total a pagar: $${total.toFixed(2)}*\n\n`;
+  mensaje += "Quedo a la espera de sus datos de cuenta para el pago. ¡Gracias!";
+
+  const url = `https://wa.me/${TELEFONO_TIENDA}?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, "_blank");
+
+  carrito = [];
+  if (nombreInput) nombreInput.value = "";
+  if (telefonoInput) telefonoInput.value = "";
+  if (emailInput) emailInput.value = "";
+  updateCartUI();
+  toggleCart();
+}
 
   mensaje += `\n---------------------------\n`;
   mensaje += `*Total a pagar: $${total.toFixed(2)}*\n\n`;
