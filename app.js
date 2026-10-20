@@ -397,40 +397,27 @@ async function checkout() {
     return alert("Por favor, completa tu Nombre y Teléfono.");
   }
 
-  // 1. Preparamos el resumen de los productos y el total
+  // 1. Armamos la lista y total de productos
   const resumenPedido = carrito.map(item => `${item.nombre} (x${item.cantidad}) - $${(item.precio * item.cantidad).toFixed(2)}`).join(" | ");
   const totalPedido = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
 
   try {
-    // 2. Guardamos primero al cliente y pedimos que nos devuelva su ID generado
-    const { data: clienteData, error: clienteError } = await supabaseClient
-      .from("clientes")
-      .insert([{ 
-        nombre, 
-        telefono, 
-        email,
-        pedido_detalle: resumenPedido 
-      }])
-      .select()
-      .single();
+    // 2. Guardamos de forma sencilla solo en la tabla 'clientes'
+    const { error } = await supabaseClient.from("clientes").insert([{ 
+      nombre, 
+      telefono, 
+      email,
+      pedido_detalle: resumenPedido
+    }]);
 
-    if (clienteError) throw clienteError;
-
-    // 3. Guardamos el pedido vinculado correctamente usando el id del cliente recién creado
-    if (clienteData) {
-      await supabaseClient.from("pedidos").insert([{
-        cliente_id: clienteData.id,
-        total: totalPedido,
-        productos: resumenPedido,
-        estado: "Pendiente"
-      }]);
+    if (error) {
+      console.error("Error al guardar en Supabase:", error);
     }
-
   } catch (err) {
-    console.error("Error al registrar en Supabase:", err);
+    console.error("Error inesperado:", err);
   }
 
-  // 4. Generamos el mensaje automatizado para WhatsApp
+  // 3. Generamos el mensaje para WhatsApp
   let mensaje = "¡Hola *Bebé en camino*! 👶🛒\n";
   mensaje += "Tengo un nuevo pedido:\n\n";
   mensaje += `👤 *Cliente:* ${nombre}\n`;
@@ -452,7 +439,7 @@ async function checkout() {
   const url = `https://wa.me/${TELEFONO_TIENDA}?text=${encodeURIComponent(mensaje)}`;
   window.open(url, "_blank");
 
-  // 5. Limpiamos el carrito y los campos del formulario
+  // 4. Limpieza del carrito y formulario
   carrito = [];
   if (nombreInput) nombreInput.value = "";
   if (telefonoInput) telefonoInput.value = "";
