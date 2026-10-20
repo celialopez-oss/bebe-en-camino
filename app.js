@@ -397,35 +397,44 @@ async function checkout() {
     return alert("Por favor, completa tu Nombre y Teléfono.");
   }
 
-  // 1. Preparamos el resumen de los productos del carrito
+  // 1. Preparamos el resumen de los productos y el total
   const resumenPedido = carrito.map(item => `${item.nombre} (x${item.cantidad}) - $${(item.precio * item.cantidad).toFixed(2)}`).join(" | ");
   const totalPedido = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
 
   try {
-    // 2. Guardamos en la tabla clientes incluyendo el detalle del pedido
-    await supabaseClient.from("clientes").insert([{ 
-      nombre, 
-      telefono, 
-      email,
-      pedido_detalle: resumenPedido 
-    }]);
+    // 2. Guardamos primero al cliente y pedimos que nos devuelva su ID generado
+    const { data: clienteData, error: clienteError } = await supabaseClient
+      .from("clientes")
+      .insert([{ 
+        nombre, 
+        telefono, 
+        email,
+        pedido_detalle: resumenPedido 
+      }])
+      .select()
+      .single();
 
-    // 3. Guardamos también una copia en la tabla pedidos (si gustas registrar cada compra por separado)
-    await supabaseClient.from("pedidos").insert([{
-      cliente_nombre: nombre,
-      telefono: telefono,
-      productos: resumenPedido,
-      total: totalPedido
-    }]);
+    if (clienteError) throw clienteError;
+
+    // 3. Guardamos el pedido vinculado correctamente usando el id del cliente recién creado
+    if (clienteData) {
+      await supabaseClient.from("pedidos").insert([{
+        cliente_id: clienteData.id,
+        total: totalPedido,
+        productos: resumenPedido,
+        estado: "Pendiente"
+      }]);
+    }
+
   } catch (err) {
-    console.error("Error al guardar en Supabase:", err);
+    console.error("Error al registrar en Supabase:", err);
   }
 
-  // 4. Generamos el mensaje para WhatsApp
-  let mensaje = "¡Hola *Bebé en camino*!\n";
+  // 4. Generamos el mensaje automatizado para WhatsApp
+  let mensaje = "¡Hola *Bebé en camino*! 👶🛒\n";
   mensaje += "Tengo un nuevo pedido:\n\n";
-  mensaje += `*Cliente:* ${nombre}\n`;
-  mensaje += `*Contacto:* ${telefono}\n`;
+  mensaje += `👤 *Cliente:* ${nombre}\n`;
+  mensaje += `📞 *Contacto:* ${telefono}\n`;
   if (email) mensaje += `✉️ *Correo:* ${email}\n`;
   mensaje += "\n*Detalle del pedido:*\n";
 
@@ -443,6 +452,7 @@ async function checkout() {
   const url = `https://wa.me/${TELEFONO_TIENDA}?text=${encodeURIComponent(mensaje)}`;
   window.open(url, "_blank");
 
+  // 5. Limpiamos el carrito y los campos del formulario
   carrito = [];
   if (nombreInput) nombreInput.value = "";
   if (telefonoInput) telefonoInput.value = "";
