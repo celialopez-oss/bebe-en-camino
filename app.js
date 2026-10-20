@@ -397,28 +397,35 @@ async function checkout() {
     return alert("Por favor, completa tu Nombre y Teléfono.");
   }
 
-  // 1. Creamos el texto resumen con los productos y cantidades del carrito
+  // 1. Preparamos el resumen de los productos del carrito
   const resumenPedido = carrito.map(item => `${item.nombre} (x${item.cantidad}) - $${(item.precio * item.cantidad).toFixed(2)}`).join(" | ");
   const totalPedido = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
 
   try {
-    // 2. Guardamos el cliente junto con el detalle de su pedido y el total
+    // 2. Guardamos en la tabla clientes incluyendo el detalle del pedido
     await supabaseClient.from("clientes").insert([{ 
       nombre, 
       telefono, 
       email,
-      pedido_detalle: resumenPedido,
+      pedido_detalle: resumenPedido 
+    }]);
+
+    // 3. Guardamos también una copia en la tabla pedidos (si gustas registrar cada compra por separado)
+    await supabaseClient.from("pedidos").insert([{
+      cliente_nombre: nombre,
+      telefono: telefono,
+      productos: resumenPedido,
       total: totalPedido
     }]);
   } catch (err) {
-    console.error("Error al guardar cliente y pedido:", err);
+    console.error("Error al guardar en Supabase:", err);
   }
 
-  // 3. Generamos el mensaje para WhatsApp (tal como lo tenías)
-  let mensaje = "¡Hola *Bebé en camino*! 👶🛒\n";
+  // 4. Generamos el mensaje para WhatsApp
+  let mensaje = "¡Hola *Bebé en camino*!\n";
   mensaje += "Tengo un nuevo pedido:\n\n";
-  mensaje += `👤 *Cliente:* ${nombre}\n`;
-  mensaje += `📞 *Contacto:* ${telefono}\n`;
+  mensaje += `*Cliente:* ${nombre}\n`;
+  mensaje += `*Contacto:* ${telefono}\n`;
   if (email) mensaje += `✉️ *Correo:* ${email}\n`;
   mensaje += "\n*Detalle del pedido:*\n";
 
@@ -443,21 +450,7 @@ async function checkout() {
   updateCartUI();
   toggleCart();
 }
-
-  mensaje += `\n---------------------------\n`;
-  mensaje += `*Total a pagar: $${total.toFixed(2)}*\n\n`;
-  mensaje += "Quedo a la espera de sus datos de cuenta para el pago. ¡Gracias!";
-
-  const url = `https://wa.me/${TELEFONO_TIENDA}?text=${encodeURIComponent(mensaje)}`;
-  window.open(url, "_blank");
-
-  carrito = [];
-  if (nombreInput) nombreInput.value = "";
-  if (telefonoInput) telefonoInput.value = "";
-  if (emailInput) emailInput.value = "";
-  updateCartUI();
-  toggleCart();
-}
+  
 
 // Alerta de carrito abandonado al intentar salir o cerrar la página
 window.addEventListener('beforeunload', (event) => {
