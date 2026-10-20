@@ -350,6 +350,21 @@ body {
   border-radius: 4px;
   font-weight: bold;
 }
+/* Contenedor que agrupa el precio y el botón dentro de la tarjeta */
+.product-footer, .card-footer-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto; /* Empuja el footer siempre hacia el fondo de la tarjeta */
+  padding-top: 10px;
+}
+
+/* Opcional: Para asegurarte de que todas las tarjetas midan lo mismo o que el contenido fluya bien */
+.product-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
 
 /* --- SECCIÓN UBICACIÓN Y MAPA --- */
 .location-section {
