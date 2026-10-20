@@ -299,19 +299,19 @@ body {
 }
 
 .product-card button {
-  background: #19efee;
-  color: #2f2f2f;
+  background: #fb5c74; /* O el color que prefieras (ej. #19efee) */
+  color: #ffffff;
   border: none;
-  padding: 0.6rem;
-  border-radius: 5px;
+  padding: 0.5rem 1rem; /* Menos relleno para que no sea tan gigante */
+  border-radius: 20px; /* Bordes redondeados modernos */
   cursor: pointer;
   font-weight: bold;
-  width: 100%;
+  width: auto; /* IMPORTANTE: Esto hace que el botón sea angosto y se adapte al texto */
   transition: background 0.2s;
 }
 
 .product-card button:hover {
-  background: #11d5d4;
+  background: #e0435b; /* Tono un poco más oscuro al pasar el cursor */
 }
 
 /* --- SIDEBAR DEL BLOG Y TIPS (ESTÉTICO CON SCROLL) --- */
