@@ -11,7 +11,7 @@
 </head>
 <body>
 
-  <!-- Encabezado / Navbar Limpio (Solo Logo, Nombre y Carrito) -->
+  <!-- Encabezado / Navbar Limpio -->
   <header class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
     <div class="logo" style="display: flex; align-items: center; gap: 10px;">
       <img src="logo.png" alt="Bebé en Camino" class="logo-img" style="height: 100px; width: auto; object-fit: contain;">
@@ -84,7 +84,7 @@
       <section style="margin-bottom: 2rem;">
         <h2 class="section-title">Lo Nuevo</h2>
         <div id="lo-nuevo-grid" class="products-grid">
-          <!-- Se carga dinámicamente (máx 4) -->
+          <!-- Se carga dinámicamente -->
         </div>
       </section>
 
@@ -92,7 +92,7 @@
       <section style="margin-bottom: 2rem;">
         <h2 class="section-title">Nuestros Productos</h2>
         <div id="nuestros-productos-grid" class="products-grid">
-          <!-- Se carga dinámicamente de 8 en 8 -->
+          <!-- Se carga dinámicamente -->
         </div>
         
         <!-- Botón Ver Más -->
@@ -104,14 +104,14 @@
       </section>
     </main>
 
-    <!-- Sidebar del Blog y Nuevas Secciones (Derecha) -->
+    <!-- Sidebar del Blog y Secciones -->
     <aside class="sidebar-area" style="display: flex; flex-direction: column; gap: 1.5rem;" id="blog">
       
       <!-- Sección de Ofertas en Slider -->
       <div class="blog-widget" id="ofertas-container" style="border-top: 4px solid #fb5c74;">
         <h3 style="color: #fb5c74; margin-bottom: 1rem; font-size: 1.1rem;">Ofertas Especiales</h3>
         <div id="ofertas-slider">
-          <!-- Las imágenes/productos en oferta rotarán aquí automáticamente -->
+          <!-- Productos en oferta rotarán aquí -->
         </div>
       </div>
 
@@ -119,7 +119,7 @@
       <div class="blog-widget" style="border-top: 4px solid #19efee;">
         <h3 style="color: #2f2f2f; margin-bottom: 1rem; font-size: 1.1rem;">Por Temporada</h3>
         <div id="temporada-container">
-          <!-- Los productos de temporada se cargarán aquí -->
+          <!-- Productos de temporada -->
         </div>
       </div>
 
@@ -140,7 +140,7 @@
     </aside>
   </div>
 
-  <!-- Pie de Página y Contacto Oficial -->
+  <!-- Pie de Página -->
   <footer id="contacto" class="footer">
     <div class="footer-container">
       
@@ -181,3 +181,19 @@
     <div class="modal-content">
       <span class="close-btn" onclick="toggleCart()">&times;</span>
       <h2>Tu Carrito de Compras 🛒</h2>
+      <div id="cart-items" style="margin-top: 1rem;"></div>
+      <h3 style="margin-top: 1rem;">Total: $<span id="cart-total">0.00</span></h3>
+
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        <input type="text" id="cli-nombre" placeholder="Tu Nombre" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="tel" id="cli-telefono" placeholder="WhatsApp / Teléfono" required style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="email" id="cli-email" placeholder="Correo (Opcional)" style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+        <button class="checkout-btn" onclick="checkout()">Realizar Pedido por WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enlace al script JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
