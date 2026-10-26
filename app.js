@@ -248,9 +248,10 @@ function renderizarBlogParcial(limite = 3) {
   if (btnVerMasBlog) {
     if (listaArticulosBlogGlobal.length > 3) {
       btnVerMasBlog.style.display = "inline-block";
-      // Si el límite actual es 3, el botón muestra "Ver más", si muestra todos, cambia a "Ver menos"
+      
+      // Ajustado para decir "Ver más artículos" o "Ver menos"
       if (limite === 3) {
-        btnVerMasBlog.innerText = "Ver más";
+        btnVerMasBlog.innerText = "Ver más artículos";
       } else {
         btnVerMasBlog.innerText = "Ver menos";
       }
