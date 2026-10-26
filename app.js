@@ -172,7 +172,7 @@ function generarTarjetaProducto(prod) {
       <div onclick="window.location.href='producto.html?id=${prod.id}'">
         <img src="${imagen}" alt="${prod.nombre}" onerror="this.onerror=null; this.src='logo.PNG';" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px;">
         <h3 style="margin: 8px 0 4px; font-size: 1rem;">${prod.nombre}</h3>
-        <p style="font-size: 0.8rem; color: #666; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${prod.descripcion || ''}</p>
+        <div style="font-size: 0.8rem; color: #666; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${prod.descripcion || ''}</div>
       </div>
       <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
         <p class="price" style="margin: 0; font-weight: bold; color: #e84393;">$${parseFloat(prod.precio).toFixed(2)}</p>
@@ -276,6 +276,9 @@ function abrirModalBlog(articulo) {
         <h2 id="lector-titulo" style="color: #3d2354; margin-bottom: 10px; font-size: 1.3rem;"></h2>
         <p id="lector-categoria" style="font-size: 0.8rem; color: #e84393; font-weight: bold; margin-bottom: 15px;"></p>
         <div id="lector-contenido" style="font-size: 0.95rem; color: #444; line-height: 1.6;"></div>
+        <div style="text-align: center; margin-top: 15px;">
+          <button id="btn-ver-mas-modal" style="background: #fb5c74; color: white; border: none; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; display: none;" onclick="alternarTextoModal()">Ver más</button>
+        </div>
       </div>
     `;
     document.body.appendChild(modal);
@@ -283,9 +286,42 @@ function abrirModalBlog(articulo) {
 
   document.getElementById("lector-titulo").textContent = articulo.titulo;
   document.getElementById("lector-categoria").textContent = `Categoría: ${articulo.categoria || 'General'}`;
-  document.getElementById("lector-contenido").innerHTML = articulo.contenido || articulo.texto || articulo.resumen || "Contenido no disponible.";
+  
+  const contenidoDiv = document.getElementById("lector-contenido");
+  const contenidoTexto = articulo.contenido || articulo.texto || articulo.resumen || "Contenido no disponible.";
+  
+  // Usamos innerHTML para que respete etiquetas HTML como <ul>, <li> o <p>
+  contenidoDiv.innerHTML = contenidoTexto;
+
+  // Lógica para mostrar el botón "Ver más" si el texto es extenso
+  const btnVerMasModal = document.getElementById("btn-ver-mas-modal");
+  if (contenidoTexto.length > 350) {
+    contenidoDiv.style.maxHeight = "200px";
+    contenidoDiv.style.overflow = "hidden";
+    btnVerMasModal.style.display = "inline-block";
+    btnVerMasModal.innerText = "Ver más";
+  } else {
+    contenidoDiv.style.maxHeight = "none";
+    contenidoDiv.style.overflow = "visible";
+    btnVerMasModal.style.display = "none";
+  }
   
   modal.style.display = "flex";
+}
+
+// Función auxiliar para expandir o contraer el texto largo en el modal
+function alternarTextoModal() {
+  const contenidoDiv = document.getElementById("lector-contenido");
+  const btn = document.getElementById("btn-ver-mas-modal");
+  if (contenidoDiv.style.maxHeight === "200px") {
+    contenidoDiv.style.maxHeight = "none";
+    contenidoDiv.style.overflow = "visible";
+    btn.innerText = "Ver menos";
+  } else {
+    contenidoDiv.style.maxHeight = "200px";
+    contenidoDiv.style.overflow = "hidden";
+    btn.innerText = "Ver más";
+  }
 }
 
 // ------------------- CARRITO DE COMPRAS Y MODAL DE CANTIDAD -------------------
