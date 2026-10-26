@@ -164,13 +164,13 @@ function cargarMasProductos() {
 }
 
 function generarTarjetaProducto(prod) {
-  const imagen = prod.imagen_url || prod.imagen || 'logo.PNG';
+  const imagen = prod.imagen_url || prod.imagen || prod.url_imagen || 'logo.PNG';
   const prodJson = JSON.stringify(prod).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
   
   return `
     <div class="product-card" style="position: relative; cursor: pointer;">
       <div onclick="window.location.href='producto.html?id=${prod.id}'">
-        <img src="${imagen}" alt="${prod.nombre}" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px;">
+        <img src="${imagen}" alt="${prod.nombre}" onerror="this.onerror=null; this.src='logo.PNG';" style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px;">
         <h3 style="margin: 8px 0 4px; font-size: 1rem;">${prod.nombre}</h3>
         <p style="font-size: 0.8rem; color: #666; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${prod.descripcion || ''}</p>
       </div>
@@ -182,7 +182,7 @@ function generarTarjetaProducto(prod) {
   `;
 }
 
-// ------------------- BLOG & TIPS (SEGURO Y FUNCIONAL) -------------------
+// ------------------- BLOG & TIPS (IMÁGENES CORREGIDAS) -------------------
 async function fetchBlogArticles() {
   const container = document.getElementById("sidebar-blog-container");
   if (!container) return;
@@ -220,10 +220,15 @@ function renderizarBlogParcial(limite) {
   container.innerHTML = "";
 
   articulosSlice.forEach((art) => {
-    const imgArticulo = art.imagen_url || art.imagen;
-    const imagenHtml = imgArticulo 
-      ? `<img src="${imgArticulo}" alt="${art.titulo}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 6px;">` 
-      : '';
+    // Buscamos con flexibilidad en cualquier columna de imagen de la tabla blog
+    const imgArticulo = art.imagen_url || art.imagen || art.url_imagen || art.foto || 'logo.PNG';
+
+    const imagenHtml = `
+      <img src="${imgArticulo}" 
+           alt="${sanitizarTexto(art.titulo)}" 
+           onerror="this.onerror=null; this.src='logo.PNG';" 
+           style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 6px;">
+    `;
 
     const card = document.createElement("div");
     card.style.cssText = "background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); margin-bottom: 12px; cursor: pointer; transition: transform 0.2s;";
@@ -497,9 +502,10 @@ async function cargarSeccionesSidebarDirecto() {
       } else {
         ofertasContainer.innerHTML = ofertas.map((prod, index) => {
           const prodJson = JSON.stringify(prod).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+          const imgOferta = prod.imagen_url || prod.imagen || prod.url_imagen || 'logo.PNG';
           return `
             <div class="oferta-slide" style="display: ${index === 0 ? 'block' : 'none'}; text-align: center;">
-              <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
+              <img src="${imgOferta}" alt="${prod.nombre}" onerror="this.onerror=null; this.src='logo.PNG';" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
               <h4 style="font-size: 0.95rem; margin: 6px 0 3px; color: #2f2f2f;">${prod.nombre}</h4>
               <p style="color: #fb5c74; font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
               <button onclick='abrirModalCantidad(${prodJson})' style="background: #fb5c74; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">¡Aprovechar Oferta!</button>
@@ -532,9 +538,10 @@ async function cargarSeccionesSidebarDirecto() {
       } else {
         temporadaContainer.innerHTML = temporada.map((prod, index) => {
           const prodJson = JSON.stringify(prod).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+          const imgTemp = prod.imagen_url || prod.imagen || prod.url_imagen || 'logo.PNG';
           return `
             <div class="temporada-slide" style="display: ${index === 0 ? 'block' : 'none'}; text-align: center;">
-              <img src="${prod.imagen_url || prod.imagen || 'logo.PNG'}" alt="${prod.nombre}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
+              <img src="${imgTemp}" alt="${prod.nombre}" onerror="this.onerror=null; this.src='logo.PNG';" style="width: 100%; height: 140px; object-fit: cover; border-radius: 4px;">
               <h4 style="font-size: 0.95rem; margin: 6px 0 3px; color: #2f2f2f;">${prod.nombre}</h4>
               <p style="color: #19efee; filter: brightness(0.7); font-weight: bold; font-size: 0.9rem; margin-bottom: 6px;">$${parseFloat(prod.precio).toFixed(2)}</p>
               <button onclick='abrirModalCantidad(${prodJson})' style="background: #19efee; color: #2f2f2f; border: none; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;">Comprar</button>
