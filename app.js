@@ -225,7 +225,6 @@ function renderizarBlogParcial(limite) {
       : '';
 
     const card = document.createElement("div");
-    // Hacemos que la tarjeta sea interactiva y cambie el cursor al pasar el mouse
     card.style.cssText = "background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); margin-bottom: 12px; cursor: pointer; transition: transform 0.2s;";
     
     card.innerHTML = `
@@ -236,9 +235,8 @@ function renderizarBlogParcial(limite) {
       <span style="font-size: 0.75rem; color: #fb5c74; font-weight: bold;">Leer artículo completo →</span>
     `;
 
-    // Conectamos el evento de clic para abrir el artículo completo
+    // Evento de clic para abrir el artículo completo en el modal
     card.onclick = () => abrirModalBlog(art);
-    
     container.appendChild(card);
   });
 
@@ -246,7 +244,6 @@ function renderizarBlogParcial(limite) {
   if (btnVerMasBlog) {
     if (listaArticulosBlogGlobal.length > 3) {
       btnVerMasBlog.style.display = "inline-block";
-      // Si el límite actual es menor al total, mostramos todos al hacer clic; si ya están todos, volvemos a contraer a 3
       btnVerMasBlog.onclick = () => {
         if (limite === 3) {
           renderizarBlogParcial(listaArticulosBlogGlobal.length);
@@ -262,9 +259,8 @@ function renderizarBlogParcial(limite) {
   }
 }
 
-// Función para abrir la lectura completa del blog (puedes usar un modal o redirigir)
+// Función para abrir la lectura completa del blog en un modal limpio
 function abrirModalBlog(articulo) {
-  // Verificamos si existe un modal de blog en el HTML, si no, creamos uno dinámicamente o redirigimos
   let modal = document.getElementById("modal-blog-lector");
   if (!modal) {
     modal = document.createElement("div");
