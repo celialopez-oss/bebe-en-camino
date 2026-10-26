@@ -85,22 +85,28 @@
       </form>
       <p id="product-msg" style="margin-top: 0.5rem; font-weight: bold;"></p>
 
-      <h3 style="margin-top: 2rem;">Inventario de Productos</h3>
-      <table class="item-list-table">
-        <thead>
-          <tr>
-            <th>Imagen</th>
-            <th>Nombre</th>
-            <th>Precio</th>
-            <th>Categoría</th>
-            <th>Destino</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="product-list">
-          <!-- Se cargan dinámicamente -->
-        </tbody>
-      </table>
+    <h3 style="margin-top: 2rem;">Inventario de Productos</h3>
+
+<!-- Buscador añadido -->
+<div style="margin: 15px 0;">
+  <input type="text" id="buscador-inventario" placeholder="🔍 Buscar producto en el inventario..." onkeyup="filtrarInventarioAdmin()" style="width: 100%; max-width: 400px; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem;">
+</div>
+
+<table class="item-list-table">
+  <thead>
+    <tr>
+      <th>Imagen</th>
+      <th>Nombre</th>
+      <th>Precio</th>
+      <th>Categoría</th>
+      <th>Destino</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody id="product-list">
+    <!-- Se cargan dinámicamente -->
+  </tbody>
+</table>  
     </div>
 
     <!-- Pestaña del Blog -->

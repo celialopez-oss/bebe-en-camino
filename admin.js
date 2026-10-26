@@ -413,3 +413,20 @@ async function logout() {
   await supabaseClient.auth.signOut();
   location.reload();
 }
+
+function filtrarInventarioAdmin() {
+  const textoBusqueda = document.getElementById("buscador-inventario").value.toLowerCase().trim();
+  const filas = document.querySelectorAll("#tabla-inventario tr"); // Asegúrate de que el tbody o la tabla tenga este ID, o ajusta el selector
+
+  filas.forEach(fila => {
+    const nombreProducto = fila.querySelector(".nombre-producto-admin"); // O la celda donde está el nombre
+    if (nombreProducto) {
+      const textoTexto = nombreProducto.textContent.toLowerCase();
+      if (textoTexto.includes(textoBusqueda)) {
+        fila.style.display = "";
+      } else {
+        fila.style.display = "none";
+      }
+    }
+  });
+}
