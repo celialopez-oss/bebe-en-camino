@@ -275,7 +275,10 @@ function abrirModalBlog(articulo) {
         <span onclick="document.getElementById('modal-blog-lector').style.display='none'" style="position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #333; font-weight: bold;">&times;</span>
         <h2 id="lector-titulo" style="color: #3d2354; margin-bottom: 10px; font-size: 1.3rem;"></h2>
         <p id="lector-categoria" style="font-size: 0.8rem; color: #e84393; font-weight: bold; margin-bottom: 15px;"></p>
-        <div id="lector-contenido" style="font-size: 0.95rem; color: #444; line-height: 1.6;"></div>
+        
+        <!-- AQUI AGREGAMOS white-space: pre-line; PARA QUE RESPETE TUS SALTOS DE LÍNEA -->
+        <div id="lector-contenido" style="font-size: 0.95rem; color: #444; line-height: 1.6; white-space: pre-line;"></div>
+        
         <div style="text-align: center; margin-top: 15px;">
           <button id="btn-ver-mas-modal" style="background: #fb5c74; color: white; border: none; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; display: none;" onclick="alternarTextoModal()">Ver más</button>
         </div>
@@ -290,10 +293,9 @@ function abrirModalBlog(articulo) {
   const contenidoDiv = document.getElementById("lector-contenido");
   const contenidoTexto = articulo.contenido || articulo.texto || articulo.resumen || "Contenido no disponible.";
   
-  // Usamos innerHTML para que respete etiquetas HTML como <ul>, <li> o <p>
-  contenidoDiv.innerHTML = contenidoTexto;
+  // Usamos textContent para que respete los espacios y saltos de línea del admin de forma segura
+  contenidoDiv.textContent = contenidoTexto;
 
-  // Lógica para mostrar el botón "Ver más" si el texto es extenso
   const btnVerMasModal = document.getElementById("btn-ver-mas-modal");
   if (contenidoTexto.length > 350) {
     contenidoDiv.style.maxHeight = "200px";
