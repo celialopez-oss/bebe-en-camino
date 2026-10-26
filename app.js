@@ -212,7 +212,7 @@ async function fetchBlogArticles() {
   }
 }
 
-function renderizarBlogParcial(limite) {
+function renderizarBlogParcial(limite = 3) {
   const container = document.getElementById("sidebar-blog-container");
   if (!container) return;
 
@@ -220,7 +220,6 @@ function renderizarBlogParcial(limite) {
   container.innerHTML = "";
 
   articulosSlice.forEach((art) => {
-    // Buscamos con flexibilidad en cualquier columna de imagen de la tabla blog
     const imgArticulo = art.imagen_url || art.imagen || art.url_imagen || art.foto || 'logo.PNG';
 
     const imagenHtml = `
@@ -249,13 +248,18 @@ function renderizarBlogParcial(limite) {
   if (btnVerMasBlog) {
     if (listaArticulosBlogGlobal.length > 3) {
       btnVerMasBlog.style.display = "inline-block";
+      // Si el límite actual es 3, el botón muestra "Ver más", si muestra todos, cambia a "Ver menos"
+      if (limite === 3) {
+        btnVerMasBlog.innerText = "Ver más";
+      } else {
+        btnVerMasBlog.innerText = "Ver menos";
+      }
+
       btnVerMasBlog.onclick = () => {
         if (limite === 3) {
           renderizarBlogParcial(listaArticulosBlogGlobal.length);
-          btnVerMasBlog.innerText = "Ver menos";
         } else {
           renderizarBlogParcial(3);
-          btnVerMasBlog.innerText = "Ver más artículos";
         }
       };
     } else {
