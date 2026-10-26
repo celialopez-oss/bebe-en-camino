@@ -182,9 +182,9 @@ function generarTarjetaProducto(prod) {
   `;
 }
 
-// ------------------- BLOG & TIPS (MÁXIMO 3 + VER MÁS + MODAL DE LECTURA) -------------------
+// ------------------- BLOG & TIPS (SEGURO Y FUNCIONAL) -------------------
 async function fetchBlogArticles() {
-  const container = document.getElementById("sidebar-blog-container") || document.querySelector(".blog-posts");
+  const container = document.getElementById("sidebar-blog-container");
   if (!container) return;
 
   try {
@@ -195,6 +195,7 @@ async function fetchBlogArticles() {
 
     if (error) {
       console.error("Error al obtener el blog:", error);
+      container.innerHTML = "<p style='font-size: 0.85rem; color: #666;'>No se pudieron cargar los artículos.</p>";
       return;
     }
 
@@ -204,7 +205,7 @@ async function fetchBlogArticles() {
     }
 
     listaArticulosBlogGlobal = articulos;
-    renderizarBlogParcial(3); // Inicia mostrando solo los primeros 3
+    renderizarBlogParcial(3);
 
   } catch (err) {
     console.error("Error al cargar blog en tienda:", err);
@@ -212,7 +213,7 @@ async function fetchBlogArticles() {
 }
 
 function renderizarBlogParcial(limite) {
-  const container = document.getElementById("sidebar-blog-container") || document.querySelector(".blog-posts");
+  const container = document.getElementById("sidebar-blog-container");
   if (!container) return;
 
   const articulosSlice = listaArticulosBlogGlobal.slice(0, limite);
@@ -235,7 +236,6 @@ function renderizarBlogParcial(limite) {
       <span style="font-size: 0.75rem; color: #fb5c74; font-weight: bold;">Leer artículo completo →</span>
     `;
 
-    // Evento de clic para abrir el artículo completo en el modal
     card.onclick = () => abrirModalBlog(art);
     container.appendChild(card);
   });
@@ -259,7 +259,6 @@ function renderizarBlogParcial(limite) {
   }
 }
 
-// Función para abrir la lectura completa del blog en un modal limpio
 function abrirModalBlog(articulo) {
   let modal = document.getElementById("modal-blog-lector");
   if (!modal) {
@@ -368,7 +367,6 @@ function eliminarDelCarrito(id) {
 }
 
 function updateCartUI() {
-  // Guardar el estado actual del carrito en el almacenamiento local del navegador
   localStorage.setItem('carrito', JSON.stringify(carrito));
 
   const countEl = document.getElementById("cart-count");
@@ -431,12 +429,9 @@ async function checkout() {
     return alert("Por favor, completa tu Nombre y Teléfono.");
   }
 
-  // 1. Armamos la lista y total de productos
   const resumenPedido = carrito.map(item => `${item.nombre} (x${item.cantidad}) - $${(item.precio * item.cantidad).toFixed(2)}`).join(" | ");
-  const totalPedido = carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
 
   try {
-    // 2. Guardamos de forma sencilla solo en la tabla 'clientes'
     const { error } = await supabaseClient.from("clientes").insert([{ 
       nombre, 
       telefono, 
@@ -451,7 +446,6 @@ async function checkout() {
     console.error("Error inesperado:", err);
   }
 
-  // 3. Generamos el mensaje para WhatsApp
   let mensaje = "¡Hola *Bebé en camino*! 👶🛒\n";
   mensaje += "Tengo un nuevo pedido:\n\n";
   mensaje += `👤 *Cliente:* ${nombre}\n`;
@@ -473,7 +467,6 @@ async function checkout() {
   const url = `https://wa.me/${TELEFONO_TIENDA}?text=${encodeURIComponent(mensaje)}`;
   window.open(url, "_blank");
 
-  // 4. Limpieza del carrito y formulario
   carrito = [];
   if (nombreInput) nombreInput.value = "";
   if (telefonoInput) telefonoInput.value = "";
@@ -481,9 +474,7 @@ async function checkout() {
   updateCartUI();
   toggleCart();
 }
-  
 
-// Alerta de carrito abandonado al intentar salir o cerrar la página
 window.addEventListener('beforeunload', (event) => {
   if (carrito.length > 0) {
     event.preventDefault();
@@ -569,7 +560,6 @@ async function cargarSeccionesSidebarDirecto() {
   }
 }
 
-// Función para sanitizar textos y prevenir XSS
 function sanitizarTexto(texto) {
     if (!texto) return "";
     const mapa = {
@@ -584,7 +574,6 @@ function sanitizarTexto(texto) {
     return texto.replace(reg, (match) => mapa[match]);
 }
 
-// Sintonizar el carrito automáticamente cuando el usuario regresa a la página principal
 window.addEventListener('pageshow', (event) => {
   carrito = JSON.parse(localStorage.getItem('carrito')) || [];
   updateCartUI();
