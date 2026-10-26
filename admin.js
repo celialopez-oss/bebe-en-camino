@@ -416,17 +416,16 @@ async function logout() {
 
 function filtrarInventarioAdmin() {
   const textoBusqueda = document.getElementById("buscador-inventario").value.toLowerCase().trim();
-  const filas = document.querySelectorAll("#tabla-inventario tr"); // Asegúrate de que el tbody o la tabla tenga este ID, o ajusta el selector
+  const filas = document.querySelectorAll("#product-list tr");
 
   filas.forEach(fila => {
-    const nombreProducto = fila.querySelector(".nombre-producto-admin"); // O la celda donde está el nombre
-    if (nombreProducto) {
-      const textoTexto = nombreProducto.textContent.toLowerCase();
-      if (textoTexto.includes(textoBusqueda)) {
-        fila.style.display = "";
-      } else {
-        fila.style.display = "none";
-      }
+    // Buscamos en todo el contenido de la fila (nombre, categoría, precio, etc.)
+    const contenidoFila = fila.textContent.toLowerCase();
+    
+    if (contenidoFila.includes(textoBusqueda)) {
+      fila.style.display = ""; // Muestra la fila si coincide
+    } else {
+      fila.style.display = "none"; // Oculta la fila si no coincide
     }
   });
 }
