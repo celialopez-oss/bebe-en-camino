@@ -182,7 +182,7 @@ function generarTarjetaProducto(prod) {
   `;
 }
 
-// ------------------- BLOG & TIPS (MÁXIMO 3 + VER MÁS) -------------------
+// ------------------- BLOG & TIPS (MÁXIMO 3 + VER MÁS + MODAL DE LECTURA) -------------------
 async function fetchBlogArticles() {
   const container = document.getElementById("sidebar-blog-container") || document.querySelector(".blog-posts");
   if (!container) return;
@@ -204,7 +204,7 @@ async function fetchBlogArticles() {
     }
 
     listaArticulosBlogGlobal = articulos;
-    renderizarBlogParcial(3);
+    renderizarBlogParcial(3); // Inicia mostrando solo los primeros 3
 
   } catch (err) {
     console.error("Error al cargar blog en tienda:", err);
@@ -225,29 +225,67 @@ function renderizarBlogParcial(limite) {
       : '';
 
     const card = document.createElement("div");
-    card.style.cssText = "background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); margin-bottom: 12px;";
+    // Hacemos que la tarjeta sea interactiva y cambie el cursor al pasar el mouse
+    card.style.cssText = "background: #fff; padding: 10px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); margin-bottom: 12px; cursor: pointer; transition: transform 0.2s;";
     
     card.innerHTML = `
       ${imagenHtml}
-      <span style="background: #fff0f5; color: #e84393; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; font-weight: bold; display: inline-block; margin-bottom: 4px;">${art.categoria}</span>
-      <h4 style="font-size: 0.9rem; margin-bottom: 4px; color: #2f2f2f;">${art.titulo}</h4>
-      <p style="font-size: 0.8rem; color: #666; margin-bottom: 0;">${art.resumen || ''}</p>
+      <span style="background: #fff0f5; color: #e84393; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; font-weight: bold; display: inline-block; margin-bottom: 4px;">${sanitizarTexto(art.categoria || 'Tips')}</span>
+      <h4 style="font-size: 0.9rem; margin-bottom: 4px; color: #2f2f2f;">${sanitizarTexto(art.titulo)}</h4>
+      <p style="font-size: 0.8rem; color: #666; margin-bottom: 6px;">${sanitizarTexto(art.resumen || '')}</p>
+      <span style="font-size: 0.75rem; color: #fb5c74; font-weight: bold;">Leer artículo completo →</span>
     `;
+
+    // Conectamos el evento de clic para abrir el artículo completo
+    card.onclick = () => abrirModalBlog(art);
+    
     container.appendChild(card);
   });
 
   const btnVerMasBlog = document.getElementById("ver-mas-blog-btn");
   if (btnVerMasBlog) {
-    if (listaArticulosBlogGlobal.length > limite) {
+    if (listaArticulosBlogGlobal.length > 3) {
       btnVerMasBlog.style.display = "inline-block";
+      // Si el límite actual es menor al total, mostramos todos al hacer clic; si ya están todos, volvemos a contraer a 3
       btnVerMasBlog.onclick = () => {
-        renderizarBlogParcial(listaArticulosBlogGlobal.length);
-        btnVerMasBlog.style.display = "none";
+        if (limite === 3) {
+          renderizarBlogParcial(listaArticulosBlogGlobal.length);
+          btnVerMasBlog.innerText = "Ver menos";
+        } else {
+          renderizarBlogParcial(3);
+          btnVerMasBlog.innerText = "Ver más artículos";
+        }
       };
     } else {
       btnVerMasBlog.style.display = "none";
     }
   }
+}
+
+// Función para abrir la lectura completa del blog (puedes usar un modal o redirigir)
+function abrirModalBlog(articulo) {
+  // Verificamos si existe un modal de blog en el HTML, si no, creamos uno dinámicamente o redirigimos
+  let modal = document.getElementById("modal-blog-lector");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "modal-blog-lector";
+    modal.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 3000;";
+    modal.innerHTML = `
+      <div style="background: #fff; padding: 25px; border-radius: 8px; max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; position: relative;">
+        <span onclick="document.getElementById('modal-blog-lector').style.display='none'" style="position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #333; font-weight: bold;">&times;</span>
+        <h2 id="lector-titulo" style="color: #3d2354; margin-bottom: 10px; font-size: 1.3rem;"></h2>
+        <p id="lector-categoria" style="font-size: 0.8rem; color: #e84393; font-weight: bold; margin-bottom: 15px;"></p>
+        <div id="lector-contenido" style="font-size: 0.95rem; color: #444; line-height: 1.6;"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  document.getElementById("lector-titulo").textContent = articulo.titulo;
+  document.getElementById("lector-categoria").textContent = `Categoría: ${articulo.categoria || 'General'}`;
+  document.getElementById("lector-contenido").innerHTML = articulo.contenido || articulo.texto || articulo.resumen || "Contenido no disponible.";
+  
+  modal.style.display = "flex";
 }
 
 // ------------------- CARRITO DE COMPRAS Y MODAL DE CANTIDAD -------------------
