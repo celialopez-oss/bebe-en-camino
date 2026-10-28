@@ -176,7 +176,7 @@ function generarTarjetaProducto(prod) {
       </div>
       <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
         <p class="price" style="margin: 0; font-weight: bold; color: #e84393;">$${parseFloat(prod.precio).toFixed(2)}</p>
-        <button onclick='abrirModalCantidad(${prodJson})' style="background: #ff85a1; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Agregar</button>
+        <button onclick="event.stopPropagation(); abrirModalCantidad(${prodJson})" style="background: #ff85a1; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Agregar</button>
       </div>
     </div>
   `;
@@ -335,7 +335,9 @@ function alternarTextoModal() {
 let productoParaAgregar = null;
 
 function abrirModalCantidad(producto) {
+  console.log("¡Función abrirModalCantidad ejecutada con éxito para:", producto.nombre);
   productoParaAgregar = producto;
+  
   const nombreEl = document.getElementById('modal-producto-nombre');
   if (nombreEl) nombreEl.textContent = producto.nombre;
   
@@ -346,6 +348,9 @@ function abrirModalCantidad(producto) {
   if (modal) {
     modal.style.display = 'flex'; // Forzamos que se muestre correctamente
     modal.classList.remove('hidden');
+  } else {
+    console.error("No se encontró el elemento #modal-cantidad en el HTML.");
+    alert("Atención: El HTML no tiene el contenedor del modal de cantidad.");
   }
 }
 
