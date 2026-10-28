@@ -510,12 +510,19 @@ async function checkout() {
     console.error("Error inesperado:", err);
   }
 
-  let mensaje = "¡Hola *Bebé en camino*! 👶🛒\n";
+ let mensaje = "¡Hola *Bebé en camino*! 👶🛒\n";
   mensaje += "Tengo un nuevo pedido:\n\n";
   mensaje += `👤 *Cliente:* ${nombre}\n`;
   mensaje += `📞 *Contacto:* ${telefono}\n`;
   if (email) mensaje += `✉️ *Correo:* ${email}\n`;
-  mensaje += "\n*Detalle del pedido:*\n";
+  mensaje += `📍 *Ciudad:* ${ciudad}\n\n`;
+  mensaje += "*Detalle del pedido:*\n";
+
+  const regexTelefono = /^[0-9]{10}$/; // Ajustado a 10 dígitos exactos para Ecuador
+  if (!regexTelefono.test(telefono)) {
+    alert('Por favor ingresa un número de celular válido de 10 dígitos.');
+    return; // Detiene la ejecución para que no avance si el número está incompleto
+  }
 
   let total = 0;
   carrito.forEach((item, index) => {
@@ -535,14 +542,19 @@ async function checkout() {
   if (nombreInput) nombreInput.value = "";
   if (telefonoInput) telefonoInput.value = "";
   if (emailInput) emailInput.value = "";
+  
+  // Limpiamos también el input de la ciudad si existe
+  const ciudadInput = document.getElementById('cli-ciudad');
+  if (ciudadInput) ciudadInput.value = "";
+
   updateCartUI();
   toggleCart();
 }
 
 window.addEventListener('beforeunload', (event) => {
-  if (carrito.length > 0) {
+  if (carrito && carrito.length > 0) {
     event.preventDefault();
-    event.returnValue = 'Tienes productos en tu carrito. ¿Seguro que deseas salir?';
+    event.returnValue = ''; 
   }
 });
 
