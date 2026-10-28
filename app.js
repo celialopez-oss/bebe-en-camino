@@ -482,6 +482,7 @@ async function checkout() {
   const nombreInput = document.getElementById("cli-nombre");
   const telefonoInput = document.getElementById("cli-telefono");
   const emailInput = document.getElementById("cli-email");
+  const ciudad = document.getElementById('cli-ciudad').value;
 
   const nombre = nombreInput ? nombreInput.value.trim() : "";
   const telefono = telefonoInput ? telefonoInput.value.trim() : "";
@@ -498,6 +499,7 @@ async function checkout() {
       nombre, 
       telefono, 
       email,
+      ciudad,
       pedido_detalle: resumenPedido
     }]);
 

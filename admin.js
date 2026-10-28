@@ -28,11 +28,22 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
 });
 
 function switchTab(tabId) {
-  document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
-  
-  document.getElementById(tabId).classList.remove("hidden");
-  event.currentTarget.classList.add("active");
+  // Oculta todas las pestañas de contenido
+  document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+  // Quita la clase activa de todos los botones
+  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+  
+  // Muestra la pestaña seleccionada si existe
+  const targetTab = document.getElementById(tabId);
+  if (targetTab) {
+    targetTab.classList.remove("hidden");
+  } else {
+    console.warn(`No se encontró la pestaña con ID: ${tabId}`);
+  }
+
+  if (event && event.currentTarget) {
+    event.currentTarget.classList.add("active");
+  }
 }
 
 async function showPanel() {
@@ -435,8 +446,8 @@ async function exportarMensajesCSV() {
   const fechaDesde = document.getElementById('filtro-fecha-desde').value;
   const fechaHasta = document.getElementById('filtro-fecha-hasta').value;
 
-  // Consulta a Supabase ordenando los mensajes del más reciente al más antiguo
-  let query = supabaseClient.from('mensajes').select('*').order('created_at', { ascending: false });
+  // Consulta a Supabase en la tabla 'clientes' ordenada por fecha
+  let query = supabaseClient.from('clientes').select('*').order('created_at', { ascending: false });
 
   if (fechaDesde) {
     query = query.gte('created_at', fechaDesde + 'T00:00:00');
@@ -448,35 +459,36 @@ async function exportarMensajesCSV() {
   const { data, error } = await query;
 
   if (error) {
-    console.error('Error al obtener mensajes para exportar:', error);
-    alert('Hubo un error al consultar los mensajes en la base de datos.');
+    console.error('Error al obtener registros:', error);
+    alert('Hubo un error al consultar los registros en la base de datos.');
     return;
   }
 
   if (!data || data.length === 0) {
-    alert('No se encontraron mensajes en el rango de fechas seleccionado.');
+    alert('No se encontraron registros en el rango de fechas seleccionado.');
     return;
   }
 
-  // Encabezados del archivo CSV (incluye BOM para que Excel reconozca tildes y eñes)
+  // Encabezados en el orden exacto pedido: Nombre, Teléfono, Email, Ciudad, Detalle de Pedido, Fecha
   let csvContent = 'data:text/csv;charset=utf-8,\uFEFF'; 
-  csvContent += 'ID,Remitente,Email,Mensaje,Fecha\n';
+  csvContent += 'Nombre,Teléfono,Email,Ciudad,Detalle de Pedido,Fecha\n';
 
-  data.forEach(msg => {
-    const id = msg.id || '';
-    const nombre = (msg.nombre || msg.remitente || 'Anónimo').replace(/"/g, '""');
-    const email = (msg.email || '').replace(/"/g, '""');
-    const texto = (msg.mensaje || msg.texto || '').replace(/"/g, '""').replace(/\n/g, ' ');
-    const fecha = msg.created_at ? new Date(msg.created_at).toLocaleString() : '';
+  data.forEach(item => {
+    const nombre = (item.nombre || item.remitente || 'Cliente').replace(/"/g, '""');
+    const telefono = (item.telefono || '').replace(/"/g, '""');
+    const email = (item.email || '').replace(/"/g, '""');
+    const ciudad = (item.ciudad || '').replace(/"/g, '""');
+    const pedido = (item.pedido_detalle || '').replace(/"/g, '""').replace(/\n/g, ' ');
+    const fecha = item.created_at ? new Date(item.created_at).toLocaleString() : '';
 
-    csvContent += `"${id}","${nombre}","${email}","${texto}","${fecha}"\n`;
+    csvContent += `"${nombre}","${telefono}","${email}","${ciudad}","${pedido}","${fecha}"\n`;
   });
 
   // Generar y activar la descarga del archivo CSV
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement('a');
   link.setAttribute('href', encodedUri);
-  link.setAttribute('download', `reporte_mensajes_${fechaDesde || 'inicio'}_al_${fechaHasta || 'hoy'}.csv`);
+  link.setAttribute('download', `reporte_pedidos_${fechaDesde || 'inicio'}_al_${fechaHasta || 'hoy'}.csv`);
   document.body.appendChild(link);
   
   link.click();
