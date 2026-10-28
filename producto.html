@@ -7,12 +7,54 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    /* Estilos responsivos para que se vea impecable en celulares */
+    * {
+      box-sizing: border-box;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 10px !important;
+      }
+      
+      main {
+        padding: 15px !important;
+      }
+      
+      #detalle-container {
+        grid-template-columns: 1fr !important; /* Pasa de 2 columnas a 1 columna en móvil */
+        gap: 20px !important;
+      }
+
+      #det-nombre {
+        font-size: 1.4rem !important;
+      }
+
+      #det-precio {
+        font-size: 1.3rem !important;
+        margin-bottom: 15px !important;
+      }
+
+      #det-btn-agregar {
+        width: 100% !important; /* Botón a ancho completo en celular para fácil clic */
+        justify-content: center !important;
+        padding: 12px 20px !important;
+      }
+
+      #btn-compartir {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+    }
+  </style>
 </head>
 <body style="background-color: #fcf6f7; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px;">
 
-  <header style="max-width: 900px; margin: 0 auto 20px auto; display: flex; justify-content: space-between; align-items: center;">
-    <a href="index.html" style="text-decoration: none; color: #333; font-weight: bold; background: #fff; padding: 8px 16px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">← Volver al Catálogo</a>
-    <h2 style="margin: 0; color: #e84393; font-size: 1.3rem;">Bebé en Camino</h2>
+  <header style="max-width: 900px; margin: 0 auto 20px auto; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+    <a href="index.html" style="text-decoration: none; color: #333; font-weight: bold; background: #fff; padding: 8px 16px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 0.9rem;">← Volver al Catálogo</a>
+    <h2 style="margin: 0; color: #e84393; font-size: 1.3rem; text-align: right;">Bebé en Camino</h2>
   </header>
 
   <main style="max-width: 900px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
@@ -27,8 +69,8 @@
         <img id="det-imagen" src="" alt="Imagen del producto" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         
         <button id="btn-compartir" onclick="compartirProducto()" style="margin: 15px auto 0 auto; width: auto; max-width: 220px; background: #4a5568; color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 0.88rem; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px;">
-  <i class="fa-solid fa-share-nodes" style="font-size: 0.85rem; opacity: 0.9;"></i> Compartir Producto
-</button>
+          <i class="fa-solid fa-share-nodes" style="font-size: 0.85rem; opacity: 0.9;"></i> Compartir Producto
+        </button>
       </div>
 
       <div>
@@ -41,7 +83,7 @@
           <p id="det-descripcion" style="font-size: 0.95rem; color: #666; line-height: 1.6; white-space: pre-line;"></p>
         </div>
 
-        <!-- Selector de cantidad fijo en el HTML -->
+        <!-- Selector de cantidad -->
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
           <span style="font-size: 0.9rem; font-weight: 600; color: #555;">Cantidad:</span>
           <div style="display: flex; align-items: center; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; background: #fff;">
