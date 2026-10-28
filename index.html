@@ -11,30 +11,31 @@
 </head>
 <body>
 
-  <!-- Encabezado / Navbar Limpio -->
-  <header class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+  <!-- Encabezado / Navbar Limpio y Unificado -->
+  <header class="navbar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;">
+    
+    <!-- 1. Logo a la Izquierda -->
     <div class="logo" style="display: flex; align-items: center; gap: 10px;">
       <img src="logo.png" alt="Bebé en Camino" class="logo-img" style="height: 100px; width: auto; object-fit: contain;">
       <span class="logo-text" style="font-size: 1.25rem; font-weight: bold; color: #3d2354;">Bebé en Camino</span>
     </div>
-    
-  <header style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background-color: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;">
-    <div class="logo" style="font-weight: bold; font-size: 1.2rem; color: #333;">
-    </div>
-    <nav>
-        <ul style="display: flex; list-style: none; gap: 1.5rem; margin: 0; padding: 0;">
-            <li><a href="#productos" style="text-decoration: none; color: #555; font-weight: 500;">Producto</a></li>
-            <li><a href="#blog" style="text-decoration: none; color: #555; font-weight: 500;">Blog</a></li>
-            <li><a href="#contacto" style="text-decoration: none; color: #555; font-weight: 500;">Contacto</a></li>
-        </ul>
-    </nav>
-</header>
 
+    <!-- 2. Menú de Navegación al Centro -->
+    <nav>
+      <ul style="display: flex; list-style: none; gap: 1.5rem; margin: 0; padding: 0;">
+        <li><a href="#productos" style="text-decoration: none; color: #555; font-weight: 500;">Producto</a></li>
+        <li><a href="#blog" style="text-decoration: none; color: #555; font-weight: 500;">Blog</a></li>
+        <li><a href="#contacto" style="text-decoration: none; color: #555; font-weight: 500;">Contacto</a></li>
+      </ul>
+    </nav>
+
+    <!-- 3. Botón del Carrito a la Derecha -->
     <div class="cart-btn-container">
       <button onclick="toggleCart()" style="background: #fb5c74; color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 0.95rem;">
         <i class="fa-solid fa-shopping-cart" style="font-size: 0.9rem;"></i> Carrito (<span id="cart-count">0</span>)
       </button>
     </div>
+
   </header>
 
   <!-- Botón Flotante de WhatsApp -->
@@ -117,7 +118,7 @@
     </main>
 
     <!-- Sidebar del Blog y Secciones -->
-    <aside class="sidebar-area" style="display: flex; flex-direction: column; gap: 1.5rem;" id="blog">
+    <aside class="sidebar-area" style="display: flex; flex-direction: column; gap: 1.5rem;">
       
       <!-- Sección de Ofertas en Slider -->
       <div class="blog-widget" id="ofertas-container" style="border-top: 4px solid #fb5c74;">
@@ -136,18 +137,12 @@
       </div>
 
       <!-- Widget del Blog & Tips -->
-      <div class="blog-widget" style="border-top: 4px solid #a0a2ad;">
-        <h3 style="color: #2f2f2f; margin-bottom: 0.3rem; font-size: 1.1rem;">Blog & Tips</h3>
-        <p style="font-size: 0.85rem; color: #a0a2ad; margin-bottom: 1rem;">Aprende más sobre el cuidado de tu bebé</p>
-        
-        <!-- Contenedor del Blog -->
-        <div id="sidebar-blog-container" class="blog-posts"></div>
-        
-        <!-- Botón Ver Más de Blog -->
-        <div style="text-align: center; margin-top: 1rem;">
-          <button id="ver-mas-blog-btn" style="background: #fb5c74; color: white; border: none; padding: 10px 25px; border-radius: 30px; font-size: 0.95rem; font-weight: bold; cursor: pointer; display: none; box-shadow: 0 4px 10px rgba(251, 92, 116, 0.3);">Ver más artículos</button>
-        </div>
-      </div>
+<div id="blog" class="blog-widget" style="border-top: 4px solid #a0a2ad; scroll-margin-top: 100px;">
+   <h3 style="color: #2f2f2f; margin-bottom: 0.3rem; font-size: 1.1rem;">Blog & Tips</h3>
+   <p style="font-size: 0.85rem; color: #a0a2ad; margin-bottom: 1rem;">Aprende más sobre el cuidado de tu bebé</p>
+   <!-- Contenedor del Blog -->
+   <div id="sidebar-blog-container" class="blog-posts"></div>
+</div>
 
     </aside>
   </div>
