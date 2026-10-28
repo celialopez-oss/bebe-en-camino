@@ -429,3 +429,56 @@ function filtrarInventarioAdmin() {
     }
   });
 }
+
+// ------------------- EXPORTAR MENSAJES A CSV CON FILTRO DE FECHAS -------------------
+async function exportarMensajesCSV() {
+  const fechaDesde = document.getElementById('filtro-fecha-desde').value;
+  const fechaHasta = document.getElementById('filtro-fecha-hasta').value;
+
+  // Consulta a Supabase ordenando los mensajes del más reciente al más antiguo
+  let query = supabaseClient.from('mensajes').select('*').order('created_at', { ascending: false });
+
+  if (fechaDesde) {
+    query = query.gte('created_at', fechaDesde + 'T00:00:00');
+  }
+  if (fechaHasta) {
+    query = query.lte('created_at', fechaHasta + 'T23:59:59');
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error al obtener mensajes para exportar:', error);
+    alert('Hubo un error al consultar los mensajes en la base de datos.');
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    alert('No se encontraron mensajes en el rango de fechas seleccionado.');
+    return;
+  }
+
+  // Encabezados del archivo CSV (incluye BOM para que Excel reconozca tildes y eñes)
+  let csvContent = 'data:text/csv;charset=utf-8,\uFEFF'; 
+  csvContent += 'ID,Remitente,Email,Mensaje,Fecha\n';
+
+  data.forEach(msg => {
+    const id = msg.id || '';
+    const nombre = (msg.nombre || msg.remitente || 'Anónimo').replace(/"/g, '""');
+    const email = (msg.email || '').replace(/"/g, '""');
+    const texto = (msg.mensaje || msg.texto || '').replace(/"/g, '""').replace(/\n/g, ' ');
+    const fecha = msg.created_at ? new Date(msg.created_at).toLocaleString() : '';
+
+    csvContent += `"${id}","${nombre}","${email}","${texto}","${fecha}"\n`;
+  });
+
+  // Generar y activar la descarga del archivo CSV
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement('a');
+  link.setAttribute('href', encodedUri);
+  link.setAttribute('download', `reporte_mensajes_${fechaDesde || 'inicio'}_al_${fechaHasta || 'hoy'}.csv`);
+  document.body.appendChild(link);
+  
+  link.click();
+  document.body.removeChild(link);
+}
