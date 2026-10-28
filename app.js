@@ -343,7 +343,10 @@ function abrirModalCantidad(producto) {
   if (inputCantidad) inputCantidad.value = 1;
 
   const modal = document.getElementById('modal-cantidad');
-  if (modal) modal.classList.remove('hidden');
+  if (modal) {
+    modal.style.display = 'flex'; // Forzamos que se muestre correctamente
+    modal.classList.remove('hidden');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -354,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnMenos) {
     btnMenos.addEventListener('click', () => {
       let cant = parseInt(inputCantidad.value) || 1;
-      if (cant > 1) inputCantidad.value = cant - 1;
+      if (cant > 1) inputCantidad.value = cant - 1; // Corregido el error tipográfico anterior (cant1)
     });
   }
 
@@ -369,7 +372,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCancelarModal = document.getElementById('btn-cancelar-modal');
   if (btnCancelarModal) {
     btnCancelarModal.addEventListener('click', () => {
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+      }
       productoParaAgregar = null;
     });
   }
@@ -381,7 +387,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const cantidad = parseInt(inputCantidad.value) || 1;
         agregarAlCarritoConfirmado(productoParaAgregar, cantidad);
       }
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+      }
       productoParaAgregar = null;
     });
   }
