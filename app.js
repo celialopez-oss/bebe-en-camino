@@ -489,44 +489,29 @@ async function checkout() {
   const email = emailInput ? emailInput.value.trim() : "";
   const ciudad = ciudadInput ? ciudadInput.value.trim() : "";
 
-  // 1. Validar que el nombre no esté vacío
-  if (!nombre) {
-    alert("Por favor, completa tu Nombre.");
-    if (nombreInput) nombreInput.focus();
-    return; //  Esto frena todo y no deja enviar nada
+  // 1. Validar que Nombre y Teléfono no estén vacíos
+  if (!nombre || !telefono) {
+    return alert("Por favor, completa tu Nombre y Teléfono.");
   }
 
-  // 2. Validar teléfono (exactamente 10 dígitos)
+  // 2. Validación estricta de 10 dígitos para el teléfono de Ecuador
   const regexTelefono = /^[0-9]{10}$/;
   if (!regexTelefono.test(telefono)) {
-    alert("Por favor ingresa un número de celular válido de 10 dígitos.");
-    if (telefonoInput) telefonoInput.focus();
-    return; //  Frena aquí
+    return alert('Por favor ingresa un número de celular válido de 10 dígitos.');
   }
 
-  // 3. Validar que la ciudad no esté vacía
+  // 3. Validar que la CIUDAD sea obligatoria
   if (!ciudad) {
-    alert("Por favor, ingresa tu Ciudad.");
-    if (ciudadInput) ciudadInput.focus();
-    return; //  Frena aquí
+    return alert("Por favor, ingresa tu Ciudad.");
   }
 
-  // 4. Validar formato de correo (Solo si escribieron algo, ya que es opcional)
+  // 4. CORREO OPCIONAL: Solo se valida si el usuario escribió algo
   if (email !== "") {
     const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regexEmail.test(email)) {
-      alert("Por favor ingresa un correo electrónico válido (ejemplo: usuario@gmail.com).");
-      if (emailInput) emailInput.focus();
-      return; //  Frena aquí
+      return alert("Por favor ingresa un correo electrónico válido (ejemplo: usuario@gmail.com).");
     }
   }
-
-  // 👉 A partir de aquí va tu código para guardar en Supabase y abrir WhatsApp...
-}
-
-  // A partir de aquí continúan tus instrucciones normales para guardar en Supabase y abrir WhatsApp...
-  console.log("¡Todos los datos son válidos, procediendo con el pedido!");
-}
 
   // Resumen del pedido con las operaciones corregidas
   const resumenPedido = carrito.map(item => `${item.nombre} (x${item.cantidad}) - $${(item.precio * item.cantidad).toFixed(2)}`).join(" | ");
@@ -674,20 +659,22 @@ async function cargarSeccionesSidebarDirecto() {
   }
 }
 
+// --- FUNCIÓN DE SANITIZAR TEXTO ---
 function sanitizarTexto(texto) {
-    if (!texto) return "";
-    const mapa = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#x27;',
-        '/': '&#x2F;',
-    };
-    const reg = /[&<>"'/]/g;
-    return texto.replace(reg, (match) => mapa[match]);
+  if (!texto) return "";
+  const mapa = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '/': '&#x2F;',
+  };
+  const reg = /[&<>"']/g;
+  return texto.replace(reg, (match) => mapa[match]);
 }
 
+// --- CARGAR CARRITO AL INICIAR LA PÁGINA ---
 window.addEventListener('pageshow', (event) => {
   carrito = JSON.parse(localStorage.getItem('carrito')) || [];
   updateCartUI();
