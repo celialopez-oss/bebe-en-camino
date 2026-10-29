@@ -477,21 +477,29 @@ function toggleCart() {
 }
 
 async function checkout() {
-  if (carrito.length === 0) return alert("El carrito está vacío.");
+  if (!carrito || carrito.length === 0) return alert("El carrito está vacío.");
 
   const nombreInput = document.getElementById("cli-nombre");
   const telefonoInput = document.getElementById("cli-telefono");
   const emailInput = document.getElementById("cli-email");
-  const ciudad = document.getElementById('cli-ciudad').value;
+  const ciudadInput = document.getElementById("cli-ciudad");
 
   const nombre = nombreInput ? nombreInput.value.trim() : "";
   const telefono = telefonoInput ? telefonoInput.value.trim() : "";
   const email = emailInput ? emailInput.value.trim() : "";
+  const ciudad = ciudadInput ? ciudadInput.value.trim() : "";
 
   if (!nombre || !telefono) {
     return alert("Por favor, completa tu Nombre y Teléfono.");
   }
 
+  // Validación estricta de 10 dígitos para Ecuador antes de hacer cualquier otra cosa
+  const regexTelefono = /^[0-9]{10}$/;
+  if (!regexTelefono.test(telefono)) {
+    return alert('Por favor ingresa un número de celular válido de 10 dígitos.');
+  }
+
+  // Resumen del pedido con las operaciones corregidas
   const resumenPedido = carrito.map(item => `${item.nombre} (x${item.cantidad}) - $${(item.precio * item.cantidad).toFixed(2)}`).join(" | ");
 
   try {
@@ -510,19 +518,13 @@ async function checkout() {
     console.error("Error inesperado:", err);
   }
 
- let mensaje = "¡Hola *Bebé en camino*! 👶🛒\n";
+  let mensaje = "¡Hola *Bebé en camino*! 👶🛒\n";
   mensaje += "Tengo un nuevo pedido:\n\n";
   mensaje += `👤 *Cliente:* ${nombre}\n`;
   mensaje += `📞 *Contacto:* ${telefono}\n`;
   if (email) mensaje += `✉️ *Correo:* ${email}\n`;
-  mensaje += `📍 *Ciudad:* ${ciudad}\n\n`;
+  if (ciudad) mensaje += `📍 *Ciudad:* ${ciudad}\n\n`;
   mensaje += "*Detalle del pedido:*\n";
-
-  const regexTelefono = /^[0-9]{10}$/; // Ajustado a 10 dígitos exactos para Ecuador
-  if (!regexTelefono.test(telefono)) {
-    alert('Por favor ingresa un número de celular válido de 10 dígitos.');
-    return; // Detiene la ejecución para que no avance si el número está incompleto
-  }
 
   let total = 0;
   carrito.forEach((item, index) => {
@@ -536,19 +538,21 @@ async function checkout() {
   mensaje += "Quedo a la espera de sus datos de cuenta para el pago. ¡Gracias!";
 
   const url = `https://wa.me/${TELEFONO_TIENDA}?text=${encodeURIComponent(mensaje)}`;
-  window.open(url, "_blank");
 
+  // Vaciamos el carrito y el almacenamiento local ANTES de redirigir
   carrito = [];
+  localStorage.removeItem('carrito');
+
   if (nombreInput) nombreInput.value = "";
   if (telefonoInput) telefonoInput.value = "";
   if (emailInput) emailInput.value = "";
-  
-  // Limpiamos también el input de la ciudad si existe
-  const ciudadInput = document.getElementById('cli-ciudad');
   if (ciudadInput) ciudadInput.value = "";
 
   updateCartUI();
   toggleCart();
+
+  // Solución para iPhone y móviles: Usar location.href para forzar la apertura de WhatsApp
+  window.location.href = url;
 }
 
 window.addEventListener('beforeunload', (event) => {
