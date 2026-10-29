@@ -489,18 +489,50 @@ async function checkout() {
   const email = emailInput ? emailInput.value.trim() : "";
   const ciudad = ciudadInput ? ciudadInput.value.trim() : "";
 
-  if (!nombre || !telefono) {
-    return alert("Por favor, completa tu Nombre y Teléfono.");
+  // 1. Validar que el nombre no esté vacío
+  if (!nombre) {
+    alert("Por favor, completa tu Nombre.");
+    if (nombreInput) nombreInput.focus();
+    return; //  Esto frena todo y no deja enviar nada
   }
 
-  // Validación estricta de 10 dígitos para Ecuador antes de hacer cualquier otra cosa
+  // 2. Validar teléfono (exactamente 10 dígitos)
   const regexTelefono = /^[0-9]{10}$/;
   if (!regexTelefono.test(telefono)) {
-    return alert('Por favor ingresa un número de celular válido de 10 dígitos.');
+    alert("Por favor ingresa un número de celular válido de 10 dígitos.");
+    if (telefonoInput) telefonoInput.focus();
+    return; //  Frena aquí
   }
+
+  // 3. Validar que la ciudad no esté vacía
+  if (!ciudad) {
+    alert("Por favor, ingresa tu Ciudad.");
+    if (ciudadInput) ciudadInput.focus();
+    return; //  Frena aquí
+  }
+
+  // 4. Validar formato de correo (Solo si escribieron algo, ya que es opcional)
+  if (email !== "") {
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regexEmail.test(email)) {
+      alert("Por favor ingresa un correo electrónico válido (ejemplo: usuario@gmail.com).");
+      if (emailInput) emailInput.focus();
+      return; //  Frena aquí
+    }
+  }
+
+  // 👉 A partir de aquí va tu código para guardar en Supabase y abrir WhatsApp...
+}
+
+  // A partir de aquí continúan tus instrucciones normales para guardar en Supabase y abrir WhatsApp...
+  console.log("¡Todos los datos son válidos, procediendo con el pedido!");
+}
 
   // Resumen del pedido con las operaciones corregidas
   const resumenPedido = carrito.map(item => `${item.nombre} (x${item.cantidad}) - $${(item.precio * item.cantidad).toFixed(2)}`).join(" | ");
+
+  // Obtener fecha y hora exacta de Ecuador (Guayaquil)
+  const fechaEcuador = new Date().toLocaleString('sv-SE', { timeZone: 'America/Guayaquil' });
 
   try {
     const { error } = await supabaseClient.from("clientes").insert([{ 
