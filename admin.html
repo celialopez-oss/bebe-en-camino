@@ -245,27 +245,6 @@
     </div>
   </div>
 
-  <!-- Pestaña de Mensajes de Clientes -->
-    <div id="mensajes-tab" class="tab-content hidden">
-      <h3>💬 Reporte de Mensajes de Clientes</h3>
-      <p style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">Filtra por rango de fechas y descarga un reporte detallado en formato CSV.</p>
-      
-      <!-- Controles de Filtro de Fechas y Exportación -->
-      <div style="margin: 20px 0; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
-        <div>
-          <label style="display: block; font-size: 0.85rem; color: #555; margin-bottom: 5px; font-weight: 600;">Desde:</label>
-          <input type="date" id="filtro-fecha-desde" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; background: #fff;">
-        </div>
-        <div>
-          <label style="display: block; font-size: 0.85rem; color: #555; margin-bottom: 5px; font-weight: 600;">Hasta:</label>
-          <input type="date" id="filtro-fecha-hasta" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; background: #fff;">
-        </div>
-        <button onclick="exportarMensajesCSV()" style="background: #27ae60; color: white; border: none; padding: 9px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-file-csv"></i> Descargar Reporte CSV
-        </button>
-      </div>
-    </div>
-
   <script src="admin.js"></script>
 </body>
 </html>
